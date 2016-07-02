@@ -1,8 +1,9 @@
 import os
-import json
+import simplejson as json
 from zipfile import ZipFile
 import pandas as pd # pandas
 import re
+import cProfile
 
 class WikilinksOldIterator:
 
@@ -34,53 +35,68 @@ class WikilinksOldIterator:
 
 class WikilinksNewIterator:
 
-    # path should either point to a zip file or a directory containing all dataset files,
-    def __init__(self, path="wikilink.zip"):
+    # the new iterator does not support using a zip file.
+    def __init__(self, path, limit_files = 0):
         self._path = path
+        self._limit_files = limit_files
 
     def _wikilink_files(self):
-        if os.path.isdir(self._path):
-            for file in os.listdir(self._path):
-                if os.path.isdir(os.path.join(self._path, file)):
-                    continue
-                print "opening ", file
-                yield open(os.path.join(self._path, file), 'r')
-        else: # assume zip
-            zf = ZipFile(self._path, 'r') # Read in a list of zipped files
-            for fname in zf.namelist():
-                print "opening ", fname
-                yield zf.open(fname)
+        for file in os.listdir(self._path):
+            if os.path.isdir(os.path.join(self._path, file)):
+                continue
+            print "opening ", file
+            yield open(os.path.join(self._path, file), 'r')
 
-    # the main function - returns a generator that can iterate over all dataset
+    # code from:
+    # http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-of-unicode-ones-from-json-in-python/13105359#13105359
+    def _byteify(self, input):
+        if isinstance(input, dict):
+            return {self._byteify(key): self._byteify(value)
+                    for key, value in input.iteritems()}
+        elif isinstance(input, list):
+            return [self._byteify(element) for element in input]
+        elif isinstance(input, unicode):
+            return input.encode('utf-8')
+        else:
+            return input
+
+    def myJsonReader(self, s):
+        
     def wikilinks(self):
+        c = 0
         for f in self._wikilink_files():
-            for line in f:
+            lines = f.readlines()
+            for line in lines:
                 if len(line) > 0:
-                    yield json.loads(line)
+                    wlink = self._byteify(json.loads(line))
+                    if (not 'word' in wlink) or (not 'wikiId' in wlink):
+                        continue
+                    if not ('right_context' in wlink or 'left_context' in wlink):
+                        continue
+                    yield wlink
+
             f.close()
+            c += 1
+            if (self._limit_files > 0 and c == self._limit_files):
+                break
 
     # transforms a context into a list of words
     def contextAsList(self, context):
         # Might need more processing?
         return str.split(re.sub(r'\W+', '', context))
 
-class WikilnksStatistics:
+class WikilinksStatistics:
     def __init__(self, wikilinks_iter):
         self._wikilinks_iter = wikilinks_iter
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.conceptCounts = dict()
         self.contextDictionary = dict()
-        self.calcStatistics()
 
     # goes over all dataset and calculates a number statistics
     def calcStatistics(self):
         print "getting statistics"
         for wlink in self._wikilinks_iter.wikilinks():
-            if (not 'word' in wlink) or (not 'wikiId' in wlink):
-                continue
-            if not ('right_context' in wlink or 'left_context' in wlink):
-                continue
             if not wlink['word'] in self.mentionLinks:
                 self.mentionLinks[wlink['word']] = dict()
             self.mentionLinks[wlink['word']][wlink['wikiId']] = self.mentionLinks[wlink['word']].get(wlink['wikiId'], 0) + 1
@@ -88,22 +104,34 @@ class WikilnksStatistics:
             self.conceptCounts[wlink['wikiId']] = self.conceptCounts.get(wlink['wikiId'], 0) + 1
 
             if 'right_context' in wlink:
-                for w in self.contextAsList(wlink['right_context']):
+                for w in self._wikilinks_iter.contextAsList(wlink['right_context']):
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
             if 'left_context' in wlink:
-                for w in self.contextAsList(wlink['left_context']):
+                for w in self._wikilinks_iter.contextAsList(wlink['left_context']):
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
-if __name__ == "__main__":
-    wikilinks = WikilinksIterator("C:\\repo\\WikiLink\\ids")
-    stats = WikilnksStatistics(wikilinks)
-
-    def sortedList(l):
+    def _sortedList(self, l):
         l = [(k,v) for k,v in l.items()]
         l.sort(key=lambda (k,v):-v)
         l.append(("--",0))
         return l
 
-    wordsSorted = [(k, sortedList(v), sum(v.values())) for k,v in stats.mentionLinks.items()]
-    wordsSorted.sort(key=lambda (k, v, d): v[1][1])
-    print "distinct mentions: ", len(stats.mentionLinks)
+    def printSomeStats(self):
+        print "distinct terms: ", len(self.mentionCounts)
+        print "distinct concepts: ", len(self.conceptCounts)
+        print "distinct context words: ", len(self.contextDictionary)
+
+        k, v = stats.mentionLinks.items()[0]
+        wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in stats.mentionLinks.items()]
+        wordsSorted.sort(key=lambda (k, v, d): v[1][1])
+
+        print("some ambiguous terms:")
+        for w in wordsSorted[-10:]:
+            print w
+
+if __name__ == "__main__":
+    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train", limit_files=1)
+    stats = WikilinksStatistics(iter)
+    stats.calcStatistics()
+    stats.printSomeStats()
+

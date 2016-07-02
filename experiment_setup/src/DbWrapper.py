@@ -1,5 +1,4 @@
 import mysql.connector
-dsf
 
 class WikipediaDbWrapper:
     def __init__(self, user, password, database, host='127.0.0.1'):
