@@ -49,6 +49,7 @@ class Antirectifier(Layer):
         neg = K.relu(-x)
         return K.concatenate([pos, neg], axis=1)
 
+<<<<<<< HEAD
 # global parameters
 batch_size = 128
 nb_classes = 10
@@ -93,3 +94,36 @@ model.fit(X_train, Y_train,
 
 # next, compare with an equivalent network
 # with2x bigger Dense layers and ReLU
+=======
+if __name__ == "__main__":
+    data_dim = 16
+    timesteps = 8
+    nb_classes = 10
+
+    # generate dummy training data
+    x_train = np.random.random((1000, timesteps, data_dim))
+    y_train = np.random.random((1000, nb_classes))
+
+    model = Sequential()
+    # Dense(64) is a fully-connected layer with 64 hidden units.
+    # in the first layer, you must specify the expected input data shape:
+    # here, 20-dimensional vectors.
+    model.add(Dense(64, input_dim=20, init='uniform'))
+    model.add(Activation('tanh'))
+    model.add(Dropout(0.5))
+    model.add(Dense(64, init='uniform'))
+    model.add(Activation('tanh'))
+    model.add(Dropout(0.5))
+    model.add(Dense(10, init='uniform'))
+    model.add(Activation('softmax'))
+
+    sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy',
+                  optimizer=sgd,
+                  metrics=['accuracy'])
+
+    model.fit(x_train, y_train,
+              nb_epoch=20,
+              batch_size=16)
+    score = model.evaluate(X_test, y_test, batch_size=16)
+>>>>>>> origin/master
