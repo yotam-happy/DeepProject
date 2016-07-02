@@ -16,6 +16,7 @@ import requests
 
 class word2vecLoader:
     def __init__(self, wordsFilePath="vecs", conceptsFilePath="context"):
+        # loads words and contexts
         self._wordsFilePath = wordsFilePath
         self._conceptsFilePath = conceptsFilePath
 
@@ -102,7 +103,15 @@ class WikilinksGenerator:
                 for w in self.contextAsList(wlink['left_context']):
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
-wikilinks = WikilinksGenerator("C:\\repo\\WikiLink\\ids")
+# main commands
+if os.path.isdir("C:\\repo\\WikiLink\\ids"):
+    path = "C:\\repo\\WikiLink\\ids"
+    noam_yotam_flag = 2
+elif os.path.isdir("C:\Users\Noam\Documents\Data_DeepESA"):
+    path = "C:\Users\Noam\Documents\Data_DeepESA"
+    noam_yotam_flag = 1
+
+wikilinks = WikilinksGenerator(path)
 words = wikilinks.getWordStatistics()
 
 def sortedList(l):
