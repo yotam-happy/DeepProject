@@ -1,8 +1,8 @@
 import os
-import simplejson as json
 from zipfile import ZipFile
 import pandas as pd # pandas
 import re
+import ujson as json
 import cProfile
 
 class WikilinksOldIterator:
@@ -47,37 +47,32 @@ class WikilinksNewIterator:
             print "opening ", file
             yield open(os.path.join(self._path, file), 'r')
 
-    # code from:
-    # http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-of-unicode-ones-from-json-in-python/13105359#13105359
-    def _byteify(self, input):
-        if isinstance(input, dict):
-            return {self._byteify(key): self._byteify(value)
-                    for key, value in input.iteritems()}
-        elif isinstance(input, list):
-            return [self._byteify(element) for element in input]
-        elif isinstance(input, unicode):
-            return input.encode('utf-8')
-        else:
-            return input
-
-    def myJsonReader(self, s):
-        
     def wikilinks(self):
         c = 0
         for f in self._wikilink_files():
             lines = f.readlines()
             for line in lines:
                 if len(line) > 0:
-                    wlink = self._byteify(json.loads(line))
+                    wlink = json.loads(line)
+
+                    # preprocess
+                    if 'right_context' in wlink:
+                        wlink['right_context'] = wlink['right_context'].encode('utf-8')
+                    if 'left_context' in wlink:
+                        wlink['left_context'] = wlink['left_context'].encode('utf-8')
+
+                    # filter
                     if (not 'word' in wlink) or (not 'wikiId' in wlink):
                         continue
                     if not ('right_context' in wlink or 'left_context' in wlink):
                         continue
+
+                    # return
                     yield wlink
 
             f.close()
             c += 1
-            if (self._limit_files > 0 and c == self._limit_files):
+            if self._limit_files > 0 and c == self._limit_files:
                 break
 
     # transforms a context into a list of words
