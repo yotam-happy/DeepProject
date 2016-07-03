@@ -61,8 +61,8 @@ def it(iter):
     print c
 
 if __name__ == "__main__":
-    iter_train = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
-    iter_eval = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\evaluation")
+    iter_train = WikilinksNewIterator("..\\data\\wikilinks\\train")
+    iter_eval = WikilinksNewIterator("..\\data\\wikilinks\\evaluation")
 
-    ev = Evaluation(iter_eval, BaselineModel(iter_train, stats_file='C:\\repo\\WikiLink\\randomized\\train_stats'))
+    ev = Evaluation(iter_eval, BaselineModel(iter_train, stats_file='..\\data\\wikilinks\\train_stats'))
     ev.evaluate()

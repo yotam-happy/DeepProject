@@ -97,8 +97,8 @@ class WikilinksStatistics:
             print w
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
-    stats = WikilinksStatistics(iter, load_from_file_path='C:\\repo\\WikiLink\\randomized\\train_stats')
+    iter = WikilinksNewIterator("..\\data\\train")
+    stats = WikilinksStatistics(iter, load_from_file_path='....\\data\\wikilinks\\train_stats')
     stats.calcStatistics()
-    stats.saveToFile('C:\\repo\\WikiLink\\randomized\\train_stats')
+    stats.saveToFile('..\\data\\train_stats')
     stats.printSomeStats()
