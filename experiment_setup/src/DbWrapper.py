@@ -1,4 +1,4 @@
-import mysql.connector
+import my0sql.connector
 
 class WikipediaDbWrapper:
     def __init__(self, user, password, database, host='127.0.0.1'):
