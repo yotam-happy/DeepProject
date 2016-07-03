@@ -5,6 +5,16 @@ import random
 from WikilinksIterator import *
 
 class WikilinksRewrite:
+    """
+        This class takes an iterator of the dataset and creates a new dataset where
+        each wikilink is its own json contained in one line.
+        This is opposed to the old style we had where the entire file was a single
+        json and each wikilink was in multiple lines.
+
+        wikilinks_iter -    an iterator of the dataset, supposed to be of the old
+                            style so this class converts to new style
+    """
+
     def __init__(self, wikilinks_iter, dest_dir, json_per_file=400000):
         self._iter = wikilinks_iter
         self._dest_dir = dest_dir
@@ -27,7 +37,17 @@ class WikilinksRewrite:
                 self._n += 1
                 l = []
 
+
 class ShuffleFiles:
+    """
+    This class takes a source directory which is assumed to contain some text file.
+    It then writes the contents of these files into dest_dir, into a similar number
+    of files but with the lines: roughly equally devided between the files and randomly
+    shuffled both between the files and inside the files.
+
+    the process is a two step process and one must call work1() and then work2() to do
+    the job
+    """
     def __init__(self, src_dir, dest_dir):
         self._src_dir = src_dir
         self._dest_dir = dest_dir

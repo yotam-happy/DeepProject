@@ -6,9 +6,18 @@ import ujson as json
 import cProfile
 
 class WikilinksOldIterator:
+    """
+    This iterator is meant to be used with the older format of the dataset where each
+    file has a single json with many wikilinks in it. It is arguably faster then the
+    new iterator but requires quite a lot of memory
 
-    # path should either point to a zip file or a directory containing all dataset files,
+    note that WikilinksNewIterator and WikilinksOldIterator can be dropped-in-replacements of each other
+    """
+
     def __init__(self, path="wikilink.zip"):
+        """
+        :param path:    Path to either a zip file or a directory containing the dataset
+        """
         self._path = path
 
     def _wikilink_files(self):
@@ -24,8 +33,11 @@ class WikilinksOldIterator:
                 print "opening ", fname
                 yield zf.open(fname)
 
-    # the main function - returns a generator that can iterate over all dataset
     def wikilinks(self):
+        """
+        This is the main function - it is a generator that can be used as an iterator
+        returning a single wikilink object at a time
+        """
         for f in self._wikilink_files():
             df = pd.read_json(f)
             for wlink in df.wlinks:
@@ -34,9 +46,18 @@ class WikilinksOldIterator:
             f.close()
 
 class WikilinksNewIterator:
+    """
+    The new iterator for the version of the dataset where each file contains many jsons,
+    each one for a single wikilink and in a single line
 
-    # the new iterator does not support using a zip file.
+    note that WikilinksNewIterator and WikilinksOldIterator can be dropped-in-replacements of each other
+    """
+
     def __init__(self, path, limit_files = 0):
+        """
+        :param path:        can only be a directory here, no zip file support (caus i'm lazy)
+        :param limit_files: if specified then we read only this number of files (good for testing stuff quickly)
+        """
         self._path = path
         self._limit_files = limit_files
 
@@ -48,6 +69,10 @@ class WikilinksNewIterator:
             yield open(os.path.join(self._path, file), 'r')
 
     def wikilinks(self):
+        """
+        This is the main function - it is a generator that can be used as an iterator
+        returning a single wikilink object at a time
+        """
         c = 0
         for f in self._wikilink_files():
             lines = f.readlines()
@@ -79,75 +104,3 @@ class WikilinksNewIterator:
     def contextAsList(self, context):
         # Might need more processing?
         return str.split(re.sub(r'\W+', '', context))
-
-class WikilinksStatistics:
-    def __init__(self, wikilinks_iter, load_from_file_path=None):
-        self._wikilinks_iter = wikilinks_iter
-        self.mentionCounts = dict()
-        self.mentionLinks = dict()
-        self.conceptCounts = dict()
-        self.contextDictionary = dict()
-        if load_from_file_path is not None:
-            self.loadFromFile(load_from_file_path)
-
-
-    def saveToFile(self, path):
-        f = open(path, mode='w')
-        f.write(json.dumps(self.mentionCounts)+'\n')
-        f.write(json.dumps(self.mentionLinks)+'\n')
-        f.write(json.dumps(self.conceptCounts)+'\n')
-        f.write(json.dumps(self.contextDictionary))
-        f.close()
-
-    def loadFromFile(self, path):
-        f = open(path, mode='r')
-        l = f.readlines()
-        self.mentionCounts = json.loads(l[0])
-        self.mentionLinks = json.loads(l[1])
-        self.conceptCounts = json.loads(l[2])
-        self.contextDictionary = json.loads(l[3])
-        f.close()
-
-    # goes over all dataset and calculates a number statistics
-    def calcStatistics(self):
-        print "getting statistics"
-        for wlink in self._wikilinks_iter.wikilinks():
-            if not wlink['word'] in self.mentionLinks:
-                self.mentionLinks[wlink['word']] = dict()
-            self.mentionLinks[wlink['word']][wlink['wikiId']] = self.mentionLinks[wlink['word']].get(wlink['wikiId'], 0) + 1
-            self.mentionCounts[wlink['word']] = self.mentionCounts.get(wlink['word'], 0) + 1
-            self.conceptCounts[wlink['wikiId']] = self.conceptCounts.get(wlink['wikiId'], 0) + 1
-
-            if 'right_context' in wlink:
-                for w in self._wikilinks_iter.contextAsList(wlink['right_context']):
-                    self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
-            if 'left_context' in wlink:
-                for w in self._wikilinks_iter.contextAsList(wlink['left_context']):
-                    self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
-
-    def _sortedList(self, l):
-        l = [(k,v) for k,v in l.items()]
-        l.sort(key=lambda (k,v):-v)
-        l.append(("--",0))
-        return l
-
-    def printSomeStats(self):
-        print "distinct terms: ", len(self.mentionCounts)
-        print "distinct concepts: ", len(self.conceptCounts)
-        print "distinct context words: ", len(self.contextDictionary)
-
-        k, v = stats.mentionLinks.items()[0]
-        wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in stats.mentionLinks.items()]
-        wordsSorted.sort(key=lambda (k, v, d): v[1][1])
-
-        print("some ambiguous terms:")
-        for w in wordsSorted[-10:]:
-            print w
-
-if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
-    stats = WikilinksStatistics(iter, load_from_file_path='C:\\repo\\WikiLink\\randomized\\train_stats')
-    stats.calcStatistics()
-    stats.saveToFile('C:\\repo\\WikiLink\\randomized\\train_stats')
-    stats.printSomeStats()
-
