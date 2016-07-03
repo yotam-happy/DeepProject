@@ -1,18 +1,18 @@
 from WikilinksIterator import *
-from BaselineInferer import BaselineInferer
+from BaselineModel import BaselineModel
 
 class Evaluation:
     """
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, inferer):
+    def __init__(self, test_iter, model):
         """
         :param test_iter:   an iterator to the test or evaluation set
-        :param inferer:     a model to evaluate
+        :param model:       a model to evaluate
         """
         self._iter = test_iter
-        self._inferer = inferer
+        self._model = model
 
         self.n_samples = 0
         self.correct = 0
@@ -36,12 +36,12 @@ class Evaluation:
 
         for wikilink in self._iter.wikilinks():
             actual = wikilink['wikiId']
-            infered = self._inferer.infer(wikilink)
+            prediction = self._model.predict(wikilink)
 
             self.n_samples += 1
-            if infered is None:
+            if prediction is None:
                 self.no_prediction += 1
-            if infered == actual:
+            if prediction == actual:
                 self.correct += 1
 
         self.printEvaluation()
@@ -64,5 +64,5 @@ if __name__ == "__main__":
     iter_train = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
     iter_eval = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\evaluation")
 
-    ev = Evaluation(iter_eval, BaselineInferer(iter_train, stats_file='C:\\repo\\WikiLink\\randomized\\train_stats'))
+    ev = Evaluation(iter_eval, BaselineModel(iter_train, stats_file='C:\\repo\\WikiLink\\randomized\\train_stats'))
     ev.evaluate()

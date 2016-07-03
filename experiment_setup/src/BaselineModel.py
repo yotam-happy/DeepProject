@@ -1,6 +1,6 @@
-from WikilinksIterator import *
+from WikilinksStatistics import *
 
-class BaselineInferer:
+class BaselineModel:
     """
     This baseline model uses the statistics on the dataset to always predict the sense that was
     most common for a mention.
@@ -16,7 +16,7 @@ class BaselineInferer:
         if stats_file is None:
             self._wikilink_stats.calcStatistics()
 
-    def infer(self, wikilink):
+    def predict(self, wikilink):
         """
         takes a wikilink and predicts its correct sense (as we'v said, this is always the most
         common sense for each mention)
