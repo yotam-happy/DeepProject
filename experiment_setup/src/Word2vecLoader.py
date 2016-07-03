@@ -1,7 +1,14 @@
 import numpy as np
-
+import os
 
 class Word2vecLoader:
+    """
+    Words a word2vec model. Loads both word vectors and concept (context) vectors. These must
+    match in vector sizes.
+    Notice the files are not loaded when the object is created and one must explicitly
+    call loadEmbeddings() to do so
+    """
+
     def __init__(self, wordsFilePath="vecs", conceptsFilePath="context"):
         self._wordsFilePath = wordsFilePath
         self._conceptsFilePath = conceptsFilePath
@@ -20,17 +27,27 @@ class Word2vecLoader:
 
     def _loadEmbedding(self, path, filterSet):
         embedding = dict()
-        with open(self._wordsFilePath) as f:
+        with open(path) as f:
             f.readline() # skip embedding size def
             for line in iter(f):
-                s = line.split
+                s = line.split()
                 if filterSet is None or s[0] in filterSet:
                     embedding[s[0]] = np.array([float(x) for x in s[1:]])
         return embedding
 
-    # loads both word and concept embeddings into memory.
-    # wordDict and conceptDict can be used to filter the loaded embeddings so that only those
-    # actually needed are loaded (can be important as these might take a lot of memory
     def loadEmbeddings(self, wordDict=None, conceptDict=None):
+        """
+        Loads both word and context embeddings.
+
+        :param wordDict: If specified, only words appearing in word dict will be kept in memory
+        :param conceptDict: If specified, only concepts appearing in concept dict will be kept in memory
+        """
+
         self.wordEmbeddings = self._loadEmbedding(self._wordsFilePath, wordDict)
         self.conceptEmbeddings = self._loadEmbedding(self._conceptsFilePath, conceptDict)
+
+if __name__ == "__main__":
+    w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
+                         conceptsFilePath="..\\..\\data\\word2vec\\dim300context_vecs")
+    w2v.loadEmbeddings()
+    print w2v.wordEmbeddings
