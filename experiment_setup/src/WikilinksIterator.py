@@ -81,12 +81,32 @@ class WikilinksNewIterator:
         return str.split(re.sub(r'\W+', '', context))
 
 class WikilinksStatistics:
-    def __init__(self, wikilinks_iter):
+    def __init__(self, wikilinks_iter, load_from_file_path=None):
         self._wikilinks_iter = wikilinks_iter
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.conceptCounts = dict()
         self.contextDictionary = dict()
+        if load_from_file_path is not None:
+            self.loadFromFile(load_from_file_path)
+
+
+    def saveToFile(self, path):
+        f = open(path, mode='w')
+        f.write(json.dumps(self.mentionCounts)+'\n')
+        f.write(json.dumps(self.mentionLinks)+'\n')
+        f.write(json.dumps(self.conceptCounts)+'\n')
+        f.write(json.dumps(self.contextDictionary))
+        f.close()
+
+    def loadFromFile(self, path):
+        f = open(path, mode='r')
+        l = f.readlines()
+        self.mentionCounts = json.loads(l[0])
+        self.mentionLinks = json.loads(l[1])
+        self.conceptCounts = json.loads(l[2])
+        self.contextDictionary = json.loads(l[3])
+        f.close()
 
     # goes over all dataset and calculates a number statistics
     def calcStatistics(self):
@@ -125,8 +145,9 @@ class WikilinksStatistics:
             print w
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train", limit_files=1)
-    stats = WikilinksStatistics(iter)
+    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
+    stats = WikilinksStatistics(iter, load_from_file_path='C:\\repo\\WikiLink\\randomized\\train_stats')
     stats.calcStatistics()
+    stats.saveToFile('C:\\repo\\WikiLink\\randomized\\train_stats')
     stats.printSomeStats()
 

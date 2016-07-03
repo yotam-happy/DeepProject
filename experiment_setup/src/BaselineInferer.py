@@ -1,9 +1,10 @@
 from WikilinksIterator import *
 
 class BaselineInferer:
-    def __init__(self, iter=None):
-        self._wikilink_stats = WikilinksStatistics(iter)
-        self._wikilink_stats.calcStatistics()
+    def __init__(self, iter=None, stats_file=None):
+        self._wikilink_stats = WikilinksStatistics(iter, load_from_file_path=stats_file)
+        if stats_file is None:
+            self._wikilink_stats.calcStatistics()
 
     def infer(self, wikilink):
         if self._wikilink_stats is None:

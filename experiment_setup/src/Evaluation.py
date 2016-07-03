@@ -25,9 +25,6 @@ class Evaluation:
             if infered == actual:
                 self.correct += 1
 
-            if self.n_samples % 100000 == 0:
-                print "evaluated ", self.n_samples
-
         self.printEvaluation()
 
     def printEvaluation(self):
@@ -35,8 +32,15 @@ class Evaluation:
         print "%correct from total: ", float(self.correct) / self.n_samples
         print "%correct with train: ", float(self.correct) / (self.n_samples - self.no_train)
 
+def it(iter):
+    c = 0
+    for a in iter.wikilinks():
+        c += 1
+    print c
+
 if __name__ == "__main__":
     iter_train = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train")
     iter_eval = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\evaluation")
-    ev = Evaluation(iter_eval, BaselineInferer(iter_train))
+
+    ev = Evaluation(iter_eval, BaselineInferer(iter_train, stats_file='C:\\repo\\WikiLink\\randomized\\train_stats'))
     ev.evaluate()
