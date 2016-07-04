@@ -19,7 +19,7 @@ class DesaModel:
         # initialization of database path
         self.wvl = Word2vecLoader
         self.witr = WikilinksOldIterator
-        self.sense_dic = SenseDic
+        self.sense_dic =  SenseDic
 
     def train(self):
     # iterates using the wikilinkIterator over all possible examples when with data
