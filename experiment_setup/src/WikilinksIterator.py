@@ -8,9 +8,19 @@ import gzip
 import cProfile
 
 class WikilinksOldIterator:
+    """
+    This iterator is meant to be used with the older format of the dataset where each
+    file has a single json with many wikilinks in it. It is arguably faster then the
+    new iterator but requires quite a lot of memory
+
+    note that WikilinksNewIterator and WikilinksOldIterator can be dropped-in-replacements of each other
+    """
 
     # path should either point to a zip file or a directory containing all dataset files,
     def __init__(self, path="wikilink.zip", limit_files = 0):
+        """
+        :param path:    Path to either a zip file or a directory containing the dataset
+        """
         self._path = path
         self.limit_files =  limit_files
         self.wikilink_fname = 'wikilink.zip'
@@ -18,7 +28,7 @@ class WikilinksOldIterator:
     def get_wlinks(self):
         # outputs the next wlink piece
         # print "get next()"
-        for wlink in self.wikilinks():
+        for wlink in self._wikilinks_iter.wikilinks():
             yield wlink
 
     def _wikilink_files(self):
@@ -41,8 +51,11 @@ class WikilinksOldIterator:
                 print "opening ", fname
                 yield zf.open(fname)
 
-    # the main function - returns a generator that can iterate over all dataset
     def wikilinks(self):
+        """
+        This is the main function - it is a generator that can be used as an iterator
+        returning a single wikilink object at a time
+        """
         c = 0
         for f in self._wikilink_files():
             df = pd.read_json(f)
@@ -57,6 +70,46 @@ class WikilinksOldIterator:
                 print "stoppped at file ", self.limit_files
                 break
 
+class WikilinksNewIterator:
+    """
+    The new iterator for the version of the dataset where each file contains many jsons,
+    each one for a single wikilink and in a single line
+
+    note that WikilinksNewIterator and WikilinksOldIterator can be dropped-in-replacements of each other
+    """
+
+    def __init__(self, path, limit_files = 0):
+        """
+        :param path:        can only be a directory here, no zip file support (caus i'm lazy)
+        :param limit_files: if specified then we read only this number of files (good for testing stuff quickly)
+        """
+        self._path = path
+        self._limit_files = limit_files
+
+    def _wikilink_files(self):
+        for file in os.listdir(self._path):
+            if os.path.isdir(os.path.join(self._path, file)):
+                continue
+            print "opening ", file
+            yield open(os.path.join(self._path, file), 'r')
+
+    def wikilinks(self):
+        """
+        This is the main function - it is a generator that can be used as an iterator
+        returning a single wikilink object at a time
+        """
+        c = 0
+        for f in self._wikilink_files():
+            lines = f.readlines()
+            for line in lines:
+                if len(line) > 0:
+                    wlink = json.loads(line)
+
+                    # preprocess
+                    if 'right_context' in wlink:
+                        wlink['right_context'] = wlink['right_context'].encode('utf-8')
+                    if 'left_context' in wlink:
+                        wlink['left_context'] = wlink['left_context'].encode('utf-8')
 
 def save_zip(object, filename, bin = 1):
     """Saves a compressed object to disk
@@ -64,7 +117,6 @@ def save_zip(object, filename, bin = 1):
     file = gzip.GzipFile(filename, 'wb')
     file.write(pickle.dumps(object, bin))
     file.close()
-
 
 def load_zip(filename):
     """Loads a compressed object from disk
@@ -79,7 +131,6 @@ def load_zip(filename):
     object = pickle.loads(buffer)
     file.close()
     return object
-
 
 class WikilinksStatistics:
     def __init__(self, wikilinks_iter):
@@ -191,6 +242,7 @@ class WikilinksNewIterator:
             if self._limit_files > 0 and c == self._limit_files:
                 break
 
+
     # transforms a context into a list of words
     def contextAsList(self, context):
         # Might need more processing?
@@ -201,4 +253,3 @@ if __name__ == "__main__":
     stats = WikilinksStatistics(iter)
     stats.calcStatistics()
     stats.printSomeStats()
-
