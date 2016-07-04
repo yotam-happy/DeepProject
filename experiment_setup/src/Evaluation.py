@@ -1,5 +1,7 @@
 from WikilinksIterator import *
-from BaselineModel import BaselineModel
+from BaselinePairwiseModel import *
+from KnockoutModel import *
+from WikilinksStatistics import *
 
 class Evaluation:
     """
@@ -16,7 +18,7 @@ class Evaluation:
 
         self.n_samples = 0
         self.correct = 0
-        self.no_train = 0
+        self.no_prediction = 0
 
     def evaluate(self):
         """
@@ -35,13 +37,15 @@ class Evaluation:
         self.no_prediction = 0
 
         for wikilink in self._iter.wikilinks():
+            if 'wikiId' not in wikilink:
+                continue
             actual = wikilink['wikiId']
             prediction = self._model.predict(wikilink)
 
             self.n_samples += 1
             if prediction is None:
                 self.no_prediction += 1
-            if prediction == actual:
+            elif prediction == actual:
                 self.correct += 1
 
         self.printEvaluation()
@@ -50,19 +54,18 @@ class Evaluation:
         """
         Pretty print results of evaluation
         """
-        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_train
+        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction
         print "%correct from total: ", float(self.correct) / self.n_samples
         print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
-
-def it(iter):
-    c = 0
-    for a in iter.wikilinks():
-        c += 1
-    print c
 
 if __name__ == "__main__":
     iter_train = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     iter_eval = WikilinksNewIterator("..\\..\\data\\wikilinks\\evaluation")
+    train_stats = WikilinksStatistics(iter_train, load_from_file_path="..\\..\\data\\wikilinks\\train_stats")
 
-    ev = Evaluation(iter_eval, BaselineModel(iter_train, stats_file='..\\..\\data\\wikilinks\\train_stats'))
+    # build model
+    pairwise_model = BaselinePairwiseModel(train_stats)
+    knockout_model = KnockoutModel(pairwise_model, train_stats)
+
+    ev = Evaluation(iter_eval, knockout_model)
     ev.evaluate()

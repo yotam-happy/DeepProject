@@ -73,6 +73,16 @@ class WikilinksStatistics:
                 for w in self._wikilinks_iter.contextAsList(wlink['left_context']):
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
+    def getCandidatesForMention(self, mention):
+        """
+        :param mention:     the mention to search for
+        :return:            returns a dictionary: (candidate,count)
+        """
+        if mention not in self.mentionLinks:
+            return None
+        return self.mentionLinks[mention]
+
+
     def _sortedList(self, l):
         l = [(k,v) for k,v in l.items()]
         l.sort(key=lambda (k,v):-v)
