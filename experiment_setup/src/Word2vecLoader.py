@@ -50,12 +50,17 @@ class Word2vecLoader:
         """
         parent_path = os.path.abspath(os.path.join(self._wordsFilePath, os.pardir))
         if(os.path.isfile(parent_path+'\\w2v_filt.txt')):
-            output = open(parent_path+'\\w2v_filt.txt','rb')
-            self.wordEmbeddings = pickle.load(output)
-            self.conceptEmbeddings = pickle.load(output)
+            file_w2v = open(parent_path+'\\w2v_filt.txt','rb')
+            self.wordEmbeddings = pickle.load(file_w2v)
+            self.conceptEmbeddings = pickle.load(file_w2v)
+            file_w2v.close()
         else:
             self.wordEmbeddings = self._loadEmbedding(self._wordsFilePath, wordDict)
             self.conceptEmbeddings = self._loadEmbedding(self._conceptsFilePath, conceptDict)
+            file_w2v = open("..\\..\\data\\word2vec\\w2v_filt.txt",'ab+')
+            pickle.dump(self.wordEmbeddings, file_w2v)
+            pickle.dump(self.conceptEmbeddings, file_w2v)
+            file_w2v.close()
 
 if __name__ == "__main__":
     w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
@@ -63,7 +68,7 @@ if __name__ == "__main__":
     itr_train = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     itr_stats = WikilinksStatistics(itr_train, load_from_file_path="..\\..\\data\\wikilinks\\train_stats")
     wD = itr_stats.mentionLinks
-    cD = itr_stats.contextDictionary
+    cD = itr_stats.conceptCounts
     w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
     print 'wordEmbedding size is ',len(w2v.wordEmbeddings)
     print 'conceptEmbeddings size is ',len(w2v.conceptEmbeddings)

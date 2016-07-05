@@ -10,7 +10,7 @@ class SimpleW2VPairwiseModel:
     The w2v vector for the context is calculated simply as the average of all context words
     """
 
-    def __init__(self, stats, w2v):
+    def __init__(self, w2v):
         self._w2v = w2v
 
     def predict(self, wikilink, candidate1, candidate2):
