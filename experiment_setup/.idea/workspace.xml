@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d9a9dd20-8f5c-42e9-bcfd-dabb2f56de4f" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/EsaSimilarityModel.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/WikilinksIterator.py" afterPath="$PROJECT_DIR$/src/WikilinksIterator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/desaModel.py" afterPath="$PROJECT_DIR$/src/desaModel.py" />
     </list>
     <ignored path="experiment_setup.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -106,8 +105,8 @@
       <file leaf-file-name="EsaSimilarityModel.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/EsaSimilarityModel.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="1.4431239">
-              <caret line="50" column="26" selection-start-line="50" selection-start-column="26" selection-end-line="51" selection-end-column="25" />
+            <state vertical-scroll-proportion="0.23089983">
+              <caret line="17" column="49" selection-start-line="17" selection-start-column="49" selection-end-line="17" selection-end-column="49" />
               <folding>
                 <element signature="e#0#33#0" expanded="true" />
               </folding>
@@ -432,12 +431,12 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14699684" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39420936" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3129176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3129176" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30846325" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739422" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -466,7 +465,8 @@
     <MESSAGE value="First commit experiment setup" />
     <MESSAGE value="Merge remote-tracking branch 'origin/master'&#10;&#10;# Conflicts:&#10;#&#9;experiment_setup/src/test_keras.py&#10;" />
     <MESSAGE value="Desa class := senses_dictionary creating an loading + initial train module" />
-    <option name="LAST_COMMIT_MESSAGE" value="Desa class := senses_dictionary creating an loading + initial train module" />
+    <MESSAGE value="Similarity model skeleton&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Similarity model skeleton&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -772,8 +772,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/EsaSimilarityModel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.4431239">
-          <caret line="50" column="26" selection-start-line="50" selection-start-column="26" selection-end-line="51" selection-end-column="25" />
+        <state vertical-scroll-proportion="0.23089983">
+          <caret line="17" column="49" selection-start-line="17" selection-start-column="49" selection-end-line="17" selection-end-column="49" />
           <folding>
             <element signature="e#0#33#0" expanded="true" />
           </folding>

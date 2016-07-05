@@ -1,7 +1,10 @@
+from SimpleW2VPairwiseModel import SimpleW2VPairwiseModel
 from WikilinksIterator import *
 from BaselinePairwiseModel import *
 from KnockoutModel import *
 from WikilinksStatistics import *
+from Word2vecLoader import *
+
 
 class Evaluation:
     """
@@ -62,10 +65,21 @@ if __name__ == "__main__":
     iter_train = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     iter_eval = WikilinksNewIterator("..\\..\\data\\wikilinks\\evaluation")
     train_stats = WikilinksStatistics(iter_train, load_from_file_path="..\\..\\data\\wikilinks\\train_stats")
+    w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
+                         conceptsFilePath="..\\..\\data\\word2vec\\dim300context_vecs")
+    wD = train_stats.mentionLinks
+    cD = train_stats.contextDictionary
+    w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
+    print 'wordEmbedding size is ',len(w2v.wordEmbeddings)
+    print 'conceptEmbeddings size is ',len(w2v.conceptEmbeddings)
 
     # build model
-    pairwise_model = BaselinePairwiseModel(train_stats)
-    knockout_model = KnockoutModel(pairwise_model, train_stats)
+    # pairwise_model = BaselinePairwiseModel(train_stats)
+    # knockout_model = KnockoutModel(pairwise_model, train_stats)
+
+    # build Similarity model
+    simple_model = SimpleW2VPairwiseModel(train_stats, w2v)
+    knockout_model = KnockoutModel(simple_model)
 
     ev = Evaluation(iter_eval, knockout_model)
     ev.evaluate()

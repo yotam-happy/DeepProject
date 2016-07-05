@@ -39,8 +39,8 @@ class DesaModel:
     #     # TODO: recieves data set and prodicts accuracy according to model
 
 if __name__ == '__main__':
-    path = os.path.split(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))[0]
-    witr = WikilinksIterator.WikilinksOldIterator(path+'\Data',  limit_files = 1)
+    path = "..\\..\\data"
+    witr = WikilinksIterator.WikilinksOldIterator(path,  limit_files = 1)
     stats = WikilinksIterator.WikilinksStatistics(witr)
     stats.senseDicCreation()
 
