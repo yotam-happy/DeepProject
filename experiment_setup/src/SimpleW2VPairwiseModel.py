@@ -1,6 +1,7 @@
 from nltk import word_tokenize
 from Word2vecLoader import *
 from scipy import spatial
+import string
 from WikilinksStatistics import *
 
 class SimpleW2VPairwiseModel:
@@ -15,13 +16,22 @@ class SimpleW2VPairwiseModel:
 
     def predict(self, wikilink, candidate1, candidate2):
         """
-        The prediction function of a pairwise model
+        The prediction function of a similarity model
         :return:    returns one of the two candidates - the one deemed better
                     This function can returns None if it has nothing to say on either of the candidates
                     this is considered as saying they are both very unlikely and should be eliminated
         """
-        context = word_tokenize(wikilink['right_context'] + wikilink['left_context'])
+
+        # tokenize context and project to embedding
+        try:
+            context = word_tokenize(((wikilink['right_context'] + wikilink['left_context']).translate(None, string.punctuation)).decode('utf-8'))
+        except ValueError:
+            print "word_tokenize failed!"
+            context = ( ((wikilink['right_context'] + wikilink['left_context']) ).translate(None, string.punctuation) ).decode('utf-8').split()
+
         context_vec = [self._w2v.wordEmbeddings[word.lower()] for word in context if word.isalpha() and self._w2v.wordEmbeddings.has_key(word.lower())]
+
+        # checks if all inputs appear in the dictionaries otherwise returns None
         if((not self._w2v.conceptEmbeddings.has_key(candidate1.lower())) or
                (not self._w2v.conceptEmbeddings.has_key(candidate1.lower())) or
                (not context_vec)):
@@ -36,6 +46,13 @@ class SimpleW2VPairwiseModel:
 
 
 def findCosineDist(w ,c1, c2):
+    """
+    clculates cosine dist between 2 pairs and returns their similarity value
+    :param w: word
+    :param c1: candidate1
+    :param c2: candidate2
+    :return:
+    """
     out = dict()
     out['candidate1'] = spatial.distance.cosine(w,c1)
     out['candidate2'] = spatial.distance.cosine(w,c2)

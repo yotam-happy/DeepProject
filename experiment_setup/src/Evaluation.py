@@ -51,6 +51,9 @@ class Evaluation:
             elif prediction == actual:
                 self.correct += 1
 
+            if(not self.n_samples.__mod__(1e3)):
+                print ' --> ',self.n_samples,' were predicted'
+
         self.printEvaluation()
 
     def printEvaluation(self):
