@@ -39,9 +39,3 @@ class KnockoutModel:
         if len(l) == 0:
             return None
         return l[0]
-
-    def train(self, wikilink):
-        """
-        TODO: Should do training for a single example. e.i. train the underlying pairwise model
-        on pairs of the correct sense and some other incorrect senses
-        """
