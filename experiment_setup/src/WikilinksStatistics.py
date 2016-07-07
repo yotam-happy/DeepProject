@@ -82,11 +82,29 @@ class WikilinksStatistics:
             return None
         return self.mentionLinks[mention]
 
+    def getGoodMentionsToDisambiguate(self, f=5):
+        """
+        Returns a set of mentions that are deemed "good"
+        These are mentions where the second most common sense appears at least 10 times
+        :param f:
+        :return:
+        """
+
+        # generates a list of mentions, sorted by the second most common sense per
+        # mention
+        k, v = self.mentionLinks.items()[0]
+        l = [(k, self._sortedList(v)) for k,v in self.mentionLinks.items()]
+
+        # take those mentions where the second most common term appears more then f times
+        s = set()
+        for mention in l:
+            if len(mention[1]) > 1 and mention[1][1][1] >= f:
+                s.add(mention[0])
+        return s
 
     def _sortedList(self, l):
         l = [(k,v) for k,v in l.items()]
         l.sort(key=lambda (k,v):-v)
-        l.append(("--",0))
         return l
 
     def printSomeStats(self):
@@ -100,15 +118,15 @@ class WikilinksStatistics:
 
         k, v = stats.mentionLinks.items()[0]
         wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in stats.mentionLinks.items()]
-        wordsSorted.sort(key=lambda (k, v, d): v[1][1])
+        wordsSorted.sort(key=lambda (k, v, d): v[1][1] if len(v) > 1 else 0)
 
         print("some ambiguous terms:")
         for w in wordsSorted[-10:]:
             print w
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("..\\..\\data\\train")
+    iter = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     stats = WikilinksStatistics(iter)
     stats.calcStatistics()
-    stats.saveToFile('..\\..\\data\\train_stats')
+    stats.saveToFile('..\\..\\data\\wikilinks\\train_stats')
     stats.printSomeStats()

@@ -67,7 +67,7 @@ if __name__ == "__main__":
                          conceptsFilePath="..\\..\\data\\word2vec\\dim300context_vecs")
     itr_train = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     itr_stats = WikilinksStatistics(itr_train, load_from_file_path="..\\..\\data\\wikilinks\\train_stats")
-    wD = itr_stats.mentionLinks
+    wD = itr_stats.contextDictionary
     cD = itr_stats.conceptCounts
     w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
     print 'wordEmbedding size is ',len(w2v.wordEmbeddings)
