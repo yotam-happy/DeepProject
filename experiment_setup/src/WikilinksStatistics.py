@@ -67,10 +67,10 @@ class WikilinksStatistics:
             self.conceptCounts[wlink['wikiId']] = self.conceptCounts.get(wlink['wikiId'], 0) + 1
 
             if 'right_context' in wlink:
-                for w in self._wikilinks_iter.contextAsList(wlink['right_context']):
+                for w in wlink['right_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
             if 'left_context' in wlink:
-                for w in self._wikilinks_iter.contextAsList(wlink['left_context']):
+                for w in wlink['left_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
     def getCandidatesForMention(self, mention):

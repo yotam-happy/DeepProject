@@ -1,8 +1,5 @@
-from nltk import word_tokenize
 from Word2vecLoader import *
-from scipy import spatial
-import string
-from WikilinksStatistics import *
+
 
 class SimpleW2VPairwiseModel:
     """
@@ -22,38 +19,48 @@ class SimpleW2VPairwiseModel:
                     this is considered as saying they are both very unlikely and should be eliminated
         """
 
-        # tokenize context and project to embedding
-        try:
-            context = word_tokenize(((wikilink['right_context'] + wikilink['left_context']).translate(None, string.punctuation)).decode('utf-8'))
-        except ValueError:
-            print "word_tokenize failed!"
-            context = ( ((wikilink['right_context'] + wikilink['left_context']) ).translate(None, string.punctuation) ).decode('utf-8').split()
-
-        context_vec = [self._w2v.wordEmbeddings[word.lower()] for word in context if word.isalpha() and self._w2v.wordEmbeddings.has_key(word.lower())]
-
-        # checks if all inputs appear in the dictionaries otherwise returns None
-        if((not self._w2v.conceptEmbeddings.has_key(candidate1.lower())) or
-               (not self._w2v.conceptEmbeddings.has_key(candidate1.lower())) or
-               (not context_vec)):
+        if candidate1 not in self._w2v.conceptEmbeddings and candidate2 not in self._w2v.conceptEmbeddings:
             return None
+        if 'right_context' not in wikilink and 'left_context' not in wikilink:
+            return None
+
+        if candidate1 not in self._w2v.conceptEmbeddings:
+            return candidate2
+        if candidate2 not in self._w2v.conceptEmbeddings:
+            return candidate1
+
+        candidate1_vec = self._w2v.conceptEmbeddings[candidate1.lower()]
+        candidate2_vec = self._w2v.conceptEmbeddings[candidate2.lower()]
+
+        # tokenize context and project to embedding
+        context_vec = self._w2v.meanOfWordList(wikilink['right_context'] + wikilink['left_context'])
+
+        if self._w2v.distance(context_vec, candidate1_vec) < self._w2v.distance(context_vec, candidate2_vec):
+            return candidate1
         else:
-            candidate1_vec = self._w2v.conceptEmbeddings[candidate1.lower()]
-            candidate2_vec = self._w2v.conceptEmbeddings[candidate2.lower()]
-            mean_context = np.mean(np.asarray(context_vec), 0)
-            similarity = findCosineDist(mean_context, candidate1_vec, candidate2_vec)
-            return candidate1 if similarity['candidate1'] > similarity['candidate2'] else candidate2
+            return candidate2
 
+if __name__ == "__main__":
+    iter_train = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
+    train_stats = WikilinksStatistics(iter_train, load_from_file_path="..\\..\\data\\wikilinks\\train_stats")
 
+    wD = train_stats.mentionLinks
+    cD = train_stats.conceptCounts
 
-def findCosineDist(w ,c1, c2):
-    """
-    clculates cosine dist between 2 pairs and returns their similarity value
-    :param w: word
-    :param c1: candidate1
-    :param c2: candidate2
-    :return:
-    """
-    out = dict()
-    out['candidate1'] = spatial.distance.cosine(w,c1)
-    out['candidate2'] = spatial.distance.cosine(w,c2)
-    return out
+    print 'Load embeddings...'
+    w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
+                         conceptsFilePath="..\\..\\data\\word2vec\\dim300context_vecs")
+    w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
+
+    print ' ** wordEmbedding size is ',len(w2v.wordEmbeddings)
+    print ' ** conceptEmbeddings size is ',len(w2v.conceptEmbeddings)
+
+    context = ["king"]
+    context_vec = w2v.meanOfWordList(context)
+    print context_vec[0:10]
+    context = ["castle"]
+    context_vec = w2v.meanOfWordList(context)
+    print context_vec[0:10]
+    context = ["king", "castle"]
+    context_vec = w2v.meanOfWordList(context)
+    print context_vec[0:10]

@@ -1,5 +1,6 @@
 import pickle
 
+from scipy import spatial
 import numpy as np
 import os
 
@@ -24,11 +25,12 @@ class Word2vecLoader:
 
         # make sure embedding sizes match
         with open(wordsFilePath) as f:
-            _, self.embeddingSize = f.readline().split()
+            _, sz = f.readline().split()
+            self.embeddingSize = int(sz)
 
         with open(conceptsFilePath) as f:
             _, embeddingSz = f.readline().split()
-            if embeddingSz != self.embeddingSize:
+            if int(embeddingSz) != self.embeddingSize:
                 raise Exception("Embedding sizes don't match")
 
     def _loadEmbedding(self, path, filterSet):
@@ -40,6 +42,18 @@ class Word2vecLoader:
                 if filterSet is None or s[0] in filterSet:
                     embedding[s[0].lower()] = np.array([float(x) for x in s[1:]])
         return embedding
+
+    def meanOfWordList(self, l):
+        sum = np.zeros(self.embeddingSize)
+        k = 0
+        for w in l:
+            if w in self.wordEmbeddings:
+                sum += self.wordEmbeddings[w]
+                k += 1
+        return sum / k
+
+    def distance(self, v1, v2):
+        return spatial.distance.cosine(v1,v2)
 
     def loadEmbeddings(self, wordDict=None, conceptDict=None):
         """

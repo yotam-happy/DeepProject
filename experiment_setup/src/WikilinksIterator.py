@@ -75,9 +75,10 @@ class WikilinksOldIterator:
 class WikilinksNewIterator:
 
     # the new iterator does not support using a zip file.
-    def __init__(self, path, limit_files = 0):
+    def __init__(self, path, limit_files = 0, mention_filter=None):
         self._path = path
         self._limit_files = limit_files
+        self._mention_filter = mention_filter
 
     def _wikilink_files(self):
         for file in os.listdir(self._path):
@@ -93,19 +94,21 @@ class WikilinksNewIterator:
                 if len(line) > 0:
                     wlink = json.loads(line)
 
-                    # preprocess
-                    if 'right_context' in wlink:
-                        wlink['right_context'] = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore')
-                        #wlink['right_context'].encode('utf-8')
-                    if 'left_context' in wlink:
-                        wlink['left_context'] = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore')
-                            #wlink['left_context'].encode('utf-8')
-
                     # filter
                     if (not 'word' in wlink) or (not 'wikiId' in wlink):
                         continue
                     if not ('right_context' in wlink or 'left_context' in wlink):
                         continue
+                    if self._mention_filter is not None and wlink['word'] not in self._mention_filter:
+                        continue
+
+                    # preprocess context
+                    if 'right_context' in wlink:
+                        r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
+                        wlink['right_context'] = nltk.word_tokenize(r_context)
+                    if 'left_context' in wlink:
+                        l_context = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore').lower()
+                        wlink['left_context'] = nltk.word_tokenize(l_context)
 
                     # return
                     yield wlink
@@ -113,11 +116,6 @@ class WikilinksNewIterator:
             f.close()
             if self._limit_files > 0 and c >= self._limit_files:
                 break
-
-
-    # transforms a context into a list of words
-    def contextAsList(self, context):
-        return nltk.word_tokenize(context)
 
 if __name__ == "__main__":
     iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train", limit_files=1)
