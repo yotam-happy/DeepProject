@@ -1,10 +1,10 @@
+from VanilllaNNPairwiseModel import *
 from SimpleW2VPairwiseModel import SimpleW2VPairwiseModel
 from BaselinePairwiseModel import *
 from GuessPairwiseModel import *
 from KnockoutModel import *
 from WikilinksStatistics import *
 from Word2vecLoader import *
-
 
 class Evaluation:
     """
@@ -23,7 +23,7 @@ class Evaluation:
         self.correct = 0
         self.no_prediction = 0
 
-    def evaluate(self):
+    def evaluate(self, mode="predict"):
         """
         Do the work - runs over the given test/evaluation set and compares
         the predictions of the model to the actual sense.
@@ -43,26 +43,47 @@ class Evaluation:
             if 'wikiId' not in wikilink:
                 continue
             actual = wikilink['wikiId']
-            prediction = self._model.predict(wikilink)
 
-            self.n_samples += 1
-            if prediction is None:
-                self.no_prediction += 1
-            elif prediction == actual:
-                self.correct += 1
+            if(mode == 'predict'):
+                prediction = self._model.predict(wikilink)
 
-            if(self.n_samples % 1000 == 0):
-                print 'sampels=', self.n_samples ,'; %correct=', float(self.correct) / (self.n_samples - self.no_prediction)
+                self.n_samples += 1
+                if prediction is None:
+                    self.no_prediction += 1
+                elif prediction == actual:
+                    self.correct += 1
 
-        self.printEvaluation()
+                if(self.n_samples % 1000 == 0):
+                    print 'sampels=', self.n_samples ,'; %correct=', float(self.correct) / (self.n_samples - self.no_prediction)
 
-    def printEvaluation(self):
+            if(mode == 'train'):
+                # TODO: define stopping criteria for training
+                self._model.train(wikilink)
+
+        self.printEvaluation(mode)
+
+    def printEvaluation(self,mode):
         """
         Pretty print results of evaluation
         """
-        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction
-        print "%correct from total: ", float(self.correct) / self.n_samples
-        print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
+        if mode == 'train':
+            print "TODO: print evaluation on training set..."
+
+        if mode == 'predict':
+            print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction
+            print "%correct from total: ", float(self.correct) / self.n_samples
+            print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
+
+def getVanillaNNPairwiseModel(train_stats):
+    w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
+                         conceptsFilePath="..\\..\\data\\word2vec\\dim300context_vecs")
+    wD = train_stats.mentionLinks
+    cD = train_stats.conceptCounts
+    print 'Load embeddings...'
+    w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
+    from VanilllaNNPairwiseModel import VanillaNNPairwiseModel
+    vanilla_nn_model = VanillaNNPairwiseModel(w2v)
+    return KnockoutModel(vanilla_nn_model,train_stats)
 
 def getW2VSimpleModel(train_stats):
     w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
@@ -90,6 +111,12 @@ if __name__ == "__main__":
     iter_eval = WikilinksNewIterator("..\\..\\data\\wikilinks\\evaluation",
                                      mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
 
+    # ev = Evaluation(iter_eval, getW2VSimpleModel(train_stats)) # results for getW2Vmodle
+    model = getVanillaNNPairwiseModel(train_stats);
+    ev = Evaluation(iter_eval, model)
+
+    print 'Training...'
+    ev.evaluate('train')
+
     print 'Prediction...'
-    ev = Evaluation(iter_eval, getW2VSimpleModel(train_stats))
-    ev.evaluate()
+    ev.evaluate('predict')

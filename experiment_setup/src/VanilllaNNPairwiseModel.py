@@ -16,10 +16,11 @@ class VanillaNNPairwiseModel:
         self._w2v = w2v
         self._batchX = []
         self._batchY = []
-        self._batch_size = 32
 
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
+        self._batch_size = 32
+        # self._nb_epoch = 1e3 # FIXME
         self.model = Sequential()
         self.model.add(Dense( 64 ,input_dim = w2v.embeddingSize , init = 'uniform' ))
         self.model.add(Activation('tanh'))
@@ -55,7 +56,7 @@ class VanillaNNPairwiseModel:
         candidate2_vec = self._w2v.conceptEmbeddings[candidate2.lower()]
         context_vec = self._w2v.meanOfWordList(wikilink['right_context'] + wikilink['left_context'])
 
-        X = np.concatenate(context_vec, candidate1, candidate2)
+        X = (np.asarray([context_vec, candidate1_vec, candidate2_vec])).flatten()
         Y = np.array([1,0] if candidate1 == correct else [0,1])
         self._trainXY(X,Y)
 
@@ -64,10 +65,12 @@ class VanillaNNPairwiseModel:
         self._batchY.append(Y)
 
         if len(self._batchX) >= self._batch_size:
-            batchX = np.array(self._batchX) # this the right way?
+            # pushes numeric data into batch vector
+            batchX = np.array(self._batchX)
             batchY = np.array(self._batchY)
 
-            # train!!!
+            # training on batch is specifically good for cases were data doesn't fit into memory
+            self.model.train_on_batch(batchX, batchY)
 
             self._batchX = []
             self._batchY = []

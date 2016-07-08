@@ -12,8 +12,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Layer, Activation
 from keras.datasets import mnist
 from keras import backend as K
+from keras.optimizers import SGD
 from keras.utils import np_utils
-
+import numpy as np
 
 class Antirectifier(Layer):
     '''This is the combination of a sample-wise
