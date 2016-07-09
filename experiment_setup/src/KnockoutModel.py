@@ -39,27 +39,3 @@ class KnockoutModel:
         if len(l) == 0:
             return None
         return l[0]
-
-    def train(self, wikilink):
-        # TODO: change from default predict definitions to not-complete knockout
-        candidates = self._stats.getCandidatesForMention(wikilink["word"])
-        if candidates is None:
-            return None
-
-        # do a knockout
-        l = candidates.keys()
-        while len(l) > 1:
-            # create a list of surviving candidates by comparing couples
-            next_l = []
-            for i in range(0, len(l) - 1, 1):
-                a = self._pairwise_model.train(wikilink, wikilink["wikiId"], l[i], correct= wikilink["wikiId"])
-                if a is not None:
-                    next_l.append(a)
-
-            if len(l) % 2 == 1:
-                next_l.append(l[-1])
-            l = next_l
-
-        if len(l) == 0:
-            return None
-        return l[0]
