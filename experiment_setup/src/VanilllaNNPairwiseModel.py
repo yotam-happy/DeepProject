@@ -61,10 +61,12 @@ class VanillaNNPairwiseModel:
         self._trainXY(X,Y)
 
     def _trainXY(self,X,Y):
+        print 'train xy'
         self._batchX.append(X)
         self._batchY.append(Y)
 
         if len(self._batchX) >= self._batch_size:
+            print 'train first batch'
             # pushes numeric data into batch vector
             batchX = np.array(self._batchX)
             batchY = np.array(self._batchY)

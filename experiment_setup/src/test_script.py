@@ -7,8 +7,11 @@ ATTENTION: If you de modificaitons in the classes please keep the copyies here u
 
 NOTEs: use collapse all shortcut CTRL + SHIFT + NumPad (-)  to navigate and excecute easily the code.
 also use the ALT+SHIFT+E to execute single lines or whole code fragments
+I also recommend on Pycharm cell mode plugin for easier execution of code fragments
+(Noam)
 """
 
+## The cell seperator
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 from keras.optimizers import SGD
@@ -20,13 +23,9 @@ import pickle
 from scipy import spatial
 import numpy as np
 import os
-from WikilinksIterator import WikilinksNewIterator
-from WikilinksStatistics import WikilinksStatistics
+from keras.callbacks import EarlyStopping
 
-###
-# Here are all the dependencies to run from the Python console for better debugging
-###
-
+##
 class KnockoutModel:
     """
     This model takes a pairwise model that can train/predict on pairs of candidates for a wikilink
@@ -552,7 +551,9 @@ class VanillaNNPairwiseModel:
             batchY = np.array(self._batchY)
 
             # training on batch is specifically good for cases were data doesn't fit into memory
+            print 'train batch. Size of batch x - ', batchX.shape
             self.model.train_on_batch(batchX, batchY)
+            # print self.model.metrics_names
 
             self._batchX = []
             self._batchY = []
@@ -572,11 +573,11 @@ class VanillaNNPairwiseModel:
     def predict(self, wikilink, candidate1, candidate2):
         return None
 
+##
 """
 here we test the VanillaNN structure
 This is the main script
 """
-
 print 'Starts model evluation\nStarts loading files...'
 os.chdir("C:\Users\Noam\Documents\GitHub\DeepProject") # TODO: Yotam, you need to change this in order to work with this file
 path = "C:\Users\Noam\Documents\GitHub\DeepProject"
@@ -592,15 +593,15 @@ cD = train_stats.conceptCounts
 print 'Load embeddings...'
 w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
 
-# TRAIN DEBUGGING CELL#
-
-model = getVanillaNNPairwiseModel(train_stats,w2v);
+## TRAIN DEBUGGING CELL
+model = getVanillaNNPairwiseModel(train_stats,w2v)
 ev = Evaluation(iter_eval, model)
 
-print 'Training...'
 ev.evaluate('train')
+print 'Training...'
 
 ##
-
 print 'Prediction...'
 ev.evaluate('predict')
+
+##
