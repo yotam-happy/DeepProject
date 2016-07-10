@@ -26,7 +26,7 @@ from ModelTrainer import *
 here we test the VanillaNN structure
 This is the main script
 """
-print 'Starts model evluation\nStarts loading files...'
+print "Loading iterators+stats..."
 os.chdir("C:\\repo\\DeepProject") # TODO: Yotam, you need to change this in order to work with this file
 path = "C:\\repo\\DeepProject"
 train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
@@ -35,18 +35,29 @@ iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\train",
                                   mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
 iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\evaluation",
                                  mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
+print "Done!"
 
-print 'Load embeddings...'
+print 'Loading embeddings...'
 w2v = Word2vecLoader(wordsFilePath=path+"\\data\\word2vec\\dim300vecs",
                      conceptsFilePath=path+"\\data\\word2vec\\dim300context_vecs")
 wD = train_stats.mentionLinks
 cD = train_stats.conceptCounts
 w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
-print 'done'
+print 'wordEmbedding dict size: ',len(w2v.wordEmbeddings)
+print 'conceptEmbeddings dict size: ',len(w2v.conceptEmbeddings)
+print 'Done!'
 
 ## TRAIN DEBUGGING CELL
 print 'Training...'
 pairwise_model = VanillaNNPairwiseModel(w2v)
 knockout_model = KnockoutModel(pairwise_model,train_stats)
-trainer = ModelTrainer(iter_train, train_stats, pairwise_model)
+#pairwise_model.loadModel(path + "\\models\\vanilla_nn")
+
+trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=10)
 trainer.train()
+pairwise_model.saveModel(path + "\\models\\vanilla_nn")
+
+## TEST
+evaluation = Evaluation(iter_eval,knockout_model)
+evaluation.evaluate()
+pairwise_model.plotTrainLoss()

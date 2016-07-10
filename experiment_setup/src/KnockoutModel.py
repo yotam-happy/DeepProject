@@ -22,7 +22,7 @@ class KnockoutModel:
             return None
 
         # do a knockout
-        l = candidates.keys()
+        l = [int(candidate) for candidate in candidates.keys()]
         while len(l) > 1:
             # create a list of surviving candidates by comparing couples
             next_l = []

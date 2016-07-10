@@ -1,4 +1,5 @@
-from WikilinksIterator import *
+from WikilinksIterator import WikilinksNewIterator
+import json
 
 class WikilinksStatistics:
     """
@@ -128,5 +129,5 @@ if __name__ == "__main__":
     iter = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
     stats = WikilinksStatistics(iter)
     stats.calcStatistics()
-    stats.saveToFile('..\\..\\data\\wikilinks\\train_stats')
+    stats.saveToFile('..\\..\\data\\wikilinks\\train_stats2')
     stats.printSomeStats()

@@ -33,14 +33,14 @@ class Word2vecLoader:
             if int(embeddingSz) != self.embeddingSize:
                 raise Exception("Embedding sizes don't match")
 
-    def _loadEmbedding(self, path, filterSet):
+    def _loadEmbedding(self, path, filterSet, int_key = False):
         embedding = dict()
         with open(path) as f:
             f.readline() # skip embedding size def
             for line in iter(f):
                 s = line.split()
                 if filterSet is None or s[0] in filterSet:
-                    embedding[s[0].lower()] = np.array([float(x) for x in s[1:]])
+                    embedding[int(s[0].lower()) if int_key else s[0].lower()] = np.array([float(x) for x in s[1:]])
         return embedding
 
     def meanOfWordList(self, l):
@@ -70,8 +70,8 @@ class Word2vecLoader:
             file_w2v.close()
         else:
             self.wordEmbeddings = self._loadEmbedding(self._wordsFilePath, wordDict)
-            self.conceptEmbeddings = self._loadEmbedding(self._conceptsFilePath, conceptDict)
-            file_w2v = open("..\\..\\data\\word2vec\\w2v_filt.txt",'ab+')
+            self.conceptEmbeddings = self._loadEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
+            file_w2v = open("..\\..\\data\\word2vec\\w2v_filt.txt",'wb')
             pickle.dump(self.wordEmbeddings, file_w2v)
             pickle.dump(self.conceptEmbeddings, file_w2v)
             file_w2v.close()
@@ -86,10 +86,3 @@ if __name__ == "__main__":
     w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
     print 'wordEmbedding size is ',len(w2v.wordEmbeddings)
     print 'conceptEmbeddings size is ',len(w2v.conceptEmbeddings)
-    file_w2v = open("..\\..\\data\\word2vec\\w2v_filt.txt",'ab+')
-    pickle.dump(w2v.wordEmbeddings, file_w2v)
-    pickle.dump(w2v.conceptEmbeddings, file_w2v)
-    file_w2v.close()
-
-
-

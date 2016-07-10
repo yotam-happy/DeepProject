@@ -102,6 +102,8 @@ class WikilinksNewIterator:
                     if self._mention_filter is not None and wlink['word'] not in self._mention_filter:
                         continue
 
+                    wlink['wikiId'] = int(wlink['wikiId'])
+
                     # preprocess context
                     if 'right_context' in wlink:
                         r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
@@ -118,4 +120,6 @@ class WikilinksNewIterator:
                 break
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\WikiLink\\randomized\\train", limit_files=1)
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\train", limit_files=1)
+    for k in iter.wikilinks():
+        break
