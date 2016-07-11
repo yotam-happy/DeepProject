@@ -43,6 +43,16 @@ class Word2vecLoader:
                     embedding[int(s[0].lower()) if int_key else s[0].lower()] = np.array([float(x) for x in s[1:]])
         return embedding
 
+    def wordListToVectors(self, l):
+        l = []
+        for w in l:
+            if w in self.wordEmbeddings:
+                l.append(self.wordEmbeddings[w])
+        ar = np.asarray(l)
+        print len(l)
+        print ar.shape
+        return ar
+
     def meanOfWordList(self, l):
         sum = np.zeros(self.embeddingSize)
         k = 0
