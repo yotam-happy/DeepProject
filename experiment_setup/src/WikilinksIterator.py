@@ -104,11 +104,12 @@ class WikilinksNewIterator:
 
                     wlink['wikiId'] = int(wlink['wikiId'])
 
-                    # preprocess context
-                    if 'right_context' in wlink:
+                    # preprocess context (if not already processed
+                    if 'right_context' in wlink and not isinstance(wlink['right_context'], list):
                         r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
                         wlink['right_context'] = nltk.word_tokenize(r_context)
-                    if 'left_context' in wlink:
+
+                    if 'left_context' in wlink and not isinstance(wlink['left_context'], list):
                         l_context = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore').lower()
                         wlink['left_context'] = nltk.word_tokenize(l_context)
 

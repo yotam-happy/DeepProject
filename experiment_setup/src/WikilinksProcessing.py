@@ -3,6 +3,7 @@ import os
 import random
 
 from WikilinksIterator import *
+from WikilinksStatistics import *
 
 class WikilinksRewrite:
     """
@@ -24,18 +25,23 @@ class WikilinksRewrite:
     def _open_file(self, n):
         return open(os.path.join(self._dest_dir, 'wikilinks_{}.json'.format(n)), mode='w')
 
+    def save(self,l):
+        f = self._open_file(self._n)
+        for s in l:
+            f.write(s + '\n')
+        f.close()
+        self._n += 1
     def work(self):
         l = []
         for wikilink in self._iter.wikilinks():
             l.append(json.dumps(wikilink))
             if len(l) >= self._json_per_file:
+                self.save(l)
                 # write list to file
-                f = self._open_file(self._n)
-                for s in l:
-                    f.write(s + '\n')
-                f.close()
-                self._n += 1
                 l = []
+        if len(l) > 0:
+            self.save(l)
+
 
 
 class ShuffleFiles:
@@ -99,7 +105,16 @@ if __name__ == "__main__":
 #    rewriter.work()
 
     # randomizes lines in dataset files
-    random.seed()
-    shuffler = ShuffleFiles('C:\\repo\\WikiLink\\new_format', 'C:\\repo\\WikiLink\\randomized')
-    shuffler.work1()
-    shuffler.work2()
+#    random.seed()
+#    shuffler = ShuffleFiles('C:\\repo\\WikiLink\\new_format', 'C:\\repo\\WikiLink\\randomized')
+#    shuffler.work1()
+#    shuffler.work2()
+
+    # create a pre-filtered dataset (should significantly speed up processing)
+    stats = WikilinksStatistics(None,
+                                load_from_file_path="C:\\repo\\DeepProject\\data\\wikilinks\\train_stats")
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\train",
+                                mention_filter=stats.getGoodMentionsToDisambiguate())
+    rewriter = WikilinksRewrite(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small_train")
+    rewriter.work()
+    print "done"

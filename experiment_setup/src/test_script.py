@@ -31,9 +31,9 @@ os.chdir("C:\\repo\\DeepProject") # TODO: Yotam, you need to change this in orde
 path = "C:\\repo\\DeepProject"
 train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
 
-iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\train",
+iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\small_train",
                                   mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
-iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\evaluation",
+iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\small_evaluation",
                                  mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
 print "Done!"
 
