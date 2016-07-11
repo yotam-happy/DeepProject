@@ -13,12 +13,13 @@ class VanillaNNPairwiseModel:
     binary vector, specifying which candidate is more accurate
     """
 
-    def __init__(self, w2v, context_window_sz = 20):
+    def __init__(self, w2v, context_window_sz = 20, lstm=None):
         self._w2v = w2v
         self._batchX = []
         self._batchY = []
         self._context_window_sz = context_window_sz
         self._train_loss = []
+        self._lstm = lstm
 
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
@@ -57,18 +58,41 @@ class VanillaNNPairwiseModel:
         candidate1_vec = self._w2v.conceptEmbeddings[candidate1]
         candidate2_vec = self._w2v.conceptEmbeddings[candidate2]
 
-        context = []
-        if len(wikilink['right_context']) <= self._context_window_sz:
-            context += wikilink['right_context']
-        else:
-            context += wikilink['right_context'][-self._context_window_sz:]
-        if len(wikilink['left_context']) <= self._context_window_sz:
-            context += wikilink['left_context']
-        else:
-            context += wikilink['left_context'][-self._context_window_sz:]
+        if self._lstm is None:
+            # average
+            context = []
+            if len(wikilink['right_context']) <= self._context_window_sz:
+                context += wikilink['right_context']
+            else:
+                context += wikilink['right_context'][-self._context_window_sz:]
+            if len(wikilink['left_context']) <= self._context_window_sz:
+                context += wikilink['left_context']
+            else:
+                context += wikilink['left_context'][-self._context_window_sz:]
 
-        context_vec = self._w2v.meanOfWordList(context)
+            context_vec = self._w2v.meanOfWordList(context)
+        else:
+            # use lstm
+            ar = self.wordListToVectors(wikilink['left_context'])
+            if ar.shape[0] < self._context_window_sz:
+                return None
+
+            # cache the context embedding. We are likely to see the same wikilink a number of times
+            if '_context_embed' not in wikilink:
+                context_vec = self._lstm.predict(np.array([ar[-10:,:]]), batch_size=1)
+                context_vec = context_vec.flatten()
+                wikilink['_context_embed'] = context_vec
+            else:
+                context_vec = wikilink['_context_embed']
+
         return (context_vec, candidate1_vec, candidate2_vec)
+
+    def wordListToVectors(self, l):
+        o = []
+        for w in l:
+            if w in self._w2v.wordEmbeddings:
+                o.append(self._w2v.wordEmbeddings[w])
+        return np.asarray(o)
 
     def train(self, wikilink, candidate1, candidate2, correct):
         """

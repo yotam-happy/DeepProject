@@ -66,7 +66,7 @@ for epoch in xrange(epochs):
 
 
 
-plt.plot(train_loss)
+plt.plot(train_loss[100:])
 plt.ylabel('Loss')
 plt.xlabel('Batch')
 plt.show()
@@ -133,3 +133,46 @@ m = mmooddeell(model, w2v)
 knockout_model = KnockoutModel(m,train_stats)
 evaluation = Evaluation(iter_eval,knockout_model)
 evaluation.evaluate()
+
+## incorporate into the vanilla model (code copy pasted from test_script.py
+
+## The cell seperator
+import os
+from VanilllaNNPairwiseModel import *
+from KnockoutModel import *
+from WikilinksIterator import *
+from WikilinksStatistics import *
+from Word2vecLoader import *
+from Evaluation import *
+from ModelTrainer import *
+##
+
+"""
+here we test the VanillaNN structure
+This is the main script
+"""
+print "Loading iterators+stats..."
+os.chdir("C:\\repo\\DeepProject") # TODO: Yotam, you need to change this in order to work with this file
+path = "C:\\repo\\DeepProject"
+train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
+
+iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\small_train",
+                                  mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
+iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\small_evaluation",
+                                 mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
+print "Done!"
+
+## TRAIN DEBUGGING CELL
+print 'Training...'
+pairwise_model = VanillaNNPairwiseModel(w2v, context_window_sz=10, lstm=model)
+knockout_model = KnockoutModel(pairwise_model,train_stats)
+#pairwise_model.loadModel(path + "\\models\\vanilla_nn_lstm")
+
+trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=30)
+trainer.train()
+pairwise_model.saveModel(path + "\\models\\vanilla_nn_lstm")
+
+## TEST
+evaluation = Evaluation(iter_eval,knockout_model)
+evaluation.evaluate()
+pairwise_model.plotTrainLoss()
