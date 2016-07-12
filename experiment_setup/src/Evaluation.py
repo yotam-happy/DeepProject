@@ -50,6 +50,9 @@ class Evaluation:
 
         self.printEvaluation()
 
+    def precision(self):
+        return float(self.correct) / self.n_samples
+
     def printEvaluation(self):
         """
         Pretty print results of evaluation
@@ -57,4 +60,3 @@ class Evaluation:
         print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction
         print "%correct from total: ", float(self.correct) / self.n_samples
         print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
-
