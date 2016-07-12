@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 # Try and create an LSTM model
 
 path = "C:\\repo\\DeepProject"
+if(not os.path.isdir(path)):
+    path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+
 train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
 iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\small_train",
                                   mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
