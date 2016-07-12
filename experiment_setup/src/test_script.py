@@ -28,8 +28,9 @@ here we test the VanillaNN structure
 This is the main script
 """
 print "Loading iterators+stats..."
-os.chdir("C:\\repo\\DeepProject") # TODO: Yotam, you need to change this in order to work with this file
-path = "C:\\repo\\DeepProject"
+# os.chdir("C:\\repo\\DeepProject") # TODO: Yotam, you need to change this in order to work with this file
+# path = "C:\\repo\\DeepProject"
+path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
 
 iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\small_train",
