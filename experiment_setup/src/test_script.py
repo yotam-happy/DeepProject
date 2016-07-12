@@ -14,6 +14,7 @@ I also recommend on Pycharm cell mode plugin for easier execution of code fragme
 ## The cell seperator
 import os
 from VanilllaNNPairwiseModel import *
+from RNNModel import *
 from KnockoutModel import *
 from WikilinksIterator import *
 from WikilinksStatistics import *
@@ -49,15 +50,30 @@ print 'Done!'
 
 ## TRAIN DEBUGGING CELL
 print 'Training...'
-pairwise_model = VanillaNNPairwiseModel(w2v)
+#pairwise_model = VanillaNNPairwiseModel(w2v)
+pairwise_model = RNNPairwiseModel(w2v)
 knockout_model = KnockoutModel(pairwise_model,train_stats)
-#pairwise_model.loadModel(path + "\\models\\vanilla_nn")
+#pairwise_model.loadModel(path + "\\models\\rnn")
 
-trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=10)
-trainer.train()
-pairwise_model.saveModel(path + "\\models\\vanilla_nn")
+trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1)
+evaluation_loss = []
+for train_session in xrange(40):
+    # train
+    print "Training... ", train_session
+    trainer.train()
 
-## TEST
-evaluation = Evaluation(iter_eval,knockout_model)
-evaluation.evaluate()
+    # evaluate
+    print "Evaluating...", train_session
+    evaluation = Evaluation(iter_eval,knockout_model)
+    evaluation.evaluate()
+    evaluation_loss.append(evaluation.precision())
+
+    # save
+    print "Saving...", train_session
+    precision_f = open(path + "\\models\\rnn.precision.txt","a")
+    precision_f.write(str(train_session) + ": " + str(evaluation.precision()) + "\n")
+    precision_f.close()
+
+    pairwise_model.saveModel(path + "\\models\\rnn." + str(train_session))
+
 pairwise_model.plotTrainLoss()
