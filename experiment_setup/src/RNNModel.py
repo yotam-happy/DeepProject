@@ -27,12 +27,12 @@ class RNNPairwiseModel:
         right_context_input = Input(shape=(self._context_window_sz,self._w2v.embeddingSize), name='right_context_input')
         candidates_input = Input(shape=(self._w2v.embeddingSize * 2,), name='candidates_input')
 
-        left_lstm = GRU(self._w2v.embeddingSize)(left_context_input)
-        right_lstm = GRU(self._w2v.embeddingSize)(right_context_input)
+        left_lstm = GRU(self._w2v.embeddingSize, activation='relu')(left_context_input)
+        right_lstm = GRU(self._w2v.embeddingSize, activation='relu')(right_context_input)
 
         x = merge([left_lstm, right_lstm,candidates_input], mode='concat')
-        x = Dense(300, activation='tanh')(x)
-        x = Dense(50, activation='tanh')(x)
+        x = Dense(300, activation='relu')(x)
+        x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
         model = Model(input=[left_context_input, right_context_input,candidates_input], output=[out])
