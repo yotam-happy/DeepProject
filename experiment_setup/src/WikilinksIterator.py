@@ -8,6 +8,7 @@ import gzip
 import cProfile
 import nltk
 import unicodedata
+from nltk.corpus import stopwords
 
 class WikilinksOldIterator:
     """
@@ -79,6 +80,7 @@ class WikilinksNewIterator:
         self._path = path
         self._limit_files = limit_files
         self._mention_filter = mention_filter
+        self._stopwords = stopwords.words('english')
 
     def _wikilink_files(self):
         for file in os.listdir(self._path):
@@ -103,15 +105,22 @@ class WikilinksNewIterator:
                         continue
 
                     wlink['wikiId'] = int(wlink['wikiId'])
-
                     # preprocess context (if not already processed
                     if 'right_context' in wlink and not isinstance(wlink['right_context'], list):
                         r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
                         wlink['right_context'] = nltk.word_tokenize(r_context)
+                        wlink['right_context'] = [w for w in wlink['right_context'] if w not in self._stopwords]
+                    # this should be removed once we process the dataset again
+                    elif 'right_context' in wlink and isinstance(wlink['right_context'], list):
+                        wlink['right_context'] = [w for w in wlink['right_context'] if w not in self._stopwords]
 
                     if 'left_context' in wlink and not isinstance(wlink['left_context'], list):
                         l_context = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore').lower()
                         wlink['left_context'] = nltk.word_tokenize(l_context)
+                        wlink['left_context'] = [w for w in wlink['left_context'] if w not in self._stopwords]
+                    # this should be removed once we process the dataset again
+                    elif 'left_context' in wlink and isinstance(wlink['left_context'], list):
+                        wlink['left_context'] = [w for w in wlink['left_context'] if w not in self._stopwords]
 
                     # return
                     yield wlink
