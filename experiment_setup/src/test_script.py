@@ -23,14 +23,16 @@ from WikilinksStatistics import *
 from Word2vecLoader import *
 from Evaluation import *
 from ModelTrainer import *
+import pickle
+import nltk
 ##
-
 """
 here we test the VanillaNN structure
 This is the main script
 """
-print "Loading iterators+stats..."
+
 path = "C:\\repo\\DeepProject"
+print "Loading iterators+stats..."
 if(not os.path.isdir(path)):
     path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
@@ -63,7 +65,7 @@ knockout_model = KnockoutModel(pairwise_model,train_stats)
 
 trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1)
 evaluation_loss = []
-for train_session in xrange(40):
+for train_session in xrange(20):
     # train
     print "Training... ", train_session
     trainer.train()
@@ -76,11 +78,13 @@ for train_session in xrange(40):
 
     # save
     print "Saving...", train_session
-    precision_f = open(path + "\\models\\rnn.precision.txt","a")
+    precision_f = open(path + "\\models\\rnn.relu.precision.txt","a")
     precision_f.write(str(train_session) + ": " + str(evaluation.precision()) + "\n")
     precision_f.close()
 
-    pairwise_model.saveModel(path + "\\models\\rnn." + str(train_session))
+    train_loss_f = open(path + "\\models\\rnn.relu.train_loss.txt",'wb')
+    pickle.dump(pairwise_model._train_loss, train_loss_f)
+    train_loss_f.close()
 
 ## Plot results
 pairwise_model.plotTrainLoss()
@@ -116,4 +120,3 @@ for train_session in xrange(40):
     pairwise_model.saveModel(path + "\\models\\rnn_gru." + str(train_session))
 
 ## Plot results
-pairwise_model.plotTrainLoss()
