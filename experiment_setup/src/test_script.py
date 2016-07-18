@@ -91,7 +91,7 @@ Training single gru model
 """
 
 print 'Training...'
-pairwise_model = ModelSingleGRU(w2v,context_window_sz=20)
+pairwise_model = ModelSingleGRU(w2v = w2v,context_window_sz=20)
 knockout_model = KnockoutModel(pairwise_model,train_stats)
 
 trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1)

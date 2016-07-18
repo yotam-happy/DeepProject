@@ -100,21 +100,41 @@ class ShuffleFiles:
 if __name__ == "__main__":
     # converts the old format (one json with many wikilinks per file)
     # to new format (one json one single wikilink per line)
-#    old_iter = WikilinksOldIterator(path="C:\\repo\\WikiLink\\with_ids")
-#    rewriter = WikilinksRewrite(old_iter, "C:\\repo\\WikiLink\\new_format")
-#    rewriter.work()
+    path = "C:\\repo"
+    if(not os.path.isdir(path)):
+        path = "C:\\Users\\Noam\\Documents\\GitHub"
+
+    # old_iter = WikilinksOldIterator(path=path+"\\WikiLink\\with_ids")
+    # rewriter = WikilinksRewrite(old_iter, path+"\\WikiLink\\new_format")
+    # rewriter.work()
 
     # randomizes lines in dataset files
-#    random.seed()
-#    shuffler = ShuffleFiles('C:\\repo\\WikiLink\\new_format', 'C:\\repo\\WikiLink\\randomized')
-#    shuffler.work1()
-#    shuffler.work2()
+    #    random.seed()
+    #    shuffler = ShuffleFiles(path+'\\WikiLink\\new_format', path+'\\WikiLink\\randomized')
+    #    shuffler.work1()
+    #    shuffler.work2()
 
     # create a pre-filtered dataset (should significantly speed up processing)
     stats = WikilinksStatistics(None,
-                                load_from_file_path="C:\\repo\\DeepProject\\data\\wikilinks\\train_stats")
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\train",
+                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
+    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\train",
                                 mention_filter=stats.getGoodMentionsToDisambiguate())
-    rewriter = WikilinksRewrite(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small_train")
+    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_train")
     rewriter.work()
-    print "done"
+    print "done train small"
+
+    stats = WikilinksStatistics(None,
+                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
+    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\test",
+                                mention_filter=stats.getGoodMentionsToDisambiguate())
+    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_test")
+    rewriter.work()
+    print "done test small"
+
+    stats = WikilinksStatistics(None,
+                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
+    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\evaluation",
+                                mention_filter=stats.getGoodMentionsToDisambiguate())
+    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_evaluation")
+    rewriter.work()
+    print "done evaluation small"

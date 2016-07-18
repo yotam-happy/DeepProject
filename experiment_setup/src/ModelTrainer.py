@@ -55,5 +55,8 @@ class ModelTrainer:
                     else:
                         self._model.train(wikilink, wrong, actual, actual)
 
+                # print 'breaked' # DEBUG
+                # break
+
         self._model.finilizeTraining()
         print "done training."
