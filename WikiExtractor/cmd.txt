@@ -1,0 +1,1 @@
+python WikiExtractor.py -o - -l --no-templates --filter_disambig_pages C:\EclipseWorkspace\projectTest\data\Wikipedia\enwiki-20151102-pages-articles.xml.bz2
