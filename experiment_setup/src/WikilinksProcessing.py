@@ -1,48 +1,98 @@
 import json
 import os
 import random
-
+import hashlib
+from urlparse import urlparse
 from WikilinksIterator import *
 from WikilinksStatistics import *
 
-class WikilinksRewrite:
-    """
-        This class takes an iterator of the dataset and creates a new dataset where
-        each wikilink is its own json contained in one line.
-        This is opposed to the old style we had where the entire file was a single
-        json and each wikilink was in multiple lines.
+def _urlHash(url):
+    '''
+    # uses the domain name as hash - to be on the strict side we put all wikilinks from the same domain on
+    # a single folder
+    '''
+    if len(urlparse(url).netloc) == 0:
+        print "bad: ", url
+    return urlparse(url).netloc
 
-        wikilinks_iter -    an iterator of the dataset, supposed to be of the old
-                            style so this class converts to new style
-    """
+def _get_split(iter, validation_frac=0.2, test_frac=0.2):
+    '''
+    reads all urls of wikilinks and assignes each url to a folder.
+    Returns a set of urls (by hash) for each folder
+    '''
 
-    def __init__(self, wikilinks_iter, dest_dir, json_per_file=400000):
-        self._iter = wikilinks_iter
-        self._dest_dir = dest_dir
+    # reads all urls of wikilinks and assignes each url to a folder
+
+    test_hash = set()
+    validation_hash = set()
+    train_hash = set()
+    for i, wlink in enumerate(iter.wikilinks()):
+        if _urlHash(wlink['url']) not in test_hash and \
+                _urlHash(wlink['url']) not in validation_hash and \
+                _urlHash(wlink['url']) not in train_hash:
+            r = random.random()
+            if r < validation_frac:
+                validation_hash.add(_urlHash(wlink['url']))
+            elif r < validation_frac + test_frac:
+                test_hash.add(_urlHash(wlink['url']))
+            else:
+                train_hash.add(_urlHash(wlink['url']))
+        if i % 10000 == 0:
+            print "calc split, done: ", i
+    return (train_hash, validation_hash, test_hash)
+
+class wlink_writer:
+    def __init__(self, dir, json_per_file=400000):
+        self._dir = dir
         self._n = 0
         self._json_per_file = json_per_file
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        self._l = []
 
-    def _open_file(self, n):
-        return open(os.path.join(self._dest_dir, 'wikilinks_{}.json'.format(n)), mode='w')
-
-    def save(self,l):
-        f = self._open_file(self._n)
-        for s in l:
-            f.write(s + '\n')
-        f.close()
+    def _next_file(self):
+        f = open(os.path.join(self._dir, 'wikilinks_{}.json'.format(self._n)), mode='w')
         self._n += 1
-    def work(self):
-        l = []
-        for wikilink in self._iter.wikilinks():
-            l.append(json.dumps(wikilink))
-            if len(l) >= self._json_per_file:
-                self.save(l)
-                # write list to file
-                l = []
-        if len(l) > 0:
-            self.save(l)
+        return f
 
+    def _dump(self):
+        if len(self._l) >= 1:
+            f = self._next_file()
+            for s in self._l:
+                f.write(s + '\n')
+            f.close()
 
+    def save(self, wlink):
+        self._l.append(json.dumps(wlink))
+        if len(self._l) >= self._json_per_file:
+            self._dump()
+
+    def finalize(self):
+            self._dump()
+
+def splitWikis(iter, dest_dir, json_per_file=400000, validation_frac=0.2, test_frac=0.2):
+    train_hash, validation_hash, test_hash = _get_split(iter,
+                                                        validation_frac=validation_frac,
+                                                        test_frac=test_frac)
+    print "got ", len(train_hash)+len(validation_hash)+len(test_hash), " unique urls"
+    train_writer = wlink_writer(os.path.join(dest_dir, "train"))
+    validation_writer = wlink_writer(os.path.join(dest_dir, "validation"))
+    test_writer = wlink_writer(os.path.join(dest_dir, "test"))
+
+    for i, wlink in enumerate(iter.wikilinks()):
+        h = _urlHash(wlink['url'])
+        if h in train_hash:
+            train_writer.save(wlink)
+        if h in validation_hash:
+            validation_writer.save(wlink)
+        if h in test_hash:
+            test_writer.save(wlink)
+        if i % 10000 == 0:
+            print "do split, done: ", i
+
+    train_writer.finalize()
+    validation_writer.finalize()
+    test_writer.finalize()
 
 class ShuffleFiles:
     """
@@ -100,41 +150,25 @@ class ShuffleFiles:
 if __name__ == "__main__":
     # converts the old format (one json with many wikilinks per file)
     # to new format (one json one single wikilink per line)
-    path = "C:\\repo"
-    if(not os.path.isdir(path)):
-        path = "C:\\Users\\Noam\\Documents\\GitHub"
-
-    # old_iter = WikilinksOldIterator(path=path+"\\WikiLink\\with_ids")
-    # rewriter = WikilinksRewrite(old_iter, path+"\\WikiLink\\new_format")
-    # rewriter.work()
+#    old_iter = WikilinksOldIterator(path="C:\\repo\\WikiLink\\with_ids")
+#    rewriter = WikilinksRewrite(old_iter, "C:\\repo\\WikiLink\\new_format")
+#    rewriter.work()
 
     # randomizes lines in dataset files
-    #    random.seed()
-    #    shuffler = ShuffleFiles(path+'\\WikiLink\\new_format', path+'\\WikiLink\\randomized')
-    #    shuffler.work1()
-    #    shuffler.work2()
+#    random.seed()
+#    shuffler = ShuffleFiles('C:\\repo\\WikiLink\\new_format', 'C:\\repo\\WikiLink\\randomized')
+#    shuffler.work1()
+#    shuffler.work2()
 
-    # create a pre-filtered dataset (should significantly speed up processing)
-    stats = WikilinksStatistics(None,
-                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
-    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\train",
-                                mention_filter=stats.getGoodMentionsToDisambiguate())
-    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_train")
-    rewriter.work()
-    print "done train small"
+    # split into train/validation/test (split by urls. All mentions from same url go to same folder)
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\all")
+    splitWikis(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small")
 
+    # split into train/validation/test (split by urls. All mentions from same url go to same folder)
+    # BUT with filtering!
     stats = WikilinksStatistics(None,
-                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
-    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\test",
+                                load_from_file_path="C:\\repo\\DeepProject\\data\\wikilinks\\train_stats")
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\all",
                                 mention_filter=stats.getGoodMentionsToDisambiguate())
-    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_test")
-    rewriter.work()
-    print "done test small"
-
-    stats = WikilinksStatistics(None,
-                                load_from_file_path=path+"\\DeepProject\\data\\wikilinks\\train_stats2")
-    iter = WikilinksNewIterator(path+"\\DeepProject\\data\\wikilinks\\evaluation",
-                                mention_filter=stats.getGoodMentionsToDisambiguate())
-    rewriter = WikilinksRewrite(iter, path+"\\DeepProject\\data\\wikilinks\\small_evaluation")
-    rewriter.work()
-    print "done evaluation small"
+    splitWikis(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small")
+    print "done"
