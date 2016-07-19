@@ -62,7 +62,7 @@ class RNNPairwiseModel:
         candidates = (np.asarray([candidate1_vec, candidate2_vec])).flatten()
 
 
-        left_context_ar = self.wordListToVectors(wikilink['left_context'])
+        left_context_ar = self.wordListToVectors(wikilink['left_context']) if 'left_context' in wikilink else []
         if (len(left_context_ar) >= self._context_window_sz):
             left_context = np.array(left_context_ar[-self._context_window_sz:,:])
         else:
@@ -70,7 +70,10 @@ class RNNPairwiseModel:
             if len(left_context_ar) != 0:
                 left_context[-len(left_context_ar):,] = np.array(left_context_ar)
 
-        right_context_ar = self.wordListToVectors(wikilink['right_context'])[::-1]
+        if 'right_context' in wikilink:
+            right_context_ar = self.wordListToVectors(wikilink['right_context'])[::-1]
+        else:
+            right_context_ar = []
         if (len(right_context_ar) >= self._context_window_sz):
             right_context = np.array(right_context_ar[-self._context_window_sz:,:])
         else:
@@ -135,6 +138,7 @@ class RNNPairwiseModel:
             self._batchY = []
 
     def plotTrainLoss(self,st=0):
+        plt.plot(g[100:])
         plt.plot(self._train_loss[st:])
         plt.ylabel('Loss')
         plt.xlabel('Batch')
