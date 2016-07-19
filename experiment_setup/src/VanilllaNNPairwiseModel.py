@@ -23,7 +23,7 @@ class VanillaNNPairwiseModel:
 
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
-        self._batch_size = 4096
+        self._batch_size = 512
         # self._nb_epoch = 1e3 # FIXME
         self.model = Sequential()
         self.model.add(Dense( 300 ,input_dim = w2v.embeddingSize * 3 , init = 'uniform' ))
