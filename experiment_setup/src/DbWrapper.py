@@ -1,4 +1,5 @@
 import mysql.connector
+import re
 
 class WikipediaDbWrapper:
     """
@@ -12,7 +13,7 @@ class WikipediaDbWrapper:
         """
 
         self._cnx = mysql.connector.connect(user=user, password=password, host=host, database=database)
-        self._cursor = self._cnx.cursor()
+        self._cursor = self._cnx.cursor(buffered=True)
 
     def getConceptTitle(self, conceptId):
         """
@@ -22,58 +23,44 @@ class WikipediaDbWrapper:
         self._cursor.execute(query, (conceptId,))
         return self._cursor.fetchone()[0].decode("utf-8")
 
-    def getPages(self):
-        query = "SELECT id, title, namespace, isRedirect FROM article"
-        self._cursor.execute(query)
-        for row in self._cursor:
-            p = Page(row[0],row[1],row[2],row[3])
-            yield p
+    def getConceptTitle(self, conceptId):
+        """
+        Gets the wikipedia page title for a given id.
+        """
+        query = "SELECT title FROM article WHERE id = %s "
+        self._cursor.execute(query, (conceptId,))
+        return self._cursor.fetchone()[0].decode("utf-8")
 
-    def getRedirects(self):
-        query = "SELECT from, to, namespace FROM redirects"
-        self._cursor.execute(query)
-        for row in self._cursor:
-            yield (row[0],row[1],row[2])
+    def getPageInfoByTitle(self, title):
+        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE title = %s"
+        self._cursor.execute(query, (self.stripTitle(title),))
+        row = self._cursor.fetchone()
+        if row == None:
+            return (None,None,None,None)
+        return (row[0], row[1], row[2].decode("utf-8"), row[3])
 
+    def getPageInfoById(self, page_id):
+        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE page_id = %s"
+        self._cursor.execute(query, (page_id,))
+        row = self._cursor.fetchone()
+        if row == None:
+            return (None,None,None,None)
+        return (row[0], row[1], row[2].decode("utf-8"), row[3])
 
-
-class Page:
-    def __init__(self, id, title, namespace, isRedirect):
-        self.id = id
-        self.title = title
-        self.isRedirect = isRedirect
-        self.namespace = namespace
-        self.redirectTo = -1
-
-class titleResolver:
-    def __init__(self, db):
-        self._pagesById = dict()
-        self._pagesByTitle = dict()
-        for page in db.getPages():
-            # we care only about main namespace
-            if page.namespace != 0:
-                continue;
-            self._pagesById[page.id] = page
-            self._pagesByTitle[page.title] = page
-
-        for red_from, red_to, red_namespace in db.getRedirects:
-            if red_namespace != 0:
-                continue
-            f = self._pagesById(red_from)
-            t = self._pagesByTitle(red_to)
-            if f is None or t is None:
-                continue
-            f.redirectTo = t.id
+    def stripTitle(self,title):
+        t = re.sub('[^0-9a-zA-Z]', '_', title.lower())
+        return t
 
     def resolvePage(self, title):
         i = 0
-        while title in self._pagesByTitle and \
-                self._pagesByTitle[title].isRedirect and \
-                self._pagesByTitle[title].redirectTo >= 0 and\
+        page_id, namespace, title, redirect = self.getPageInfoByTitle(title)
+        while page_id is not None and \
+                redirect > -1 and \
                 i < 3:
-            title = self._pagesByTitle[title].title
+            page_id, namespace, title, redirect = self.getPageInfoById(page_id)
             i+=1
-        return self._pagesByTitle[title].id if title in self._pagesByTitle else None
+        return page_id
+
 
 
 
