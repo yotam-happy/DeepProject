@@ -18,24 +18,42 @@ class RNNPairwiseModel:
         self._batchY = []
         self._context_window_sz = context_window_sz
         self._train_loss = []
+        self._batch_size = 512
+        self.model = None
+        self.compileModel()
 
+    def compileModel(self):
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
-        self._batch_size = 512
 
-        left_context_input = Input(shape=(self._context_window_sz,self._w2v.embeddingSize), name='left_context_input')
-        right_context_input = Input(shape=(self._context_window_sz,self._w2v.embeddingSize), name='right_context_input')
-        candidates_input = Input(shape=(self._w2v.embeddingSize * 2,), name='candidates_input')
+        word_embed_layer = Embedding(len(self._w2v.wordDict)+1,
+                                     self._w2v.wordEmbeddingsSz,
+                                     input_length=self._context_window_sz,
+                                     weights=[self._w2v.wordEmbeddings])
+        concept_embed_layer = Embedding(len(self._w2v.conceptDict)+1,
+                                        self._w2v.conceptEmbeddingsSz,
+                                        input_length=1,
+                                        weights=[self._w2v.conceptEmbeddings])
 
-        left_lstm = GRU(self._w2v.embeddingSize, activation='relu')(left_context_input)
-        right_lstm = GRU(self._w2v.embeddingSize, activation='relu')(right_context_input)
+        left_context_input = Input(shape=(self._context_window_sz,), dtype='int32', name='left_context_input')
+        right_context_input = Input(shape=(self._context_window_sz,), dtype='int32', name='right_context_input')
+        candidate1_input = Input(shape=(1,), dtype='int32', name='candidate1_input')
+        candidate2_input = Input(shape=(1,), dtype='int32', name='candidate2_input')
 
-        x = merge([left_lstm, right_lstm,candidates_input], mode='concat')
+        left_context_embed = word_embed_layer(left_context_input)
+        right_context_embed = word_embed_layer(right_context_input)
+        candidate1_embed = concept_embed_layer(candidate1_input)
+        candidate2_embed = concept_embed_layer(candidate2_input)
+
+        left_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(left_context_embed)
+        right_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(right_context_embed)
+
+        x = merge([left_lstm, right_lstm,candidate1_embed,candidate2_embed], mode='concat')
         x = Dense(300, activation='relu')(x)
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
-        model = Model(input=[left_context_input, right_context_input,candidates_input], output=[out])
+        model = Model(input=[left_context_input, right_context_input,candidate1_input,candidate2_input], output=[out])
         model.compile(optimizer='adagrad', loss='binary_crossentropy')
         self.model = model
 
@@ -47,48 +65,38 @@ class RNNPairwiseModel:
         if cannot produce wikilink vec or vectors for both candidates then returns None
         if cannot produce vector to only one of the candidates then returns the id of the other
         """
-        if candidate1 not in self._w2v.conceptEmbeddings and candidate2 not in self._w2v.conceptEmbeddings:
+        if candidate1 not in self._w2v.conceptDict and candidate2 not in self._w2v.conceptDict:
             return None
+        if candidate1 not in self._w2v.conceptDict:
+            return candidate2
+        if candidate2 not in self._w2v.conceptDict:
+            return candidate1
+
         if 'right_context' not in wikilink and 'left_context' not in wikilink:
             return None
 
-        if candidate1 not in self._w2v.conceptEmbeddings:
-            return candidate2
-        if candidate2 not in self._w2v.conceptEmbeddings:
-            return candidate1
+        candidate1_id = np.array([self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1],:]])
+        candidate2_id = np.array([self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2],:]])
 
-        candidate1_vec = self._w2v.conceptEmbeddings[candidate1]
-        candidate2_vec = self._w2v.conceptEmbeddings[candidate2]
-        candidates = (np.asarray([candidate1_vec, candidate2_vec])).flatten()
+        lc = wikilink['left_context'] if 'left_context' in wikilink else []
+        rc = wikilink['right_context'] if 'right_context' in wikilink else []
+        left_context = self.wordListToIndices(wikilink['left_context'], self._context_window_sz, reverse=False)
+        right_context = self.wordListToIndices(wikilink['right_context'], self._context_window_sz, reverse=True)
 
+        return (left_context, right_context,candidate1_id, candidate2_id)
 
-        left_context_ar = self.wordListToVectors(wikilink['left_context']) if 'left_context' in wikilink else []
-        if (len(left_context_ar) >= self._context_window_sz):
-            left_context = np.array(left_context_ar[-self._context_window_sz:,:])
-        else:
-            left_context = np.zeros((self._context_window_sz,self._w2v.embeddingSize))
-            if len(left_context_ar) != 0:
-                left_context[-len(left_context_ar):,] = np.array(left_context_ar)
-
-        if 'right_context' in wikilink:
-            right_context_ar = self.wordListToVectors(wikilink['right_context'])[::-1]
-        else:
-            right_context_ar = []
-        if (len(right_context_ar) >= self._context_window_sz):
-            right_context = np.array(right_context_ar[-self._context_window_sz:,:])
-        else:
-            right_context = np.zeros((self._context_window_sz,self._w2v.embeddingSize))
-            if len(right_context_ar) != 0:
-                right_context[-len(right_context_ar):,] = np.array(right_context_ar)
-
-        return (left_context, right_context,candidates)
-
-    def wordListToVectors(self, l):
+    def wordListToIndices(self, l, output_len, reverse):
         o = []
         for w in l:
             if w in self._w2v.wordEmbeddings:
                 o.append(self._w2v.wordEmbeddings[w])
-        return np.asarray(o)
+        if reverse:
+            o = o[::-1]
+
+        arr = np.zeros((self._context_window_sz,))
+        n = len(o) if len(o) <= output_len else output_len
+        arr[:n] = np.array(o)
+        return arr
 
     def train(self, wikilink, candidate1, candidate2, correct):
         """
@@ -102,31 +110,35 @@ class RNNPairwiseModel:
         if not isinstance(vecs, tuple):
             return # nothing to train on
 
-        (left_X, right_X, candidates_X) = vecs
+        (left_X, right_X, candidate1_X, candidate2_X) = vecs
         Y = np.array([1,0] if candidate1 == correct else [0,1])
         # Check for nan
-        if np.isnan(np.sum(left_X)) or np.isnan(np.sum(right_X)) or np.isnan(np.sum(candidates_X)):
+        if np.isnan(np.sum(left_X)) or np.isnan(np.sum(right_X)) \
+                or np.isnan(np.sum(candidate1_X)) or np.isnan(np.sum(candidate2_X)):
             print "Input has NaN, ignoring..."
             return
-        self._trainXY(left_X, right_X, candidates_X,Y)
+        self._trainXY(left_X, right_X, candidate1_X, candidate2_X, Y)
 
-    def _trainXY(self,left_X, right_X, candidates_X,Y):
+    def _trainXY(self,left_X, right_X, candidate1_X, candidate2_X, Y):
         self._batch_left_X.append(left_X)
         self._batch_right_X.append(right_X)
-        self._batch_candidates_X.append(candidates_X)
+        self._batch_candidate1_X.append(candidate1_X)
+        self._batch_candidate2_X.append(candidate2_X)
         self._batchY.append(Y)
 
         if len(self._batchY) >= self._batch_size:
             # pushes numeric data into batch vector
             batch_left_X = np.array(self._batch_left_X)
             batch_right_X = np.array(self._batch_right_X)
-            batch_candidates_X = np.array(self._batch_candidates_X)
+            batch_candidate1_X = np.array(self._batch_candidate1_X)
+            batch_candidate2_X = np.array(self._batch_candidate2_X)
             batchY = np.array(self._batchY)
 
             # training on batch is specifically good for cases were data doesn't fit into memory
             loss = self.model.train_on_batch({'left_context_input':batch_left_X,
                                               'right_context_input':batch_right_X,
-                                              'candidates_input':batch_candidates_X},
+                                              'candidate1_input':batch_candidate1_X,
+                                              'candidate2_input':batch_candidate2_X},
                                              batchY)
             self._train_loss.append(loss)
             print 'Done batch. Size of batch - ', batchY.shape, '; loss: ', loss
@@ -134,11 +146,11 @@ class RNNPairwiseModel:
 
             self._batch_left_X = []
             self._batch_right_X = []
-            self._batch_candidates_X = []
+            self._batch_candidate1_X = []
+            self._batch_candidate2_X = []
             self._batchY = []
 
     def plotTrainLoss(self,st=0):
-        plt.plot(g[100:])
         plt.plot(self._train_loss[st:])
         plt.ylabel('Loss')
         plt.xlabel('Batch')
@@ -164,12 +176,10 @@ class RNNPairwiseModel:
         vecs = self._2vec(wikilink, candidate1, candidate2)
         if not isinstance(vecs, tuple):
             return vecs
-        (left_X, right_X, candidates_X) = vecs
-        left_X = left_X.reshape(1,left_X.shape[0],left_X.shape[1])
-        right_X = right_X.reshape(1,right_X.shape[0],right_X.shape[1])
-        candidates_X = candidates_X.reshape(1,candidates_X.shape[0])
+        (left_X, right_X, candidate1_X, candidate2_X) = vecs
         Y = self.model.predict({'left_context_input':left_X,
                                 'right_context_input':right_X,
-                                'candidates_input':candidates_X},
+                                'candidate1_input':candidate1_X,
+                                'candidate2_input':candidate2_X},
                                batch_size=1)
         return candidate1 if Y[0][0] > Y[0][1] else candidate2
