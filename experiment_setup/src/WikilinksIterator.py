@@ -130,6 +130,6 @@ class WikilinksNewIterator:
                 break
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\train", limit_files=1)
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\train")
     for k in iter.wikilinks():
         break

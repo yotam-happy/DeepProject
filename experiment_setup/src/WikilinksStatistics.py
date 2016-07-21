@@ -126,8 +126,8 @@ class WikilinksStatistics:
             print w
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("..\\..\\data\\wikilinks\\train")
+    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\train")
     stats = WikilinksStatistics(iter)
     stats.calcStatistics()
-    stats.saveToFile('..\\..\\data\\wikilinks\\train_stats2')
+    stats.saveToFile('C:\\repo\\DeepProject\\data\\wikilinks\\train_stats')
     stats.printSomeStats()
