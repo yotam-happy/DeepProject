@@ -1,5 +1,4 @@
 from RNNModel import *
-from test_lstm import batch_Y
 
 
 class ModelSingleGRU(RNNPairwiseModel):
