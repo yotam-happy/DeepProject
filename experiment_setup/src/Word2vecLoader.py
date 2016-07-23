@@ -20,34 +20,61 @@ class Word2vecLoader:
         self._wordsFilePath = wordsFilePath
         self._conceptsFilePath = conceptsFilePath
 
-        self.wordEmbeddings = dict()
-        self.conceptEmbeddings = dict()
+        self.wordEmbeddings = None
+        self.wordDict = dict()
+        self.wordEmbeddingsSz = 0
+        self.conceptEmbeddings = None
+        self.conceptDict = dict()
+        self.conceptEmbeddingsSz = 0
 
-        # make sure embedding sizes match
-        with open(wordsFilePath) as f:
-            _, sz = f.readline().split()
-            self.embeddingSize = int(sz)
-
-        with open(conceptsFilePath) as f:
-            _, embeddingSz = f.readline().split()
-            if int(embeddingSz) != self.embeddingSize:
-                raise Exception("Embedding sizes don't match")
 
     def _loadEmbedding(self, path, filterSet, int_key = False):
-        embedding = dict()
         with open(path) as f:
-            f.readline() # skip embedding size def
+            dict_sz, embd_sz = f.readline().split()
+            dict_sz = int(dict_sz) if int(dict_sz) < len(filterSet) else len(filterSet)
+            embd_sz = int(embd_sz)
+
+            embd_dict = dict()
+            embedding = np.zeros((dict_sz+1,embd_sz))
+
+            print "dict: ", dict_sz, " e", embedding.shape
+            i = 1
             for line in iter(f):
                 s = line.split()
                 if filterSet is None or s[0] in filterSet:
-                    embedding[int(s[0].lower()) if int_key else s[0].lower()] = np.array([float(x) for x in s[1:]])
-        return embedding
+                    embedding[i,:] = np.array([float(x) for x in s[1:]])
+                    embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
+                    i += 1
+        return embedding, embd_dict, embd_sz
+
+    def _loadEmbeddingDump(self, np_array_path, dict_path):
+        '''
+        Loads processed embeddings that were saved
+        '''
+        dict_file = open(dict_path,'rb')
+        embd_dict = pickle.load(dict_file)
+        embd_sz = pickle.load(dict_file)
+        dict_file.close()
+        embd = np.load(np_array_path)
+        return (embd, embd_dict, embd_sz)
+
+    def _saveEmbeddingDump(self, np_array_path, dict_path, embd, embd_dict, embd_sz):
+        try:
+            dict_file = open(dict_path,'wb')
+            pickle.dump(self.wordEmbeddings, dict_file)
+            pickle.dump(embd_dict, dict_file)
+            pickle.dump(embd_sz, dict_file)
+            dict_file.close()
+            np.save(np_array_path, embd)
+        except:
+            print "couldn't load embeddings... continue"
+
 
     def wordListToVectors(self, l):
         l = []
         for w in l:
-            if w in self.wordEmbeddings:
-                l.append(self.wordEmbeddings[w])
+            if w in self.wordDict:
+                l.append(self.wordEmbeddings[self.wordDict[w]])
         ar = np.asarray(l)
         print len(l)
         print ar.shape
@@ -57,8 +84,8 @@ class Word2vecLoader:
         sum = np.zeros(self.embeddingSize)
         k = 0
         for w in l:
-            if w in self.wordEmbeddings:
-                sum += self.wordEmbeddings[w]
+            if w in self.wordDict:
+                sum += self.wordEmbeddings[self.wordDict[w],:]
                 k += 1
         return sum / k
 
@@ -72,19 +99,32 @@ class Word2vecLoader:
         :param wordDict: If specified, only words appearing in word dict will be kept in memory
         :param conceptDict: If specified, only concepts appearing in concept dict will be kept in memory
         """
-        parent_path = os.path.abspath(os.path.join(self._wordsFilePath, os.pardir))
-        if(os.path.isfile(parent_path+'\\w2v_filt.txt')):
-            file_w2v = open(parent_path+'\\w2v_filt.txt','rb')
-            self.wordEmbeddings = pickle.load(file_w2v)
-            self.conceptEmbeddings = pickle.load(file_w2v)
-            file_w2v.close()
+        print "loading word embeddings...", self._conceptsFilePath
+        if os.path.isfile(self._wordsFilePath+'.preprocessed.dict') \
+                and os.path.isfile(self._wordsFilePath+'.preprocessed.npy'):
+            self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
+                self._loadEmbeddingDump(self._wordsFilePath+'.preprocessed.npy', self._wordsFilePath+'.preprocessed.dict')
         else:
-            self.wordEmbeddings = self._loadEmbedding(self._wordsFilePath, wordDict)
-            self.conceptEmbeddings = self._loadEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
-            file_w2v = open("..\\..\\data\\word2vec\\w2v_filt.txt",'wb')
-            pickle.dump(self.wordEmbeddings, file_w2v)
-            pickle.dump(self.conceptEmbeddings, file_w2v)
-            file_w2v.close()
+            self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
+                self._loadEmbedding(self._wordsFilePath, wordDict)
+            print "saving embeddings..."
+            #self._saveEmbeddingDump(self._wordsFilePath+'.preprocessed.npy',
+            #                        self._wordsFilePath+'.preprocessed.dict',
+            #                        self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz)
+
+        print "loading concept embeddings..."
+        if os.path.isfile(self._conceptsFilePath+'.preprocessed.dict') \
+                and os.path.isfile(self._conceptsFilePath+'.preprocessed.npy'):
+            self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
+                self._loadEmbeddingDump(self._conceptsFilePath+'.preprocessed.npy', self._conceptsFilePath+'.preprocessed.dict')
+        else:
+            self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
+                self._loadEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
+            print "saving embeddings..."
+            #self._saveEmbeddingDump(self._conceptsFilePath+'.preprocessed.npy',
+            #                        self._conceptsFilePath+'.preprocessed.dict',
+            #                        self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz)
+
 
 if __name__ == "__main__":
     w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
