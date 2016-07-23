@@ -117,8 +117,8 @@ class WikilinksStatistics:
         print "distinct concepts: ", len(self.conceptCounts)
         print "distinct context words: ", len(self.contextDictionary)
 
-        k, v = stats.mentionLinks.items()[0]
-        wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in stats.mentionLinks.items()]
+        k, v = self.mentionLinks.items()[0]
+        wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in self.mentionLinks.items()]
         wordsSorted.sort(key=lambda (k, v, d): v[1][1] if len(v) > 1 else 0)
 
         print("some ambiguous terms:")
