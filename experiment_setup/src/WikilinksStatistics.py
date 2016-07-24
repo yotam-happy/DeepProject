@@ -61,10 +61,12 @@ class WikilinksStatistics:
         """
         print "getting statistics"
         for wlink in self._wikilinks_iter.wikilinks():
-            if not wlink['word'] in self.mentionLinks:
-                self.mentionLinks[wlink['word']] = dict()
-            self.mentionLinks[wlink['word']][wlink['wikiId']] = self.mentionLinks[wlink['word']].get(wlink['wikiId'], 0) + 1
-            self.mentionCounts[wlink['word']] = self.mentionCounts.get(wlink['word'], 0) + 1
+            word = wlink['word'].lower()
+
+            if not word in self.mentionLinks:
+                self.mentionLinks[word] = dict()
+            self.mentionLinks[word][wlink['wikiId']] = self.mentionLinks[word].get(wlink['wikiId'], 0) + 1
+            self.mentionCounts[word] = self.mentionCounts.get(word, 0) + 1
             self.conceptCounts[wlink['wikiId']] = self.conceptCounts.get(wlink['wikiId'], 0) + 1
 
             if 'right_context' in wlink:
@@ -126,8 +128,12 @@ class WikilinksStatistics:
             print w
 
 if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\train")
+    iter = WikilinksNewIterator("/home/yotam/pythonWorkspace/deepProject/data/wikilinks/small/train")
     stats = WikilinksStatistics(iter)
     stats.calcStatistics()
-    stats.saveToFile('C:\\repo\\DeepProject\\data\\wikilinks\\train_stats')
+    stats.saveToFile('/home/yotam/pythonWorkspace/deepProject/data/wikilinks/small/wikilinks.stats')
     stats.printSomeStats()
+
+    stats = WikilinksStatistics(None, load_from_file_path='/home/yotam/pythonWorkspace/deepProject/data/wikilinks/small/wikilinks.stats')
+    print stats.mentionLinks['jaguar']
+

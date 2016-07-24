@@ -119,7 +119,7 @@ class ShuffleFiles:
 
         for fname in os.listdir(self._src_dir):
             in_f = open(os.path.join(self._src_dir, fname), 'r')
-            dest_files_temp = [[] for n in xrange(len(dest_files))]
+            dest_files_temp = [[] for n in xrange(lden(dest_files))]
             for line in in_f:
                 dest_files_temp[random.randrange(len(dest_files))].append(line)
             in_f.close()

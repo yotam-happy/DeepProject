@@ -1,8 +1,11 @@
-import mysql.connector
+import os
 import nltk
+from nltk import TreebankWordTokenizer
+from nltk import PunktSentenceTokenizer
 import re
-import mysql
-from nltk.corpus import stopwords
+import json
+import mysql.connector
+import cProfile
 
 class WikipediaDbWrapper:
     """
@@ -10,13 +13,17 @@ class WikipediaDbWrapper:
     Note this class is not thread safe or anything so be aware...
     """
 
-    def __init__(self, user, password, database, host='127.0.0.1'):
+    def __init__(self, user, password, database, host='127.0.0.1', cache=False):
         """
         All the parameters are self explanatory...
         """
 
         self._cnx = mysql.connector.connect(user=user, password=password, host=host, database=database)
         self._cursor = self._cnx.cursor(buffered=True)
+        self._pageInfoByIdCache = None
+        self._pageInfoByTitleCache = None
+        if cache:
+            self.cachePageInfoTable()
 
     def getConceptTitle(self, conceptId):
         """
@@ -33,8 +40,31 @@ class WikipediaDbWrapper:
         query = "SELECT title FROM article WHERE id = %s "
         self._cursor.execute(query, (conceptId,))
         return self._cursor.fetchone()[0].decode("utf-8")
+
+    def cachePageInfoTable(self):
+        _cursor = self._cnx.cursor()
+        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects where namespace=0"
+        self._pageInfoByTitleCache = dict()
+        self._pageInfoByIdCache = dict()
+        _cursor.execute(query)
+        i = 0
+        while True:
+            row = _cursor.fetchone()
+            if not row:
+                break
+            t = row[2].decode("utf-8")
+            self._pageInfoByTitleCache[t] = (row[0], row[1], t, row[3])
+            self._pageInfoByIdCache[row[0]] = (row[0], row[1], t, row[3])
+            if i % 100000 == 0:
+                print "done ", i
+            i += 1
+        print "cached ", len(self._pageInfoByTitleCache), " entries"
 
     def getPageInfoByTitle(self, title):
+        if self._pageInfoByTitleCache is not None:
+            return self._pageInfoByTitleCache[self.stripTitle(title)] \
+                if self.stripTitle(title) in self._pageInfoByTitleCache \
+                else (None,None,None,None)
         query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE title = %s"
         self._cursor.execute(query, (self.stripTitle(title),))
         row = self._cursor.fetchone()
@@ -43,6 +73,10 @@ class WikipediaDbWrapper:
         return (row[0], row[1], row[2].decode("utf-8"), row[3])
 
     def getPageInfoById(self, page_id):
+        if self._pageInfoByIdCache is not None:
+            return self._pageInfoByIdCache[page_id] \
+                if page_id in self._pageInfoByIdCache \
+                else (None,None,None,None)
         query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE page_id = %s"
         self._cursor.execute(query, (page_id,))
         row = self._cursor.fetchone()
@@ -54,82 +88,151 @@ class WikipediaDbWrapper:
         t = re.sub('[^0-9a-zA-Z]', '_', title.lower())
         return t
 
-    def resolvePage(self, title):
+    def _resolvePage(self, title):
         i = 0
         page_id, namespace, title, redirect = self.getPageInfoByTitle(title)
         while page_id is not None and \
                 redirect > -1 and \
-                i < 3:
-            page_id, namespace, title, redirect = self.getPageInfoById(page_id)
+                redirect != page_id and \
+                i < 7:
+            page_id, namespace, title, redirect = self.getPageInfoById(redirect)
             i+=1
+        return page_id, title
+
+    def resolvePage(self, title):
+        '''
+        Due to some problem in the DB we need to resolve a page name twice.
+         I am not sure why...
+        :param title:
+        :return:
+        '''
+        page_id, title = self._resolvePage(title)
+        if title is not None:
+            page_id, title = self._resolvePage(title)
         return page_id
 
 
-stop = stopwords.words('english')
-
 def isGoodToken(token):
-    if re.search('[a-zA-Z]', token) == None:
+    if len(token.strip()) == 0:
         return False
     return True
 
 def fixURL(url):
-    url = re.sub("%20"," ", url)
+    url = re.sub("%[0-9a-fA-F][0-9a-fA-F]","_", url)
     return url
+
+word_tok = TreebankWordTokenizer()
+sent_tok = PunktSentenceTokenizer()
+
+def word_tokenize(text, language='english'):
+    """
+    Return a tokenized copy of *text*,
+    using NLTK's recommended word tokenizer
+    (currently :class:`.TreebankWordTokenizer`
+    along with :class:`.PunktSentenceTokenizer`
+    for the specified language).
+
+    :param text: text to split into sentences
+    :param language: the model name in the Punkt corpus
+    """
+    return [token for sent in sent_tok.tokenize(text, language)
+            for token in word_tok.tokenize(sent)]
 
 def docToLinks(doc, db, contextLen = 25):
 
-    lines = doc.split('\n')
-    for line in lines:
-        # record mentions
-        links = re.findall('<a href="?\'?([^"\'>]*)">([^<]*)</a>', line)
+    # record mentions
+    links = re.findall('<a href="?\'?([^"\'>]*)">([^<]*)</a>', doc)
 
-        line = re.sub(r'</a>', ' _linkend_ ', line)
-        line = re.sub(r'<a href="?\'?([^"\'>]*)">', " _linkstart_ ", line)
-        tokens = nltk.word_tokenize(line)
-        tokens = [token for token in tokens if isGoodToken(token)]
+    line = re.sub(r'</a>', ' yotlinkendyot ', doc)
+    line = re.sub(r'<a href="?\'?([^"\'>]*)">', " yotlinkstartyot ", line)
+    tokens = word_tokenize(line.decode('utf-8'))
+    tokens = [token.strip() for token in tokens if isGoodToken(token)]
 
-        linkBounds = []
-        only_words = []
-        insideLink = False
-        i = 0
-        for token in tokens:
-            if token == "_linkend_":
-                # sanity check
-                if not insideLink:
-                    raise Exception("Something is wrong")
+    linkBounds = []
+    only_words = []
+    insideLink = False
+    i = 0
+    for token in tokens:
+        if token == "yotlinkendyot":
+            if insideLink:
                 insideLink = False
-
                 rightContext = i
                 linkBounds.append((leftContext, rightContext))
-            elif token.startswith('_link'):
-                # sanity check
-                if insideLink:
-                    raise Exception("Something is wrong")
-                insideLink = True
-
-                leftContext = i
+        elif token == "yotlinkstartyot" and not insideLink:
+            # if we are already inside a link then something is wrong. just skip
+            if insideLink:
+                insideLink = False
             else:
-                only_words.append(token)
-                i += 1
+                insideLink = True
+                leftContext = i
+        else:
+            only_words.append(token)
+            i += 1
 
-        print only_words
-        for link, bounds in zip(links, linkBounds):
-            l = bounds[0] - contextLen if bounds[0] - contextLen >= 0 else 0
-            r = bounds[1] + contextLen if bounds[1] + contextLen < len(only_words) else len(only_words)
-            leftContext = only_words[l:bounds[0]]
-            rightContext = only_words[bounds[1]:r]
-            link_url, mention = link
-            link_url = fixURL(link_url)
-            link_id = db.resolvePage(link_url)
-            print link_url, " (", link_id, ") as ", mention
-            print bounds
-            print leftContext
-            print rightContext
-            if link_id == None:
-                raise "Whaaaat!"
+    for link, bounds in zip(links, linkBounds):
+        l = bounds[0] - contextLen if bounds[0] - contextLen >= 0 else 0
+        r = bounds[1] + contextLen if bounds[1] + contextLen < len(only_words) else len(only_words)
 
+        leftContext = only_words[l:bounds[0]]
+        rightContext = only_words[bounds[1]:r]
+        link_url, mention = link
+        link_url_fixed = fixURL(link_url)
+        link_id = db.resolvePage(link_url_fixed)
+        yield {'word': mention,
+               'wikiId': link_id,
+               'left_context': leftContext,
+               'right_context': rightContext,
+               'wikiurl':link_url}
+
+def textDirectoryIter(path):
+    '''
+    Iterates all files in directory as text files. Returns one line at a time
+    This is ok since wikipedia places each paragraph in a single line so we have
+    proper context for links in a paragraph
+    :param path: directory path
+    '''
+    if not os.path.isdir(path):
+        raise "Path is not a directory: " + path
+    for file in os.listdir(path):
+        print "Opening file ", os.path.join(path,file)
+        lines = open(os.path.join(path,file), "r").readlines()
+        doc = []
+        for line in lines:
+            doc.append(line)
+            if (line.startswith('</doc>')):
+                yield '\n'.join(doc)
+                doc = []
+
+def wikiToLinks(wiki_dir, out_dir, db, context_len = 25, jsons_per_file = 400000):
+    c = 0
+    outfile_c = 0
+    outlink_c = 0
+    out_lines = []
+    for i, doc in enumerate(textDirectoryIter(wiki_dir)):
+        for link in docToLinks(doc, db, contextLen=context_len):
+            if link['wikiId'] == None:
+                # skip if we cant resolve id
+                continue
+            out_lines.append(json.dumps(link) + "\n")
+            outlink_c += 1
+            c += 1
+            if len(out_lines) >= jsons_per_file:
+                fname = os.path.join(out_dir, "wikilinks_" + str(outfile_c) + ".json")
+                out_f = open(fname, "w")
+                out_f.writelines(out_lines)
+                out_f.close()
+                outlink_c = 0
+                outfile_c += 1
+                out_lines = []
+                print "written file: ", fname, " (", i, " documents and ", c, " links)"
+    if len(out_lines) >= 0:
+        out_f = open(os.path.join(out_dir, "wikilinks_" + str(outfile_c) + ".json"), "w")
+        out_f.writelines(out_lines)
+        out_f.close()
 
 if __name__ == '__main__':
 
-    wikiDB = WikipediaDbWrapper(user='root', password='rockon123', database='wikiprep-esa-en20151002')
-    docToLinks('The Angolan Armed Forces (<a href="Portuguese%20language">Portuguese</a>: "Forças Armadas Angolanas") are the <a href="military">military</a> in <a href="Angola">Angola</a> that succeeded the <a href="Armed%20Forces%20for%20the%20Liberation%20of%20Angola">Armed Forces for the Liberation of Angola</a> (FAPLA) following the abortive <a href="Bicesse%20Accord">Bicesse Accord</a> with the National Union for the Total Independence of Angola (<a href="UNITA">UNITA</a>) in 1991. As part of the peace agreement, troops from both armies were to be <a href="demilitarized">demilitarized</a> and then integrated. Integration was never completed as UNITA went back to war in 1992. Later, consequences for UNITA members in Luanda were harsh with FAPLA veterans persecuting their erstwhile opponents in certain areas and reports of <a href="vigilantism">vigilantism</a>.', wikiDB)
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+    wikiToLinks('/home/yotam/pythonWorkspace/deepProject/data/wikiextractor-output',
+                '/home/yotam/pythonWorkspace/deepProject/data/wikipedia-intralinks', wikiDB)
+    print "done"

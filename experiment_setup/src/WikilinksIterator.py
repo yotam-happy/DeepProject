@@ -2,8 +2,8 @@ import os
 from zipfile import ZipFile
 import pandas as pd # pandas
 import re
-import ujson as json
 import pickle
+import ujson as json
 import gzip
 import cProfile
 import nltk

@@ -7,13 +7,17 @@ class WikipediaDbWrapper:
     Note this class is not thread safe or anything so be aware...
     """
 
-    def __init__(self, user, password, database, host='127.0.0.1'):
+    def __init__(self, user, password, database, host='127.0.0.1', cache=False):
         """
         All the parameters are self explanatory...
         """
 
         self._cnx = mysql.connector.connect(user=user, password=password, host=host, database=database)
         self._cursor = self._cnx.cursor(buffered=True)
+        self._pageInfoByIdCache = None
+        self._pageInfoByTitleCache = None
+        if cache:
+            self.cachePageInfoTable()
 
     def getConceptTitle(self, conceptId):
         """
@@ -23,15 +27,29 @@ class WikipediaDbWrapper:
         self._cursor.execute(query, (conceptId,))
         return self._cursor.fetchone()[0].decode("utf-8")
 
-    def getConceptTitle(self, conceptId):
-        """
-        Gets the wikipedia page title for a given id.
-        """
-        query = "SELECT title FROM article WHERE id = %s "
-        self._cursor.execute(query, (conceptId,))
-        return self._cursor.fetchone()[0].decode("utf-8")
+    def cachePageInfoTable(self):
+        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects where namespace=0"
+        self._pageInfoByTitleCache = dict()
+        self._pageInfoByIdCache = dict()
+        self._cursor.execute(query)
+        i = 0
+        while True:
+            row = self._cursor.fetchone()
+            if not row:
+                break
+            t = row[2].decode("utf-8")
+            self._pageInfoByTitleCache[t] = (row[0], row[1], t, row[3])
+            self._pageInfoByIdCache[row[0]] = (row[0], row[1], t, row[3])
+            if i % 100000 == 0:
+                print "done ", i
+            i += 1
+        print "cached ", len(self._pageInfoByTitleCache), " entries"
 
     def getPageInfoByTitle(self, title):
+        if self._pageInfoByTitleCache is not None:
+            return self._pageInfoByTitleCache[self.stripTitle(title)] \
+                if self.stripTitle(title) in self._pageInfoByTitleCache \
+                else (None,None,None,None)
         query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE title = %s"
         self._cursor.execute(query, (self.stripTitle(title),))
         row = self._cursor.fetchone()
@@ -40,6 +58,10 @@ class WikipediaDbWrapper:
         return (row[0], row[1], row[2].decode("utf-8"), row[3])
 
     def getPageInfoById(self, page_id):
+        if self._pageInfoByIdCache is not None:
+            return self._pageInfoByIdCache[page_id] \
+                if page_id in self._pageInfoByIdCache \
+                else (None,None,None,None)
         query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE page_id = %s"
         self._cursor.execute(query, (page_id,))
         row = self._cursor.fetchone()
@@ -57,7 +79,7 @@ class WikipediaDbWrapper:
         while page_id is not None and \
                 redirect > -1 and \
                 i < 3:
-            page_id, namespace, title, redirect = self.getPageInfoById(page_id)
+            page_id, namespace, title, redirect = self.getPageInfoById(redirect)
             i+=1
         return page_id
 
@@ -65,6 +87,7 @@ class WikipediaDbWrapper:
 
 
 if __name__ == "__main__":
-    wikiDB = WikipediaDbWrapper(user='root', password='???', database='wikiprep-esa-en20151002')
-    print wikiDB.getConceptTitle(264210 )
-    print wikiDB.getConceptTitle(264209)
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+    print wikiDB.getConceptTitle(147676)
+    print wikiDB.getPageInfoById(147676)
+    print wikiDB.resolvePage('jaguar_cars')
