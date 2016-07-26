@@ -4,17 +4,25 @@ class Evaluation:
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model):
+    def __init__(self, test_iter, model, stats = None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
         """
         self._iter = test_iter
         self._model = model
+        self._stats = stats
 
         self.n_samples = 0
         self.correct = 0
         self.no_prediction = 0
+        self.possible = 0
+
+    def isInStats(self, wlink):
+        l = self._stats.getCandidatesForMention(wlink["word"])
+        l = {int(x):y for x,y in l.iteritems()}
+        return wlink["wikiId"] in l
+
 
     def evaluate(self):
         """
@@ -31,11 +39,14 @@ class Evaluation:
         self.n_samples = 0
         self.correct = 0
         self.no_prediction = 0
+        self.possible = 0
 
         for wikilink in self._iter.wikilinks():
             if 'wikiId' not in wikilink:
                 continue
             actual = wikilink['wikiId']
+            if self._stats is not None and self.isInStats(wikilink):
+                self.possible += 1
 
             prediction = self._model.predict(wikilink)
 
@@ -57,6 +68,6 @@ class Evaluation:
         """
         Pretty print results of evaluation
         """
-        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction
+        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction, " possible: ", self.possible
         print "%correct from total: ", float(self.correct) / self.n_samples
         print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
