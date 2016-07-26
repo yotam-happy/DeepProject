@@ -7,8 +7,8 @@ import json
 
 class BabelfyTester:
 
-    def __init__(self, wiki2id_table):
-        self.wiki2id = wiki2id_table
+    def __init__(self, db):
+        self.db = db
         self.service_url_bf = 'https://babelfy.io/v1/disambiguate'
         self.service_url_bn = 'https://babelnet.io/v3/getSynset'
         self.key = 'dfb53f62-b530-46ce-8245-60fa13ecb763'
@@ -39,7 +39,11 @@ class BabelfyTester:
         lemma_cand = None
         input = (' '.join(wlink['right_context'])) + ' ' + wlink['word'] + ' ' +  ' '.join(wlink['left_context'])
         char_indx = len(' '.join(wlink['right_context'])) + 1 # the char fragment index of the word
-        self.params_bf['text'] = input
+        char_indx_end = len((' '.join(wlink['right_context'])) + ' ' + wlink['word'] ) - 1 # the char fragment index of the word
+
+        # print some of the context
+
+        self.params_bf['text'] = str(input.encode('utf-8'))
         url = self.service_url_bf + '?' + urllib.urlencode(self.params_bf)
         request = urllib2.Request(url)
         request.add_header('Accept-encoding', 'gzip')
@@ -49,28 +53,27 @@ class BabelfyTester:
             buf = StringIO(response.read())
             f = gzip.GzipFile(fileobj=buf)
             data = json.loads(f.read())
+            synsetId = None
             for result in data:
 
                 # retrieving char fragment
                 charFragment = result.get('charFragment')
                 cfStart = charFragment.get('start')
+                cfEnd= charFragment.get('end')
 
                 # for every charfragment with word find the wiki lemma
-                if(cfStart == char_indx):
-                    if(result.get('score') >= default_score):
-                        default_score = result.get('score')
-                        print 'Current score - ',default_score
-                        cfEnd = charFragment.get('end')
-                        print 'Fragment - ',input[cfStart:cfEnd+1]
-                        synsetId = result.get('babelSynsetID')
+                if cfStart == char_indx and cfEnd == char_indx_end and result.get('score') >= default_score:
+                    default_score = result.get('score')
+                    synsetId = result.get('babelSynsetID')
 
-                        # retrive babelnet lemma
-                        lemma_cand = self.retriveLemma(synsetId)
-                        print 'lemma - ',lemma_cand
+            # retrive babelnet lemma
+            if synsetId is None:
+                return None
+            lemma_cand = self.retriveLemma(synsetId)
+            if lemma_cand is not None:
+                print " prdicted: ", lemma_cand, ' actual: ', wlink['wikiurl']
 
-
-            # TODO: return table wikiId value of final lemma (use self.wiki2id_table)
-
+            return self.db.resolvePage(lemma_cand) if lemma_cand is not None else None
 
     def retriveLemma(self, bn_synt):
         # retriving the lemma ofa given babelnetsynt with babelnet API
