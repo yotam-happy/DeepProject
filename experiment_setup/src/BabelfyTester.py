@@ -38,8 +38,8 @@ class BabelfyTester:
         default_score = 0
         lemma_cand = None
         input = (' '.join(wlink['right_context'])) + ' ' + wlink['word'] + ' ' +  ' '.join(wlink['left_context'])
-        char_indx = len(' '.join(wlink['right_context'])) + 1 # the char fragment index of the word
-        char_indx_end = len((' '.join(wlink['right_context'])) + ' ' + wlink['word'] ) - 1 # the char fragment index of the word
+        char_index_start = len(' '.join(wlink['right_context'])) + 1 # the char fragment index of the word
+        char_index_end = len((' '.join(wlink['right_context'])) + ' ' + wlink['word'] ) - 1 # the char fragment index of the word
 
         # print some of the context
 
@@ -54,24 +54,31 @@ class BabelfyTester:
             f = gzip.GzipFile(fileobj=buf)
             data = json.loads(f.read())
             synsetId = None
+            match_sensitive_flag = 0 # flag is up if we have a full match
             for result in data:
 
                 # retrieving char fragment
                 charFragment = result.get('charFragment')
                 cfStart = charFragment.get('start')
-                cfEnd= charFragment.get('end')
+                cfEnd = charFragment.get('end')
 
                 # for every charfragment with word find the wiki lemma
-                if cfStart == char_indx and cfEnd == char_indx_end and result.get('score') >= default_score:
+                # case 1 - we have a full fragment match and nned to choose among different senses
+                if cfStart == char_index_start and cfEnd == char_index_end and result.get('score') >= default_score:
+                    match_sensitive_flag = 1
+                    default_score = result.get('score')
+                    synsetId = result.get('babelSynsetID')
+                # case 2 - we have partial fragment match (expressions start with same char) so we test this case (for example 'Jaguar' and 'Jaguar car')
+                elif cfStart == char_index_start and result.get('score') >= default_score and match_sensitive_flag == 0:
                     default_score = result.get('score')
                     synsetId = result.get('babelSynsetID')
 
             # retrive babelnet lemma
             if synsetId is None:
                 return None
-            lemma_cand = self.retriveLemma(synsetId)
+            lemma_cand = (self.retriveLemma(synsetId)).lower()
             if lemma_cand is not None:
-                print " prdicted: ", lemma_cand, ' actual: ', wlink['wikiurl']
+                print " predicted: ", lemma_cand, ' actual: ', wlink['wikiurl']
 
             return self.db.resolvePage(lemma_cand) if lemma_cand is not None else None
 

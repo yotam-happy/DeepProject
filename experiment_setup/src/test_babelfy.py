@@ -1,6 +1,6 @@
 """
 Mannually execute each class dependency to work with the project without compiling
-Best and easiest way to debug code in python. You can actully view to whole workspace
+Best and easiest way to debug code in python. You can actully view the whole workspace
 
 ATTENTION: Change the path variable in the end of the file
 ATTENTION: If you de modificaitons in the classes please keep the copyies here updated! (There must be a better way but I am lazy)
