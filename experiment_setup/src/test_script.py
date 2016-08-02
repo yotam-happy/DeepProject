@@ -32,21 +32,21 @@ here we test the VanillaNN structure
 This is the main script
 """
 
-path = "C:\\repo\\DeepProject"
+path = "/home/yotam/pythonWorkspace/deepProject"
 print "Loading iterators+stats..."
 if(not os.path.isdir(path)):
     path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
-train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
-iter_train = WikilinksNewIterator(path+"\\data\\wikilinks\\small\\train",
+train_stats = WikilinksStatistics(None, load_from_file_path=path+"/data/wikilinks/small/wikilinks.stats")
+iter_train = WikilinksNewIterator(path+"/data/wikilinks/small_train",
                                   mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
-iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\small\\evaluation",
+iter_eval = WikilinksNewIterator(path+"/data/wikilinks/small_evaluation",
                                  mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
 print "Done!"
 
 print 'Loading embeddings...'
-w2v = Word2vecLoader(wordsFilePath=path+"\\data\\word2vec\\dim300vecs",
-                     conceptsFilePath=path+"\\data\\word2vec\\dim300context_vecs")
+w2v = Word2vecLoader(wordsFilePath=path+"/data/word2vec/dim300vecs",
+                     conceptsFilePath=path+"/data/word2vec/dim300context_vecs")
 wD = train_stats.contextDictionary
 cD = train_stats.conceptCounts
 w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)

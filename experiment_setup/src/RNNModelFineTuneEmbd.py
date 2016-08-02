@@ -10,7 +10,7 @@ class RNNFineTuneEmbdPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, context_window_sz = 10):
+    def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None):
         self._w2v = w2v
         self._batch_left_X = []
         self._batch_right_X = []
@@ -21,9 +21,9 @@ class RNNFineTuneEmbdPairwiseModel:
         self._train_loss = []
         self._batch_size = 512
         self.model = None
-        self.compileModel()
+        self.compileModel(dropout=dropout, noise=noise)
 
-    def compileModel(self):
+    def compileModel(self, dropout = 0.0, noise = None):
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
 
@@ -44,15 +44,23 @@ class RNNFineTuneEmbdPairwiseModel:
         left_context_embed = word_embed_layer(left_context_input)
         right_context_embed = word_embed_layer(right_context_input)
         candidate1_embed = concept_embed_layer(candidate1_input)
-        candidate1_flat = Flatten()(candidate1_embed)
         candidate2_embed = concept_embed_layer(candidate2_input)
+        if noise is not None:
+            left_context_embed = GaussianNoise(noise)(left_context_embed)
+            right_context_embed = GaussianNoise(noise)(right_context_embed)
+            candidate1_embed = GaussianNoise(noise)(candidate1_embed)
+            candidate2_embed = GaussianNoise(noise)(candidate2_embed)
+
+        candidate1_flat = Flatten()(candidate1_embed)
         candidate2_flat = Flatten()(candidate2_embed)
 
-        left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False)(left_context_embed)
-        right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False)(right_context_embed)
+        left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(left_context_embed)
+        right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(right_context_embed)
 
         x = merge([left_rnn, right_rnn,candidate1_flat,candidate2_flat], mode='concat')
         x = Dense(300, activation='relu')(x)
+        if dropout > 0.0:
+            x = Dropout(dropout)(x)
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
@@ -149,11 +157,11 @@ class RNNFineTuneEmbdPairwiseModel:
             self._batch_candidate2_X = []
             self._batchY = []
 
-    def plotTrainLoss(self,st=0):
+    def plotTrainLoss(self,fname, st=0):
         plt.plot(self._train_loss[st:])
         plt.ylabel('Loss')
         plt.xlabel('Batch')
-        plt.show()
+        plt.savefig(fname)
 
     def saveModel(self, fname):
         open(fname+".model", 'w').write(self.model.to_json())

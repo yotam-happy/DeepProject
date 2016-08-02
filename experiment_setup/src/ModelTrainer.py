@@ -12,7 +12,7 @@ class ModelTrainer:
     and feeds them to a model's train method
     """
 
-    def __init__(self, iter, stats, model, epochs = 10):
+    def __init__(self, iter, stats, model, epochs = 10, wordFilter = None,  senseFilter = None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -22,6 +22,10 @@ class ModelTrainer:
         self._model = model
         self._stats = stats
         self._epochs = epochs
+        self.wordFilter = wordFilter
+        self.senseFilter = senseFilter
+        if senseFilter is not None:
+            self.senseFilterInt = {int(x) for x in senseFilter}
 
         self.n_samples = 0
 
@@ -33,9 +37,17 @@ class ModelTrainer:
             print "training epoch ", epoch
 
             for wikilink in self._iter.wikilinks():
+                if self.wordFilter is not None and wikilink["word"] in self.wordFilter:
+                    continue
+
                 actual = wikilink['wikiId']
+                if self.senseFilter is not None and actual in self.senseFilterInt :
+                    continue
 
                 candidates = self._stats.getCandidatesForMention(wikilink["word"])
+                if (self.senseFilter is not None):
+                    candidates = {x:y for x,y in candidates.iteritems() if x not in self.senseFilter}
+
                 if candidates is None or len(candidates) < 2:
                     continue
 

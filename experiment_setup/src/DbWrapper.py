@@ -25,7 +25,8 @@ class WikipediaDbWrapper:
         """
         query = "SELECT title FROM article WHERE id = %s "
         self._cursor.execute(query, (conceptId,))
-        return self._cursor.fetchone()[0].decode("utf-8")
+        res = self._cursor.fetchone()
+        return res[0].decode("utf-8")  if res is not None else None
 
     def cachePageInfoTable(self):
         query = "SELECT page_id, namespace, title, redirect FROM pages_redirects where namespace=0"

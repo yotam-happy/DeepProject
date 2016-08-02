@@ -1,5 +1,6 @@
 from WikilinksIterator import WikilinksNewIterator
 import json
+import random
 
 class WikilinksStatistics:
     """
@@ -33,6 +34,16 @@ class WikilinksStatistics:
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
 
+    def getRandomWordSubset(self, p):
+        '''
+        Returns a set with a random subset of the words. p is the size ([0,1])
+        :param p:
+        :return:
+        '''
+        return {x for x in self.mentionCounts if random.random() <= p}
+
+    def getSensesFor(self, l):
+        return {s for w in l for s in self.getCandidatesForMention(w)}
 
     def saveToFile(self, path):
         """ saves statistics to a file """

@@ -37,7 +37,6 @@ class Word2vecLoader:
             embd_dict = dict()
             embedding = np.zeros((dict_sz+1,embd_sz))
 
-            print "dict: ", dict_sz, " e", embedding.shape
             i = 1
             for line in iter(f):
                 s = line.split()
@@ -46,6 +45,27 @@ class Word2vecLoader:
                     embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
                     i += 1
         return embedding, embd_dict, embd_sz
+
+    def _randomEmbedding(self, path, filterSet, int_key = False, zero=False):
+        with open(path) as f:
+            dict_sz, embd_sz = f.readline().split()
+            dict_sz = int(dict_sz) if int(dict_sz) < len(filterSet) else len(filterSet)
+            embd_sz = int(embd_sz)
+
+            embd_dict = dict()
+            embedding = np.random.uniform(-1 / np.sqrt(embd_sz * 4), 1 / np.sqrt(embd_sz * 4), (dict_sz+1,embd_sz))
+            if zero:
+                embedding = np.zeros((dict_sz+1,embd_sz))
+
+            print "rnd embd"
+            i = 1
+            for line in iter(f):
+                s = line.split()
+                if filterSet is None or s[0] in filterSet:
+                    embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
+                    i += 1
+            return embedding, embd_dict, embd_sz
+
 
     def _loadEmbeddingDump(self, np_array_path, dict_path):
         '''
@@ -91,6 +111,13 @@ class Word2vecLoader:
 
     def distance(self, v1, v2):
         return spatial.distance.cosine(v1,v2)
+
+    def randomEmbeddings(self, wordDict=None, conceptDict=None):
+        self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
+            self._randomEmbedding(self._wordsFilePath, wordDict, zero=True)
+        self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
+            self._randomEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
+
 
     def loadEmbeddings(self, wordDict=None, conceptDict=None):
         """

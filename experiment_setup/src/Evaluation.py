@@ -4,7 +4,7 @@ class Evaluation:
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model, stats = None):
+    def __init__(self, test_iter, model, stats = None, wordFilter = None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -12,6 +12,7 @@ class Evaluation:
         self._iter = test_iter
         self._model = model
         self._stats = stats
+        self._wordFilter = wordFilter
 
         self.n_samples = 0
         self.correct = 0
@@ -42,6 +43,8 @@ class Evaluation:
         self.possible = 0
 
         for wikilink in self._iter.wikilinks():
+            if self._wordFilter is not None and wikilink["word"] not in self._wordFilter:
+                continue
             if 'wikiId' not in wikilink:
                 continue
             actual = wikilink['wikiId']

@@ -10,7 +10,7 @@ class RNNPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, context_window_sz = 10):
+    def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None):
         self._w2v = w2v
         self._batch_left_X = []
         self._batch_right_X = []
@@ -23,15 +23,26 @@ class RNNPairwiseModel:
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
         self._batch_size = 512
 
-        left_context_input = Input(shape=(self._context_window_sz,self._w2v.embeddingSize), name='left_context_input')
-        right_context_input = Input(shape=(self._context_window_sz,self._w2v.embeddingSize), name='right_context_input')
-        candidates_input = Input(shape=(self._w2v.embeddingSize * 2,), name='candidates_input')
+        left_context_input = Input(shape=(self._context_window_sz,self._w2v.wordEmbeddingsSz), name='left_context_input')
+        right_context_input = Input(shape=(self._context_window_sz,self._w2v.wordEmbeddingsSz), name='right_context_input')
+        candidates_input = Input(shape=(self._w2v.conceptEmbeddingsSz * 2,), name='candidates_input')
 
-        left_lstm = GRU(self._w2v.embeddingSize, activation='relu')(left_context_input)
-        right_lstm = GRU(self._w2v.embeddingSize, activation='relu')(right_context_input)
+        if noise is not None:
+            left_context_input_n = GaussianNoise(noise)(left_context_input)
+            right_context_input_n = GaussianNoise(noise)(right_context_input)
+            candidates_input_n = GaussianNoise(noise)(candidates_input)
+        else:
+            left_context_input_n = left_context_input
+            right_context_input_n = right_context_input
+            candidates_input_n = candidates_input
 
-        x = merge([left_lstm, right_lstm,candidates_input], mode='concat')
+        left_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu', dropout_U=dropout, dropout_W=dropout)(left_context_input_n)
+        right_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu', dropout_U=dropout, dropout_W=dropout)(right_context_input_n)
+
+        x = merge([left_lstm, right_lstm,candidates_input_n], mode='concat')
         x = Dense(300, activation='relu')(x)
+        if dropout > 0.0:
+            x = Dropout(dropout)(x)
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
@@ -47,18 +58,18 @@ class RNNPairwiseModel:
         if cannot produce wikilink vec or vectors for both candidates then returns None
         if cannot produce vector to only one of the candidates then returns the id of the other
         """
-        if candidate1 not in self._w2v.conceptEmbeddings and candidate2 not in self._w2v.conceptEmbeddings:
+        if candidate1 not in self._w2v.conceptDict and candidate2 not in self._w2v.conceptDict:
             return None
         if 'right_context' not in wikilink and 'left_context' not in wikilink:
             return None
 
-        if candidate1 not in self._w2v.conceptEmbeddings:
+        if candidate1 not in self._w2v.conceptDict:
             return candidate2
-        if candidate2 not in self._w2v.conceptEmbeddings:
+        if candidate2 not in self._w2v.conceptDict:
             return candidate1
 
-        candidate1_vec = self._w2v.conceptEmbeddings[candidate1]
-        candidate2_vec = self._w2v.conceptEmbeddings[candidate2]
+        candidate1_vec = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1]]
+        candidate2_vec = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2]]
         candidates = (np.asarray([candidate1_vec, candidate2_vec])).flatten()
 
 
@@ -66,7 +77,7 @@ class RNNPairwiseModel:
         if (len(left_context_ar) >= self._context_window_sz):
             left_context = np.array(left_context_ar[-self._context_window_sz:,:])
         else:
-            left_context = np.zeros((self._context_window_sz,self._w2v.embeddingSize))
+            left_context = np.zeros((self._context_window_sz,self._w2v.wordEmbeddingsSz))
             if len(left_context_ar) != 0:
                 left_context[-len(left_context_ar):,] = np.array(left_context_ar)
 
@@ -77,7 +88,7 @@ class RNNPairwiseModel:
         if (len(right_context_ar) >= self._context_window_sz):
             right_context = np.array(right_context_ar[-self._context_window_sz:,:])
         else:
-            right_context = np.zeros((self._context_window_sz,self._w2v.embeddingSize))
+            right_context = np.zeros((self._context_window_sz,self._w2v.wordEmbeddingsSz))
             if len(right_context_ar) != 0:
                 right_context[-len(right_context_ar):,] = np.array(right_context_ar)
 
@@ -86,8 +97,8 @@ class RNNPairwiseModel:
     def wordListToVectors(self, l):
         o = []
         for w in l:
-            if w in self._w2v.wordEmbeddings:
-                o.append(self._w2v.wordEmbeddings[w])
+            if w in self._w2v.wordDict:
+                o.append(self._w2v.wordEmbeddings[self._w2v.wordDict[w]])
         return np.asarray(o)
 
     def train(self, wikilink, candidate1, candidate2, correct):
@@ -138,8 +149,8 @@ class RNNPairwiseModel:
             self._batchY = []
 
     def plotTrainLoss(self,st=0):
-        plt.plot(g[100:])
         plt.plot(self._train_loss[st:])
+        plt.plot(pairwise_model._train_loss[10:])
         plt.ylabel('Loss')
         plt.xlabel('Batch')
         plt.show()
