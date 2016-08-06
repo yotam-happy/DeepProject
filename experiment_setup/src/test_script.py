@@ -25,6 +25,7 @@ from Word2vecLoader import *
 from Evaluation import *
 from ModelTrainer import *
 import pickle
+import ModelRunner
 import nltk
 ##
 """
@@ -53,43 +54,71 @@ w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
 print 'wordEmbedding dict size: ',len(w2v.wordEmbeddings)
 print 'conceptEmbeddings dict size: ',len(w2v.conceptEmbeddings)
 print 'Done!'
+
 """
-Training double gru model
+DEFINING THE MODELS - please seperate each model by ## and
+save its parameters in the exel table
 """
+
+## MODEL VERSION_____________________________________________
+model_name = "rnn.relu"
+n_epoch = 20
+pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v)
+
+## __________________________________________________________
+model_name = "rnn3_wide"
+n_epoch = 20
+pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v,dropout=1,context_window_sz=15,numof_neurons=[1e3, 100])
+## __________________________________________________________
+patience = 3 # number of epochs to include in the early stopping criterion
 
 ## TRAIN DEBUGGING CELL
-print 'Training...'
+model_runner = ModelRunner(model = pairwise_model, model_name = model_name, n_epoch = n_epoch, iterator = iter_train, stats = train_stats, path = path, patience= None)
+ModelRunner.run()
 
-pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v)
-#pairwise_model = RNNPairwiseModel(w2v)
-#pairwise_model = ModelSingleGRU(w2v)
-#pairwise_model = VanillaNNPairwiseModel(w2v)
-
-knockout_model = KnockoutModel(pairwise_model,train_stats)
-#pairwise_model.loadModel(path + "\\models\\rnn")
-
-trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1)
-evaluation_loss = []
-for train_session in xrange(20):
-    # train
-    print "Training... ", train_session
-    trainer.train()
-
-    # evaluate
-    print "Evaluating...", train_session
-    evaluation = Evaluation(iter_eval,knockout_model)
-    evaluation.evaluate()
-    evaluation_loss.append(evaluation.precision())
-
-    # save
-    print "Saving...", train_session
-    precision_f = open(path + "\\models\\rnn.relu.precision.txt","a")
-    precision_f.write(str(train_session) + ": " + str(evaluation.precision()) + "\n")
-    precision_f.close()
-
-    train_loss_f = open(path + "\\models\\rnn.relu.train_loss.txt",'wb')
-    pickle.dump(pairwise_model._train_loss, train_loss_f)
-    train_loss_f.close()
+##
+# print 'Training...'
+#
+# #pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v)
+# #pairwise_model = RNNPairwiseModel(w2v)
+# #pairwise_model = ModelSingleGRU(w2v)
+# #pairwise_model = VanillaNNPairwiseModel(w2v)
+#
+# knockout_model = KnockoutModel(pairwise_model,train_stats)
+# #pairwise_model.loadModel(path + "\\models\\rnn")
+#
+# trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1)
+#
+# evaluation_loss = []
+# for train_session in xrange(n_epoch):
+#     # train
+#     print "Training... ", train_session
+#     trainer.train()
+#
+#     # evaluate
+#     print "Evaluating...", train_session
+#     evaluation = Evaluation(iter_eval,knockout_model)
+#     evaluation.evaluate()
+#     evaluation_loss.append(evaluation.precision())
+#
+#     # save evalutation
+#     print "Saving...", train_session
+#     precision_f = open(path + "\\models\\"+model_name+".precision.txt","a")
+#     precision_f.write(str(train_session) + ": " + str(evaluation.precision()) + "\n")
+#     precision_f.close()
+#
+#     train_loss_f = open(path + "\\models\\"+model_name+".train_loss.txt",'wb')
+#     pickle.dump(pairwise_model._train_loss, train_loss_f)
+#     train_loss_f.close()
+#
+#     # early stopping criterion
+#     if train_session > patience and np.all([val_loss <= evaluation_loss[-1:] for val_loss in evaluation_loss[-1-patience:]]):
+#         break
 
 ## Plot results
+
 pairwise_model.plotTrainLoss()
+
+## Save model
+
+pairwise_model.saveModel(model_name)
