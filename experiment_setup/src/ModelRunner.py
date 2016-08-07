@@ -20,7 +20,7 @@ class ModelRunner():
             self.path = path
 
         def run(self):
-            knockout_model = KnockoutModel(self.pairwise_model,self.train_stats)
+            knockout_model = KnockoutModel(self.pairwise_model,self.stats)
             #pairwise_model.loadModel(path + "\\models\\rnn")
 
             trainer = ModelTrainer(self.itr, self.stats, self.pairwise_model, epochs=1)

@@ -71,10 +71,13 @@ n_epoch = 20
 pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v,dropout=1,context_window_sz=15,numof_neurons=[1e3, 100])
 ## __________________________________________________________
 patience = 3 # number of epochs to include in the early stopping criterion
+model_name = "rnn4_wordFilter"
+n_epoch = 20
+pairwise_model = RNNFineTuneEmbdPairwiseModel(w2v,dropout=1,context_window_sz=15)
 
 ## TRAIN DEBUGGING CELL
 model_runner = ModelRunner(model = pairwise_model, model_name = model_name, n_epoch = n_epoch, iterator = iter_train, stats = train_stats, path = path, patience= None)
-ModelRunner.run()
+model_runner.run()
 
 ##
 # print 'Training...'
