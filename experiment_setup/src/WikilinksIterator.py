@@ -82,6 +82,12 @@ class WikilinksNewIterator:
         self._mention_filter = mention_filter
         self._stopwords = stopwords.words('english')
 
+    def get_wlink(self):
+        # outputs the next wlink piece
+        # print "get next()"
+        for wlink in self.wikilinks():
+            yield wlink
+
     def _wikilink_files(self):
         for file in os.listdir(self._path):
             if os.path.isdir(os.path.join(self._path, file)):

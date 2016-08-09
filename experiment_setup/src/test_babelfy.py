@@ -32,16 +32,19 @@ from DbWrapper import *
 ##
 
 path = "C:\\repo\\DeepProject"
+password = 'rockon123'
 print "Loading iterators+stats..."
 if(not os.path.isdir(path)):
     path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+    password = 'ncTech#1'
+
 
 train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
 iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\small\\evaluation",
                                  mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
 print "Done!"
 
-wikiDB = WikipediaDbWrapper(user='root', password='rockon123', database='wikiprep-esa-en20151002')
+wikiDB = WikipediaDbWrapper(user='root', password=password, database='wikiprep-esa-en20151002')
 babelfy_model = BabelfyTester(wikiDB)
 evaluation = Evaluation(iter_eval,babelfy_model)
 evaluation.evaluate()

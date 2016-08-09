@@ -28,6 +28,7 @@ class KnockoutModel:
         wikilink = {"word": word, "left_context": l_context, "right_context": r_context}
         id = self.predict(wikilink)
         print str(id), " : ", db.getPageInfoById(id)
+        return str(id), " : ", db.getPageInfoById(id)
 
     def predict(self, wikilink):
         candidates = self._stats.getCandidatesForMention(wikilink["word"])

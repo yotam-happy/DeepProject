@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d9a9dd20-8f5c-42e9-bcfd-dabb2f56de4f" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/test_script_noam" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/test_ui.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/ModelRunner.py" afterPath="$PROJECT_DIR$/src/ModelRunner.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/KnockoutModel.py" afterPath="$PROJECT_DIR$/src/KnockoutModel.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/WikilinksIterator.py" afterPath="$PROJECT_DIR$/src/WikilinksIterator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test_babelfy.py" afterPath="$PROJECT_DIR$/src/test_babelfy.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/test_script.py" afterPath="$PROJECT_DIR$/src/test_script.py" />
     </list>
     <list id="b4b55e74-c6f6-4e7d-bf0a-75285306c380" name="- Added KnockoutModel that handles the knockout method. It recieves a Pairwise Model and uses it for the knockout.  - Changed BaselineModel accordingly into BaselinePairwiseModel - added getCandidatesForMention method to WikilinksStatistics to support KnockoutModel (cherry picked from commit 3440be6)" comment="- Added KnockoutModel that handles the knockout method. It recieves a Pairwise Model and uses it for the knockout.&#10;&#10;- Changed BaselineModel accordingly into BaselinePairwiseModel&#10;- added getCandidatesForMention method to WikilinksStatistics to support KnockoutModel&#10;(cherry picked from commit 3440be6)" />
@@ -20,32 +24,95 @@
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
   </component>
+  <component name="DockManager">
+    <window id="1">
+      <content type="file-editors">
+        <state>
+          <leaf>
+            <file leaf-file-name="BigTextProgramWithUI.py" pinned="false" current-in-tab="true">
+              <entry file="file://$PROJECT_DIR$/../../../Python Scripts/BigTextProgramWithUI.py">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state vertical-scroll-proportion="0.5657686">
+                    <caret line="81" column="59" selection-start-line="81" selection-start-column="59" selection-end-line="81" selection-end-column="59" />
+                    <folding>
+                      <element signature="e#60#81#0" expanded="true" />
+                    </folding>
+                  </state>
+                </provider>
+              </entry>
+            </file>
+          </leaf>
+        </state>
+      </content>
+    </window>
+  </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="experiment_setup" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="RNNModel.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/RNNModel.py">
+      <file leaf-file-name="RNNModelFineTuneEmbd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/RNNModelFineTuneEmbd.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="150" column="7" selection-start-line="150" selection-start-column="7" selection-end-line="150" selection-end-column="7" />
+              <caret line="17" column="32" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="deepesa_ui.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/deepesa_ui.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.27659574">
+              <caret line="208" column="10" selection-start-line="208" selection-start-column="10" selection-end-line="208" selection-end-column="10" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#198#207#0" expanded="true" />
+                <marker date="1470728975949" expanded="true" signature="9270:9461" placeholder="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="RNNModelFineTuneEmbd.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/RNNModelFineTuneEmbd.py">
+      <file leaf-file-name="test_ui.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test_ui.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="20.241379">
-              <caret line="118" column="34" selection-start-line="118" selection-start-column="32" selection-end-line="118" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="31" column="53" selection-start-line="31" selection-start-column="53" selection-end-line="31" selection-end-column="53" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#47#56#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="BabelfyTester.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/BabelfyTester.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="39" column="25" selection-start-line="39" selection-start-column="17" selection-end-line="39" selection-end-column="25" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WikilinksIterator.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/WikilinksIterator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="33" column="36" selection-start-line="33" selection-start-column="36" selection-end-line="33" selection-end-column="36" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="KnockoutModel.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/KnockoutModel.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="30" column="14" selection-start-line="30" selection-start-column="14" selection-end-line="30" selection-end-column="14" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -60,11 +127,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_script.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/test_script.py">
+      <file leaf-file-name="test_script_noam" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test_script_noam">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5862069">
-              <caret line="72" column="28" selection-start-line="72" selection-start-column="28" selection-end-line="72" selection-end-column="28" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="55" selection-end-column="13" />
               <folding>
                 <element signature="e#658#667#0" expanded="true" />
               </folding>
@@ -76,65 +143,19 @@
         <entry file="file://$PROJECT_DIR$/src/ModelRunner.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="25" column="86" selection-start-line="0" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
-              <folding>
-                <element signature="e#178#211#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="SimpleW2VPairwiseModel.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/SimpleW2VPairwiseModel.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="17" column="74" selection-start-line="17" selection-start-column="72" selection-end-line="17" selection-end-column="74" />
+              <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ModelTrainer.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ModelTrainer.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-5.551724">
-              <caret line="39" column="29" selection-start-line="39" selection-start-column="24" selection-end-line="39" selection-end-column="29" />
-              <folding>
-                <element signature="e#0#57#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BaselinePairwiseModel.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/BaselinePairwiseModel.py">
+      <file leaf-file-name="test_babelfy.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/test_babelfy.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="18" column="47" selection-start-line="18" selection-start-column="47" selection-end-line="18" selection-end-column="47" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Evaluation.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Evaluation.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="61" column="43" selection-start-line="61" selection-start-column="43" selection-end-line="61" selection-end-column="43" />
+              <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="38" selection-end-column="25" />
               <folding>
-                <marker date="1470199736763" expanded="true" signature="18:149" placeholder="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DbWrapper.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/DbWrapper.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
-              <folding>
-                <element signature="e#0#22#0" expanded="true" />
+                <element signature="e#659#668#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -169,7 +190,6 @@
         <option value="$PROJECT_DIR$/src/VanilllaNN.py" />
         <option value="$PROJECT_DIR$/src/test_keras.py" />
         <option value="$PROJECT_DIR$/src/Evaluation.py" />
-        <option value="$PROJECT_DIR$/src/KnockoutModel.py" />
         <option value="$PROJECT_DIR$/src/VanilllaNNPairwiseModel.py" />
         <option value="$PROJECT_DIR$/src/test_lstm.py" />
         <option value="$PROJECT_DIR$/src/Word2vecLoader.py" />
@@ -179,19 +199,23 @@
         <option value="$PROJECT_DIR$/src/RNNModel.py" />
         <option value="$PROJECT_DIR$/src/ModelTrainer.py" />
         <option value="$PROJECT_DIR$/src/ModelSingleGRU.py" />
-        <option value="$PROJECT_DIR$/src/WikilinksIterator.py" />
         <option value="$PROJECT_DIR$/src/BabelfyTester.py" />
-        <option value="$PROJECT_DIR$/src/test_babelfy.py" />
         <option value="$PROJECT_DIR$/src/DbWrapper.py" />
         <option value="$PROJECT_DIR$/src/RNNModelFineTuneEmbd.py" />
-        <option value="$PROJECT_DIR$/src/test_script.py" />
         <option value="$PROJECT_DIR$/src/ModelRunner.py" />
+        <option value="$PROJECT_DIR$/src/test_script.py" />
+        <option value="$PROJECT_DIR$/src/test_script_noam" />
+        <option value="$PROJECT_DIR$/src/test_babelfy.py" />
+        <option value="$PROJECT_DIR$/src/KnockoutModel.py" />
+        <option value="$PROJECT_DIR$/src/WikilinksIterator.py" />
+        <option value="$PROJECT_DIR$/src/test_ui.py" />
+        <option value="$PROJECT_DIR$/src/deepesa_ui.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1912" />
-    <option name="y" value="295" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -250,24 +274,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="experiment_setup" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="experiment_setup" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="semeval2013" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
       <pane id="Scratches" />
@@ -297,24 +303,7 @@
       <recent name="C:\Users\Noam\Documents\GitHub\DeepProject\experiment_setup\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.WikilinksProcessing">
-    <configuration default="false" name="DesaModel" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="experiment_setup" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/DesaModel.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="Python.deepesa_ui">
     <configuration default="false" name="Word2vecLoader" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -379,6 +368,23 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="experiment_setup" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/WikilinksProcessing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="deepesa_ui" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="experiment_setup" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/deepesa_ui.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -506,19 +512,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.DesaModel" />
-      <item index="1" class="java.lang.String" itemvalue="Python.Word2vecLoader" />
-      <item index="2" class="java.lang.String" itemvalue="Python.Evaluation" />
-      <item index="3" class="java.lang.String" itemvalue="Python.SimpleW2VPairwiseModel" />
-      <item index="4" class="java.lang.String" itemvalue="Python.WikilinksProcessing" />
+      <item index="0" class="java.lang.String" itemvalue="Python.Word2vecLoader" />
+      <item index="1" class="java.lang.String" itemvalue="Python.Evaluation" />
+      <item index="2" class="java.lang.String" itemvalue="Python.SimpleW2VPairwiseModel" />
+      <item index="3" class="java.lang.String" itemvalue="Python.WikilinksProcessing" />
+      <item index="4" class="java.lang.String" itemvalue="Python.deepesa_ui" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.WikilinksProcessing" />
-        <item index="1" class="java.lang.String" itemvalue="Python.Word2vecLoader" />
-        <item index="2" class="java.lang.String" itemvalue="Python.Evaluation" />
-        <item index="3" class="java.lang.String" itemvalue="Python.SimpleW2VPairwiseModel" />
-        <item index="4" class="java.lang.String" itemvalue="Python.DesaModel" />
+        <item index="0" class="java.lang.String" itemvalue="Python.deepesa_ui" />
+        <item index="1" class="java.lang.String" itemvalue="Python.WikilinksProcessing" />
+        <item index="2" class="java.lang.String" itemvalue="Python.Word2vecLoader" />
+        <item index="3" class="java.lang.String" itemvalue="Python.Evaluation" />
+        <item index="4" class="java.lang.String" itemvalue="Python.SimpleW2VPairwiseModel" />
       </list>
     </recent_temporary>
   </component>
@@ -527,14 +533,14 @@
     <configuration />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="295" width="1936" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09747102" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="-1288" y="35" width="1296" height="1000" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16069546" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="-1288" y="34" width="1296" height="1000" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.31514478" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.19112629" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32739422" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39309576" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36525613" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -592,46 +598,11 @@
           <option name="timeStamp" value="93" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="100" />
+      <option name="time" value="105" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/SimpleW2VPairwiseModel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="13" column="30" selection-start-line="13" selection-start-column="22" selection-end-line="13" selection-end-column="30" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Evaluation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="44" column="34" selection-start-line="44" selection-start-column="34" selection-end-line="44" selection-end-column="34" />
-          <folding>
-            <marker date="1470199736763" expanded="true" signature="18:149" placeholder="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/WikilinksIterator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="93" column="33" selection-start-line="93" selection-start-column="33" selection-end-line="93" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/BabelfyTester.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="39" column="40" selection-start-line="39" selection-start-column="40" selection-end-line="39" selection-end-column="40" />
-          <folding>
-            <element signature="e#0#11#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test_script.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -646,6 +617,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#659#668#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -782,20 +756,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/desaModel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="39" column="0" selection-start-line="39" selection-start-column="0" selection-end-line="39" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../Python Scripts/BigTextProgramWithUI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="41" column="34" selection-start-line="41" selection-start-column="31" selection-end-line="41" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Anaconda/Lib/site-packages/keras/models.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -839,13 +799,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/WikilinksIterator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="10" column="33" selection-start-line="10" selection-start-column="33" selection-end-line="10" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/semeval2013/process_data.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -869,38 +822,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test_babelfy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="43" column="60" selection-start-line="43" selection-start-column="51" selection-end-line="43" selection-end-column="60" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/BabelfyTester.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="64" column="70" selection-start-line="64" selection-start-column="70" selection-end-line="64" selection-end-column="70" />
-          <folding>
-            <element signature="e#0#11#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/DbWrapper.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="18" column="17" selection-start-line="18" selection-start-column="17" selection-end-line="18" selection-end-column="17" />
           <folding>
-            <element signature="e#0#22#0" expanded="true" />
+            <element signature="e#0#22#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/KnockoutModel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33293697">
-          <caret line="25" column="76" selection-start-line="25" selection-start-column="75" selection-end-line="25" selection-end-column="76" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -912,19 +840,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/RNNModel.py">
+    <entry file="file://$PROJECT_DIR$/src/SimpleW2VPairwiseModel.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="150" column="7" selection-start-line="150" selection-start-column="7" selection-end-line="150" selection-end-column="7" />
+          <caret line="17" column="74" selection-start-line="17" selection-start-column="72" selection-end-line="17" selection-end-column="74" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ModelTrainer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-5.551724">
+          <caret line="39" column="29" selection-start-line="39" selection-start-column="24" selection-end-line="39" selection-end-column="29" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#0#57#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/desaModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="20" column="40" selection-start-line="20" selection-start-column="40" selection-end-line="20" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test_script.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.12446352">
+          <caret line="57" column="3" selection-start-line="0" selection-start-column="0" selection-end-line="87" selection-end-column="36" />
+          <folding>
+            <element signature="e#658#667#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/BaselinePairwiseModel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
+        <state vertical-scroll-proportion="0.43776825">
           <caret line="18" column="47" selection-start-line="18" selection-start-column="47" selection-end-line="18" selection-end-column="47" />
           <folding />
         </state>
@@ -940,21 +894,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/RNNModelFineTuneEmbd.py">
+    <entry file="file://$PROJECT_DIR$/src/RNNModel.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="20.241379">
-          <caret line="118" column="34" selection-start-line="118" selection-start-column="32" selection-end-line="118" selection-end-column="34" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="163" column="42" selection-start-line="163" selection-start-column="42" selection-end-line="163" selection-end-column="42" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/SimpleW2VPairwiseModel.py">
+    <entry file="file://$PROJECT_DIR$/../../../Python Scripts/BigTextProgramWithUI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="17" column="74" selection-start-line="17" selection-start-column="72" selection-end-line="17" selection-end-column="74" />
-          <folding />
+        <state vertical-scroll-proportion="0.5657686">
+          <caret line="81" column="59" selection-start-line="81" selection-start-column="59" selection-end-line="81" selection-end-column="59" />
+          <folding>
+            <element signature="e#60#81#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -966,12 +922,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ModelTrainer.py">
+    <entry file="file://$PROJECT_DIR$/src/test_babelfy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-5.551724">
-          <caret line="39" column="29" selection-start-line="39" selection-start-column="24" selection-end-line="39" selection-end-column="29" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="38" selection-end-column="25" />
           <folding>
-            <element signature="e#0#57#0" expanded="true" />
+            <element signature="e#659#668#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -979,19 +935,78 @@
     <entry file="file://$PROJECT_DIR$/src/ModelRunner.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="25" column="86" selection-start-line="0" selection-start-column="0" selection-end-line="52" selection-end-column="0" />
+          <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/KnockoutModel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="30" column="14" selection-start-line="30" selection-start-column="14" selection-end-line="30" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Anaconda/Lib/site-packages/nltk/tokenize/treebank.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3321033">
+          <caret line="97" column="10" selection-start-line="97" selection-start-column="10" selection-end-line="97" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test_script_noam">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="13" column="0" selection-start-line="13" selection-start-column="0" selection-end-line="55" selection-end-column="13" />
           <folding>
-            <element signature="e#178#211#0" expanded="true" />
+            <element signature="e#658#667#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/test_script.py">
+    <entry file="file://$PROJECT_DIR$/src/BabelfyTester.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5862069">
-          <caret line="72" column="28" selection-start-line="72" selection-start-column="28" selection-end-line="72" selection-end-column="28" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="39" column="25" selection-start-line="39" selection-start-column="17" selection-end-line="39" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/WikilinksIterator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="33" column="36" selection-start-line="33" selection-start-column="36" selection-end-line="33" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test_ui.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="31" column="53" selection-start-line="31" selection-start-column="53" selection-end-line="31" selection-end-column="53" />
           <folding>
-            <element signature="e#658#667#0" expanded="true" />
+            <element signature="e#47#56#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/RNNModelFineTuneEmbd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="17" column="32" selection-start-line="17" selection-start-column="32" selection-end-line="17" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/deepesa_ui.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.27659574">
+          <caret line="208" column="10" selection-start-line="208" selection-start-column="10" selection-end-line="208" selection-end-column="10" />
+          <folding>
+            <element signature="e#198#207#0" expanded="true" />
+            <marker date="1470728975949" expanded="true" signature="9270:9461" placeholder="..." />
           </folding>
         </state>
       </provider>
