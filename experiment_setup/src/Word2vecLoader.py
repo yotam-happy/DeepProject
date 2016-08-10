@@ -31,7 +31,7 @@ class Word2vecLoader:
     def _loadEmbedding(self, path, filterSet, int_key = False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
-            dict_sz = int(dict_sz) if int(dict_sz) < len(filterSet) else len(filterSet)
+            dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
             embd_sz = int(embd_sz)
 
             embd_dict = dict()
@@ -88,17 +88,6 @@ class Word2vecLoader:
             np.save(np_array_path, embd)
         except:
             print "couldn't load embeddings... continue"
-
-
-    def wordListToVectors(self, l):
-        l = []
-        for w in l:
-            if w in self.wordDict:
-                l.append(self.wordEmbeddings[self.wordDict[w]])
-        ar = np.asarray(l)
-        print len(l)
-        print ar.shape
-        return ar
 
     def meanOfWordList(self, l):
         sum = np.zeros(self.embeddingSize)

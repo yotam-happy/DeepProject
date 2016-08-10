@@ -1,6 +1,7 @@
 from WikilinksIterator import WikilinksNewIterator
 import json
 import random
+import sys
 
 class WikilinksStatistics:
     """
@@ -34,13 +35,15 @@ class WikilinksStatistics:
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
 
-    def getRandomWordSubset(self, p):
+    def getRandomWordSubset(self, p, baseSubset=None):
         '''
         Returns a set with a random subset of the words. p is the size ([0,1])
         :param p:
         :return:
         '''
-        return {x for x in self.mentionCounts if random.random() <= p}
+        if baseSubset is None:
+            baseSubset = self.mentionCounts
+        return {x for x in baseSubset if random.random() <= p}
 
     def getSensesFor(self, l):
         return {s for w in l for s in self.getCandidatesForMention(w)}
@@ -87,14 +90,23 @@ class WikilinksStatistics:
                 for w in wlink['left_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
-    def getCandidatesForMention(self, mention):
+    def getCandidatesForMention(self, mention, p=0.9):
         """
         :param mention:     the mention to search for
         :return:            returns a dictionary: (candidate,count)
         """
         if mention not in self.mentionLinks:
             return None
-        return self.mentionLinks[mention]
+        l = self._sortedList(self.mentionLinks[mention])
+        tot =sum([x[1] for x in l])
+        c = 0.0
+        out = dict()
+        for x in l:
+            if c > p:
+                break
+            c += float(x[1]) / tot
+            out[x[0]] = x[1]
+        return out
 
     def getGoodMentionsToDisambiguate(self, f=5):
         """
@@ -113,6 +125,70 @@ class WikilinksStatistics:
         s = set()
         for mention in l:
             if len(mention[1]) > 1 and mention[1][1][1] >= f:
+                s.add(mention[0])
+        return s
+
+    def getGoodMentionsToDisambiguate2(self, p_max=0.9):
+        """
+        Returns a set of mentions that are deemed "good"
+        These are mentions where  p(most-frequent-sense|mention)<=p_max
+        :param f:
+        :return:
+        """
+
+        # generates a list of mentions, sorted by the second most common sense per
+        # mention
+        k, v = self.mentionLinks.items()[0]
+        l = [(k, self._sortedList(v)) for k,v in self.mentionLinks.items()]
+
+        # take those mentions where the second most common term appears more then f times
+        s = set()
+        for mention in l:
+            if len(mention[1]) < 2:
+                continue
+            tot = sum([x[1] for x in mention[1]])
+            p = float(mention[1][0][1]) / tot
+            if p <= p_max:
+                s.add(mention[0])
+        return s
+
+    def prettyPrintMentionStats(self, m, db):
+        try:
+            s = "["
+            for x,y in m.iteritems():
+                t = db.getPageInfoById(x)[2]
+                s += str(t) + ": " + str(y) + "; "
+            s += ']'
+            print s
+        except :
+            print "Unexpected error:", sys.exc_info()[0]
+            print m
+
+    def getGoodMentionsToDisambiguate3(self, db=None):
+        """
+        Returns a set of mentions that are deemed "interesting"
+        at least 11 samples.
+        at least two with p>=0.1
+        :param f:
+        :return:
+        """
+
+        # generates a list of mentions, sorted by the second most common sense per
+        # mention
+        k, v = self.mentionLinks.items()[0]
+        l = [(k, self._sortedList(v)) for k,v in self.mentionLinks.items()]
+
+        # take those mentions where the second most common term appears more then f times
+        s = set()
+        for mention in l:
+            if len(mention[1]) < 2:
+                continue
+            tot = sum([x[1] for x in mention[1]])
+            p1 = float(mention[1][0][1]) / tot
+            p2 = float(mention[1][1][1]) / tot
+            if tot >=20 and p1 >= 0.1 and p2 >= 0.1:
+                if db is not None:
+                    self.prettyPrintMentionStats(mention, db)
                 s.add(mention[0])
         return s
 

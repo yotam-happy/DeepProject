@@ -3,11 +3,17 @@ import urllib
 import urllib2
 from StringIO import StringIO
 import json
-
+import re
+from WikilinksProcessing import wlink_writer
 
 class BabelfyTester:
 
-    def __init__(self, db):
+    def __init__(self, db, saveGoodPath=None):
+        '''
+        :param db:
+        :param saveGoodPath:    if this is not null then we save the wlinks where babelfy returned a response that fits our needs
+                                into the given path (should be a directory name)
+        '''
         self.db = db
         self.service_url_bf = 'https://babelfy.io/v1/disambiguate'
         self.service_url_bn = 'https://babelnet.io/v3/getSynset'
@@ -23,6 +29,12 @@ class BabelfyTester:
             'key'  : self.key,
         }
 
+        self._tried = 0
+        self._correct = 0
+        self._writer = wlink_writer(saveGoodPath) if saveGoodPath is not None else None
+
+    def finalizeWriter(self):
+        self._writer.finalize()
 
     def predict(self, wlink):
         """
@@ -37,9 +49,9 @@ class BabelfyTester:
         # create input text and send to babelfy
         default_score = 0
         lemma_cand = None
-        input = (' '.join(wlink['right_context'])) + ' ' + wlink['word'] + ' ' +  ' '.join(wlink['left_context'])
-        char_index_start = len(' '.join(wlink['right_context'])) + 1 # the char fragment index of the word
-        char_index_end = len((' '.join(wlink['right_context'])) + ' ' + wlink['word'] ) - 1 # the char fragment index of the word
+        input = wlink['left_context_text'] + ' ' + wlink['word'] + ' ' + wlink['right_context_text']
+        char_indx = len(wlink['left_context_text']) + 1 # the char fragment index of the word
+        char_indx_end = len(wlink['left_context_text']) + len(wlink['word']) # the char fragment index of the word
 
         # print some of the context
 
@@ -54,33 +66,44 @@ class BabelfyTester:
             f = gzip.GzipFile(fileobj=buf)
             data = json.loads(f.read())
             synsetId = None
-            match_sensitive_flag = 0 # flag is up if we have a full match
             for result in data:
 
                 # retrieving char fragment
                 charFragment = result.get('charFragment')
                 cfStart = charFragment.get('start')
-                cfEnd = charFragment.get('end')
+                cfEnd= charFragment.get('end')
 
                 # for every charfragment with word find the wiki lemma
-                # case 1 - we have a full fragment match and nned to choose among different senses
-                if cfStart == char_index_start and cfEnd == char_index_end and result.get('score') >= default_score:
-                    match_sensitive_flag = 1
-                    default_score = result.get('score')
-                    synsetId = result.get('babelSynsetID')
-                # case 2 - we have partial fragment match (expressions start with same char) so we test this case (for example 'Jaguar' and 'Jaguar car')
-                elif cfStart == char_index_start and result.get('score') >= default_score and match_sensitive_flag == 0:
+                if cfStart == char_indx and cfEnd == char_indx_end and result.get('score') >= default_score:
                     default_score = result.get('score')
                     synsetId = result.get('babelSynsetID')
 
             # retrive babelnet lemma
             if synsetId is None:
                 return None
-            lemma_cand = (self.retriveLemma(synsetId)).lower()
+            lemma_cand = self.retriveLemma(synsetId)
             if lemma_cand is not None:
-                print " predicted: ", lemma_cand, ' actual: ', wlink['wikiurl']
+                actual = wlink['wikiurl']
+                if actual.rfind('/') > -1:
+                    actual = actual[actual.rfind('/')+1:]
+                if actual.find('#') > -1:
+                    actual = actual[:actual.find('#')]
+                regex = re.compile('[^\w]')
+                actual = regex.sub('', actual).lower()
+                pred = regex.sub('', lemma_cand).lower()
 
-            return self.db.resolvePage(lemma_cand) if lemma_cand is not None else None
+                print " prdicted: ", pred, ' actual: ', actual, ' word: ', wlink['word']
+
+                self._tried += 1
+                if actual == pred:
+                    self._correct += 1
+                if self._tried % 10 == 0:
+                    print "Babelfy test: ", float(self._correct) / self._tried
+
+            p = self.db.resolvePage(lemma_cand) if lemma_cand is not None else None
+            if p is not None:
+                self._writer.save(wlink)
+            return p
 
     def retriveLemma(self, bn_synt):
         # retriving the lemma ofa given babelnetsynt with babelnet API

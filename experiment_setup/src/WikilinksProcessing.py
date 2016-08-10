@@ -5,6 +5,7 @@ import hashlib
 from urlparse import urlparse
 from WikilinksIterator import *
 from WikilinksStatistics import *
+from DbWrapper import *
 
 def _urlHash(url):
     '''
@@ -61,6 +62,7 @@ class wlink_writer:
             for s in self._l:
                 f.write(s + '\n')
             f.close()
+            self._l = []
 
     def save(self, wlink):
         self._l.append(json.dumps(wlink))
@@ -119,7 +121,7 @@ class ShuffleFiles:
 
         for fname in os.listdir(self._src_dir):
             in_f = open(os.path.join(self._src_dir, fname), 'r')
-            dest_files_temp = [[] for n in xrange(lden(dest_files))]
+            dest_files_temp = [[] for n in xrange(len(dest_files))]
             for line in in_f:
                 dest_files_temp[random.randrange(len(dest_files))].append(line)
             in_f.close()
@@ -146,29 +148,47 @@ class ShuffleFiles:
             f.writelines(l)
             f.close()
 
+def copyWithFilter(src_path, dest_path, word_filter):
+    train_iter = WikilinksNewIterator(path=src_path)
+    writer = wlink_writer(dest_path)
+    for wlink in train_iter.wikilinks():
+        if wlink['word'] in word_filter:
+            writer.save(wlink)
+    writer.finalize()
 
 if __name__ == "__main__":
-    # converts the old format (one json with many wikilinks per file)
-    # to new format (one json one single wikilink per line)
-#    old_iter = WikilinksOldIterator(path="C:\\repo\\WikiLink\\with_ids")
-#    rewriter = WikilinksRewrite(old_iter, "C:\\repo\\WikiLink\\new_format")
-#    rewriter.work()
+    ## Resolving ids
+    #wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+    #iter = WikilinksNewIterator(path="../../data/wikilinks/unprocessed", resolveIds=True, db=wikiDB)
+    #writer = wlink_writer('../../data/wikilinks/with-ids2')
+    #for i, wlink in enumerate(iter.wikilinks()):
+    #    writer.save(wlink)
+    #    if i % 10000 == 0:
+    #        print "resolve ids: ", i
+    #writer.finalize()
 
-    # randomizes lines in dataset files
-#    random.seed()
-#    shuffler = ShuffleFiles('C:\\repo\\WikiLink\\new_format', 'C:\\repo\\WikiLink\\randomized')
-#    shuffler.work1()
-#    shuffler.work2()
+    ## shuffle the dataset
+    #random.seed()
+    #shuffler = ShuffleFiles('../../data/wikilinks/with-ids', '../../data/wikilinks/randomized')
+    #shuffler.work1()
+    #shuffler.work2()
 
-    # split into train/validation/test (split by urls. All mentions from same url go to same folder)
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\all")
-    splitWikis(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small")
+    ## split into train/validation/test (split by urls. All mentions from same url go to same folder)
+    #iter = WikilinksNewIterator('../../data/wikilinks/randomized')
+    #splitWikis(iter, '../../data/wikilinks/all-split')
 
-    # split into train/validation/test (split by urls. All mentions from same url go to same folder)
-    # BUT with filtering!
-    stats = WikilinksStatistics(None,
-                                load_from_file_path="C:\\repo\\DeepProject\\data\\wikilinks\\train_stats")
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\all",
-                                mention_filter=stats.getGoodMentionsToDisambiguate())
-    splitWikis(iter, "C:\\repo\\DeepProject\\data\\wikilinks\\small")
-    print "done"
+    ## calculate statistics for ttrain
+    #iter = WikilinksNewIterator('../../data/wikilinks/all-split/train')
+    #stats = WikilinksStatistics(iter)
+    #stats.calcStatistics()
+    #stats.saveToFile('../../data/wikilinks/all-split/train-stats')
+    #stats.printSomeStats()
+
+    # filter sets
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+    stats = WikilinksStatistics(None, load_from_file_path='../../data/wikilinks/all-split/train-stats')
+    good = stats.getGoodMentionsToDisambiguate(f=10)
+    print "n of good mentions: ", len(good)
+    copyWithFilter("../../data/wikilinks/all-split/train", '../../data/wikilinks/small/train', good)
+    copyWithFilter("../../data/wikilinks/all-split/test", '../../data/wikilinks/small/test', good)
+    copyWithFilter("../../data/wikilinks/all-split/validation", '../../data/wikilinks/small/evaluation', good)

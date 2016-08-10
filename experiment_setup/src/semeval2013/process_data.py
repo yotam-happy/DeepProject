@@ -122,8 +122,8 @@ def convWord(w):
 
 
 if __name__ == "__main__":
-    key_path = "C:\\repo\\DeepProject\\data\\semeval-2013-task12-test-data\\keys\\gold\\wikipedia\\wikipedia.en.key"
-    tree = ET.parse('C:\\repo\\DeepProject\\data\\semeval-2013-task12-test-data\\data\\multilingual-all-words.en.xml')
+    key_path = "../data/semeval-2013-task12-test-data/keys/gold/wikipedia/wikipedia.en.key"
+    tree = ET.parse('../data/semeval-2013-task12-test-data/data/multilingual-all-words.en.xml')
     root = tree.getroot()
 
     # get all words to disambiguate
@@ -133,6 +133,7 @@ if __name__ == "__main__":
     for (word, wordType, wordId) in semevalIterateAll(root):
         if (wordType == 'instance' and wordId in key):
             words.add(convWord(word))
+    print words
 
     # get all candidates from babelnet
     global query_count
@@ -175,17 +176,17 @@ if __name__ == "__main__":
     print "count ", count, " no word: ", no_word, " no_sense: ", no_sense, " not in db: ", not_in_db
 
     ## SOMETHING ELSE: try to predict
-    path = "C:\\repo\\DeepProject"
+    path = "/home/yotam/pythonWorkspace/deepProject"
     print "Loading iterators+stats..."
     if(not os.path.isdir(path)):
         path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
-    train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
+    train_stats = WikilinksStatistics(None, load_from_file_path=path + "/data/wikipedia-intralinks.stats")
     print "Done!"
 
     print 'Loading embeddings...'
-    w2v = Word2vecLoader(wordsFilePath=path+"\\data\\word2vec\\dim300vecs",
-                         conceptsFilePath=path+"\\data\\word2vec\\dim300context_vecs")
+    w2v = Word2vecLoader(wordsFilePath=path + "/data/word2vec/dim300vecs",
+                         conceptsFilePath=path + "/data/word2vec/dim300context_vecs")
     wD = train_stats.mentionLinks
     cD = train_stats.conceptCounts
     w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
@@ -195,12 +196,12 @@ if __name__ == "__main__":
 
     print "loading model"
     pairwise_model = RNNPairwiseModel(w2v)
-    pairwise_model.loadModel(path + "\\models\\rnn.relu6")
+    pairwise_model.loadModel(path + "/models/wiki-intralinks.0.out")
     knockout_model = KnockoutModel(pairwise_model,train_stats)
     print 'Done!'
 
-    wikiDB = WikipediaDbWrapper(user='root', password='rockon123', database='wikiprep-esa-en20151002')
-    tree = ET.parse('C:\\repo\\DeepProject\\data\\semeval-2013-task12-test-data\\data\\multilingual-all-words.en.xml')
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+    tree = ET.parse(path + '/data/semeval-2013-task12-test-data/data/multilingual-all-words.en.xml')
     root = tree.getroot()
     for wlink in toVec(root):
         a = knockout_model.predict(wlink)

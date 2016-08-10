@@ -4,7 +4,7 @@ class Evaluation:
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model, stats = None, wordFilter = None):
+    def __init__(self, test_iter, model, w2v=None, stats = None, wordExcludeFilter = None, wordIncludeFilter = None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -12,7 +12,9 @@ class Evaluation:
         self._iter = test_iter
         self._model = model
         self._stats = stats
-        self._wordFilter = wordFilter
+        self._wordExcludeFilter = wordExcludeFilter
+        self._wordIncludeFilter = wordIncludeFilter
+        self._w2v = w2v
 
         self.n_samples = 0
         self.correct = 0
@@ -21,7 +23,7 @@ class Evaluation:
 
     def isInStats(self, wlink):
         l = self._stats.getCandidatesForMention(wlink["word"])
-        l = {int(x):y for x,y in l.iteritems()}
+        l = {int(x):y for x,y in l.iteritems() if self._w2v is None or int(x) in self._w2v.conceptDict}
         return wlink["wikiId"] in l
 
 
@@ -43,7 +45,9 @@ class Evaluation:
         self.possible = 0
 
         for wikilink in self._iter.wikilinks():
-            if self._wordFilter is not None and wikilink["word"] not in self._wordFilter:
+            if self._wordIncludeFilter is not None and wikilink["word"] not in self._wordIncludeFilter:
+                continue
+            if self._wordExcludeFilter is not None and wikilink["word"] in self._wordExcludeFilter:
                 continue
             if 'wikiId' not in wikilink:
                 continue
@@ -71,6 +75,6 @@ class Evaluation:
         """
         Pretty print results of evaluation
         """
-        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction, " possible: ", self.possible
+        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction, " possible: ", float(self.possible) / self.n_samples
         print "%correct from total: ", float(self.correct) / self.n_samples
         print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)

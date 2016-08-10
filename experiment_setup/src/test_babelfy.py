@@ -1,6 +1,6 @@
 """
 Mannually execute each class dependency to work with the project without compiling
-Best and easiest way to debug code in python. You can actully view the whole workspace
+Best and easiest way to debug code in python. You can actully view to whole workspace
 
 ATTENTION: Change the path variable in the end of the file
 ATTENTION: If you de modificaitons in the classes please keep the copyies here updated! (There must be a better way but I am lazy)
@@ -31,20 +31,20 @@ from DbWrapper import *
 
 ##
 
-path = "C:\\repo\\DeepProject"
-password = 'rockon123'
-print "Loading iterators+stats..."
+path = ".."
+print "Loading iterators+db cache..."
 if(not os.path.isdir(path)):
     path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
-    password = 'ncTech#1'
 
 
-train_stats = WikilinksStatistics(None, load_from_file_path=path+"\\data\\wikilinks\\train_stats")
-iter_eval = WikilinksNewIterator(path+"\\data\\wikilinks\\small\\evaluation",
-                                 mention_filter=train_stats.getGoodMentionsToDisambiguate(f=10))
-print "Done!"
+wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+wikiDB.cacheArticleTable()
+iter_eval = WikilinksNewIterator(path+"/data/wikilinks/small/evaluation")
 
-wikiDB = WikipediaDbWrapper(user='root', password=password, database='wikiprep-esa-en20151002')
-babelfy_model = BabelfyTester(wikiDB)
+babelfy_model = BabelfyTester(wikiDB, path + "/data/wikilinks/babelfy")
 evaluation = Evaluation(iter_eval,babelfy_model)
-evaluation.evaluate()
+try:
+    evaluation.evaluate()
+except:
+    print "nothing to do"
+babelfy_model.finalizeWriter()

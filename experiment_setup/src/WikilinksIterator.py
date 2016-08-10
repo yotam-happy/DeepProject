@@ -76,11 +76,13 @@ class WikilinksOldIterator:
 class WikilinksNewIterator:
 
     # the new iterator does not support using a zip file.
-    def __init__(self, path, limit_files = 0, mention_filter=None):
+    def __init__(self, path, limit_files = 0, mention_filter=None, resolveIds=False, db=None):
         self._path = path
         self._limit_files = limit_files
         self._mention_filter = mention_filter
         self._stopwords = stopwords.words('english')
+        self._resolveIds = resolveIds
+        self._db = db
 
     def get_wlink(self):
         # outputs the next wlink piece
@@ -103,30 +105,40 @@ class WikilinksNewIterator:
                     wlink = json.loads(line)
 
                     # filter
-                    if (not 'word' in wlink) or (not 'wikiId' in wlink):
+                    if not 'word' in wlink:
                         continue
-                    if not ('right_context' in wlink or 'left_context' in wlink):
+                    if 'right_context' not in wlink and 'left_context' not in wlink:
                         continue
                     if self._mention_filter is not None and wlink['word'] not in self._mention_filter:
                         continue
 
-                    wlink['wikiId'] = int(wlink['wikiId'])
+                    if not self._resolveIds:
+                        wlink['wikiId'] = int(wlink['wikiId'])
+                    else:
+                        url = wlink['wikiurl']
+                        if url.rfind('/') > -1:
+                            url = url[url.rfind('/')+1:]
+                        if url.find('#') > -1:
+                            url = url[:url.find('#')]
+                        wikiId = self._db.resolvePage(url)
+                        if wikiId is None:
+                            continue
+                        else:
+                            wlink['wikiId'] = wikiId
+
+
                     # preprocess context (if not already processed
                     if 'right_context' in wlink and not isinstance(wlink['right_context'], list):
+                        wlink['right_context_text'] = wlink['right_context']
                         r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
                         wlink['right_context'] = nltk.word_tokenize(r_context)
-                        wlink['right_context'] = [w for w in wlink['right_context'] if w not in self._stopwords]
-                    # this should be removed once we process the dataset again
-                    elif 'right_context' in wlink and isinstance(wlink['right_context'], list):
-                        wlink['right_context'] = [w for w in wlink['right_context'] if w not in self._stopwords]
+                        wlink['right_context'] = [w for w in wlink['right_context']]
 
                     if 'left_context' in wlink and not isinstance(wlink['left_context'], list):
+                        wlink['left_context_text'] = wlink['left_context']
                         l_context = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore').lower()
                         wlink['left_context'] = nltk.word_tokenize(l_context)
-                        wlink['left_context'] = [w for w in wlink['left_context'] if w not in self._stopwords]
-                    # this should be removed once we process the dataset again
-                    elif 'left_context' in wlink and isinstance(wlink['left_context'], list):
-                        wlink['left_context'] = [w for w in wlink['left_context'] if w not in self._stopwords]
+                        wlink['left_context'] = [w for w in wlink['left_context']]
 
                     # return
                     yield wlink
@@ -134,8 +146,3 @@ class WikilinksNewIterator:
             f.close()
             if self._limit_files > 0 and c >= self._limit_files:
                 break
-
-if __name__ == "__main__":
-    iter = WikilinksNewIterator("C:\\repo\\DeepProject\\data\\wikilinks\\small\\train")
-    for k in iter.wikilinks():
-        break

@@ -3,6 +3,7 @@ from keras.models import Model
 from keras.models import model_from_json
 from keras.layers import *
 import matplotlib.pyplot as plt
+from nltk.corpus import stopwords
 
 class RNNFineTuneEmbdPairwiseModel:
     """
@@ -10,7 +11,8 @@ class RNNFineTuneEmbdPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None, numof_neurons = [300, 50], early_stopping = None):
+    def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True):
+        self._stopwords = stopwords.words('english') if stripStropWords else None
         self._w2v = w2v
         self._batch_left_X = []
         self._batch_right_X = []
@@ -21,8 +23,6 @@ class RNNFineTuneEmbdPairwiseModel:
         self._train_loss = []
         self._batch_size = 512
         self.model = None
-        self.early_stopping = early_stopping
-        self.n_neurons = numof_neurons
         self.compileModel(dropout=dropout, noise=noise)
 
     def compileModel(self, dropout = 0.0, noise = None):
@@ -60,10 +60,10 @@ class RNNFineTuneEmbdPairwiseModel:
         right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(right_context_embed)
 
         x = merge([left_rnn, right_rnn,candidate1_flat,candidate2_flat], mode='concat')
-        x = Dense(self.n_neurons[0], activation='relu')(x)
+        x = Dense(300, activation='relu')(x)
         if dropout > 0.0:
             x = Dropout(dropout)(x)
-        x = Dense(self.n_neurons[1], activation='relu')(x)
+        x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
         model = Model(input=[left_context_input, right_context_input,candidate1_input,candidate2_input], output=[out])
@@ -102,7 +102,7 @@ class RNNFineTuneEmbdPairwiseModel:
     def wordListToIndices(self, l, output_len, reverse):
         o = []
         for w in l:
-            if w in self._w2v.wordDict:
+            if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
                 o.append(self._w2v.wordDict[w])
         if reverse:
             o = o[::-1]

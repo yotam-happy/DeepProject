@@ -24,8 +24,6 @@ class BaselinePairwiseModel:
             return None
 
         if candidate1 not in l and candidate2 not in l:
-            print l
-            print candidate1, " ", candidate2
             return None
         elif candidate1 not in l:
             return candidate2

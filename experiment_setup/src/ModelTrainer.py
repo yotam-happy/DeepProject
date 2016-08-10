@@ -12,7 +12,7 @@ class ModelTrainer:
     and feeds them to a model's train method
     """
 
-    def __init__(self, iter, stats, model, epochs = 10, wordFilter = None,  senseFilter = None):
+    def __init__(self, iter, stats, model, epochs = 10, wordInclude = None, wordExclude=None, senseFilter = None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -22,7 +22,8 @@ class ModelTrainer:
         self._model = model
         self._stats = stats
         self._epochs = epochs
-        self.wordFilter = wordFilter
+        self.wordInclude = wordInclude
+        self.wordExclude = wordExclude
         self.senseFilter = senseFilter
         if senseFilter is not None:
             self.senseFilterInt = {int(x) for x in senseFilter}
@@ -37,7 +38,9 @@ class ModelTrainer:
             print "training epoch ", epoch
 
             for wikilink in self._iter.wikilinks():
-                if self.wordFilter is not None and wikilink["word"] in self.wordFilter:
+                if self.wordExclude is not None and wikilink["word"] in self.wordExclude:
+                    continue
+                if self.wordInclude is not None and wikilink["word"] not in self.wordInclude:
                     continue
 
                 actual = wikilink['wikiId']
@@ -53,8 +56,8 @@ class ModelTrainer:
 
                 # get probability vector. Added some smoothing
                 # TODO: uniform might be better
-                ids = [ int(candidate[0]) for candidate in candidates.items() if int(candidate[0]) != actual]
-                probs = [ candidate[1] for candidate in candidates.items() if int(candidate[0]) != actual]
+                ids = [int(candidate[0]) for candidate in candidates.items() if int(candidate[0]) != actual]
+                probs = [candidate[1] for candidate in candidates.items() if int(candidate[0]) != actual]
                 t = float(sum(probs))
                 smooth = t / len(probs)
                 probs = [(float(p) + smooth) / (t*2) for p in probs]
