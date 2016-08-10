@@ -58,3 +58,8 @@ MainWindow.show()
 sys.exit(app.exec_())
 ##
 w2v_stats_dic = {'w2v': None, 'stats': None, 'iter':iter_eval}
+
+##
+pairwise_model = RNNPairwiseModel(w2v)
+model_file = pairwise_model.loadModel("C:\\Users\\Noam\\Documents\\GitHub\\DeepProject\\models\\rnn_gru.1")
+model = KnockoutModel(pairwise_model=model_file, stats=train_stats)

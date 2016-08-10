@@ -34,12 +34,12 @@ class Ui_MainWindow(object):
     def __init__(self, w2v_stats_dic = None):
         self.model = None
         self.db = None
-        self.itr = None
+        self.iter = None
         self.path = "C:\\repo\\DeepProject"
         self.password = 'rockon123'
         self.w2v_stats_dic = w2v_stats_dic
         if w2v_stats_dic is not None:
-            self.itr = w2v_stats_dic['iter'].get_wlink()
+            self.iter = w2v_stats_dic['iter'].get_wlink()
         if(not os.path.isdir(self.path)):
             self.path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
             self.password = 'ncTech#1'
@@ -149,11 +149,11 @@ class Ui_MainWindow(object):
         # loading the model
         if self.w2v_stats_dic is None:
             self.w2v_stats_dic = self.loadW2VandStats()
-            self.itr =  self.w2v_stats_dic['iter'].get_wlink()
+            self.iter =  self.w2v_stats_dic['iter'].get_wlink()
 
-        rnn = RNNModel.RNNPairwiseModel(self.w2v_stats_dic['w2v'])
-        model_file = rnn.loadModel((fname.__str__()).split('.model')[0])
-        self.model = KnockoutModel(model_file, self.w2v_stats_dic['stats'])
+        pairwise_model = RNNModel.RNNPairwiseModel(self.w2v_stats_dic['w2v'])
+        model_file = pairwise_model.loadModel((fname.__str__()).split('.model')[0])
+        self.model = KnockoutModel(pairwise_model=model_file, stats=self.w2v_stats_dic['stats'])
         self.log_TXT.setText(str(fname)+' model was loaded....')
         self.db = WikipediaDbWrapper(user='root', password=self.password, database='wikiprep-esa-en20151002')
 
