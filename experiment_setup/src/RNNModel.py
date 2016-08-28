@@ -11,7 +11,7 @@ class RNNPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, stats=None, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True, addPriorFeature=False, db=None):
+    def __init__(self, w2v, stats=None, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True, addPriorFeature=False):
         self._stopwords = stopwords.words('english') if stripStropWords else None
         self._w2v = w2v
         self._batch_left_X = []
@@ -22,9 +22,8 @@ class RNNPairwiseModel:
         self._train_loss = []
         self._stats = stats
         self._addPriorFeature = addPriorFeature
-        self._db = db
-        if addPriorFeature and (db is None or stats is None):
-            raise Exception("If addPriorFeature is True then db and stats objects must be supplied")
+        if addPriorFeature and stats is None:
+            raise Exception("If addPriorFeature is True then stat object must be supplied")
 
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
@@ -58,10 +57,9 @@ class RNNPairwiseModel:
         self.model = model
 
     def calcPrior(self, word, sense):
-        s = {int(x): self._db.getInlinks(int(x)) for x,y in self._stats.getCandidatesForMention(word).iteritems() if self._db.getInlinks(int(x)) is not None}
-        tot =sum(s.itervalues())
-        f = float(self._db.getInlinks(sense)) / tot if self._db.getInlinks(sense) is not None else 0
-        return f
+        s = {int(x): y for x,y in self._stats.getCandidatesForMention(word).iteritems()}
+        tot = sum(s.itervalues())
+        return float(s[sense]) / tot if sense in s else 0
 
     def _2vec(self, wikilink, candidate1, candidate2):
         """

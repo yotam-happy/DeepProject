@@ -92,8 +92,6 @@ class RNNFineTuneEmbdPairwiseModel:
         candidate1_id = np.array([self._w2v.conceptDict[candidate1]])
         candidate2_id = np.array([self._w2v.conceptDict[candidate2]])
 
-        lc = wikilink['left_context'] if 'left_context' in wikilink else []
-        rc = wikilink['right_context'] if 'right_context' in wikilink else []
         left_context = self.wordListToIndices(wikilink['left_context'], self._context_window_sz, reverse=False)
         right_context = self.wordListToIndices(wikilink['right_context'], self._context_window_sz, reverse=True)
 

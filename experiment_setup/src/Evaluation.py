@@ -20,9 +20,12 @@ class Evaluation:
         self.correct = 0
         self.no_prediction = 0
         self.possible = 0
+        self.didnt = dict()
 
     def isInStats(self, wlink):
-        l = self._stats.getCandidatesForMention(wlink["word"])
+        l = self._stats.getCandidatesForMention(wlink["word"],p=0)
+        if l is None:
+            return False
         l = {int(x):y for x,y in l.iteritems() if self._w2v is None or int(x) in self._w2v.conceptDict}
         return wlink["wikiId"] in l
 
@@ -64,7 +67,11 @@ class Evaluation:
                 self.correct += 1
 
             if(self.n_samples % 1000 == 0):
-                print 'sampels=', self.n_samples ,'; %correct=', float(self.correct) / (self.n_samples - self.no_prediction)
+                print 'sampels=', self.n_samples , \
+                    '; %correct=', float(self.correct) / self.n_samples, \
+                    "; %where_tried=", float(self.correct) / (self.n_samples - self.no_prediction), \
+                    "; %no_pred=", float(self.no_prediction) / self.n_samples, \
+                    "; %possible=", float(self.possible) / self.n_samples
 
         self.printEvaluation()
 
