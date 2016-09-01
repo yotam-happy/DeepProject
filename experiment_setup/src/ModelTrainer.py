@@ -17,7 +17,7 @@ class ModelTrainer:
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
         """
-        self._neg_sample = 10
+        self._neg_sample = 5
         self._iter = iter
         self._model = model
         self._stats = stats
@@ -57,13 +57,14 @@ class ModelTrainer:
                 # get probability vector. Added some smoothing
                 # TODO: uniform might be better
                 ids = [int(candidate[0]) for candidate in candidates.items() if int(candidate[0]) != actual]
-                probs = [candidate[1] for candidate in candidates.items() if int(candidate[0]) != actual]
-                t = float(sum(probs))
-                smooth = t / len(probs)
-                probs = [(float(p) + smooth) / (t*2) for p in probs]
+#                probs = [candidate[1] for candidate in candidates.items() if int(candidate[0]) != actual]
+#                t = float(sum(probs))
+#                smooth = t / len(probs)
+#                probs = [(float(p) + smooth) / (t*2) for p in probs]
 
                 for k in xrange(self._neg_sample):
-                    wrong = ids[np.random.choice(np.arange(len(probs)), p=probs)]
+                    wrong = ids[np.random.randint(len(ids))]
+#                    wrong = ids[np.random.choice(np.arange(len(probs)), p=probs)]
                     # train on both sides so we get a symmetric model
                     if random.randrange(2) == 0:
                         self._model.train(wikilink, actual, wrong, actual)

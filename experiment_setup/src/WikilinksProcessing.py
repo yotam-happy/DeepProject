@@ -72,7 +72,7 @@ class wlink_writer:
     def finalize(self):
             self._dump()
 
-def splitWikis(iter, dest_dir, json_per_file=400000, validation_frac=0.2, test_frac=0.2):
+def splitWikis(iter, dest_dir, json_per_file=400000, validation_frac=0.1, test_frac=0.1):
     train_hash, validation_hash, test_hash = _get_split(iter,
                                                         validation_frac=validation_frac,
                                                         test_frac=test_frac)

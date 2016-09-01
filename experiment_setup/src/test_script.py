@@ -87,14 +87,13 @@ if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
 # train on wikipedia intra-links corpus
-#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikipedia-intralinks.stats")
-#_iter_train = WikilinksNewIterator(_path + "/data/wikipedia-intralinks",
-#                                   mention_filter=_train_stats.getGoodMentionsToDisambiguate(f=10))
-#_iter_eval = None
+#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
+#_iter_train = WikilinksNewIterator(_path+"/data/intralinks/train-filtered")
+#_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/test-filtered")
 
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/small/train")
-_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/small/evaluation")
+_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/filtered/train")
+_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/filtered/evaluation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -114,20 +113,20 @@ Training double gru model
 
 ## TRAIN DEBUGGING CELL
 print 'Training...'
-wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-wikiDB.cacheArticleInlinksTable()
 
-#_pairwise_model = RNNFineTuneEmbdPairwiseModel(_w2v)
-_pairwise_model = RNNPairwiseModel(_w2v, _train_stats, addPriorFeature=True, db=wikiDB, dropout=0.2)
-#_pairwise_model = ModelSingleGRU(_w2v)
+#_pairwise_model = RNNFineTuneEmbdPairwiseModel(_w2v, dropout=0.1)
+_pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1, addPriorFeature=True)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 
 experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=True, filterWords=True)
 
 ## baseline
+#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
+#_iter_test = WikilinksNewIterator(_path+"/data/intralinks/test")
 #_pairwise_model = BaselinePairwiseModel(_train_stats)
 #_pairwise_model = GuessPairwiseModel()
 #knockout_model = KnockoutModel(_pairwise_model, _train_stats)
-#evaluation = Evaluation(_iter_eval, knockout_model, _w2v, stats=_train_stats)
+#evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
 #evaluation.evaluate()
+

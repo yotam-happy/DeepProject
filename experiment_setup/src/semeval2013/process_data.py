@@ -101,7 +101,7 @@ def toVec(root, key_f = None):
             word, wordType, wordId = sentence[i]
             if wordType == 'instance':
                 wikilink = {}
-                wikilink['word'] = word
+                wikilink['word'] = word.lower().replace("_", " ")
                 wikilink['token_id'] = wordId
                 if key is not None:
                     if wordId not in key:
@@ -213,3 +213,30 @@ if __name__ == "__main__":
             candidates = [wikiDB.getConceptTitle(int(c)) for c in cc.keys()]
         print "candidates: ", candidates
         print "predicted: ", 'None' if a is None else wikiDB.getConceptTitle(int(a))
+
+
+
+    _path = "/home/yotam/pythonWorkspace/deepProject"
+    _train_stats = WikilinksStatistics(None, load_from_file_path=_path + "/data/intralinks/train-stats")
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+    count = 0
+    no_word = 0
+    no_sense = 0
+    not_in_db = 0
+    for wlink in toVec(root, key_f=key_path):
+        count += 1
+        cands = _train_stats.getCandidatesForMention(wlink['word'])
+        if cands is None:
+            no_word += 1
+            print "no word: ", wlink['word']
+            continue
+        cands = {int(x):y for x,y in cands.items()}
+        actual = wikiDB.resolvePage(wlink['wikiId'])
+        if actual is None:
+            not_in_db += 1
+            print wlink['wikiId'], " is not in our DB (strange...)"
+            continue
+        if actual not in cands:
+            no_sense += 1
+            print cands
+    print "count ", count, " no word: ", no_word, " no_sense: ", no_sense, " not in db: ", not_in_db
