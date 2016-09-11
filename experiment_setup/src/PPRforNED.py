@@ -11,9 +11,7 @@ class PPRIterator:
         self._path = path
         self._limit_files = limit_files
         self._mention_filter = mention_filter
-        # self._stopwords = stopwords.words('english')
         self._resolveIds = resolveIds
-        # self._db = db
 
     def _aida_files(self):
         # iterater over the AIDA candidates files
@@ -22,7 +20,6 @@ class PPRIterator:
             for f in os.listdir(folder_path):
                 if os.path.isdir(os.path.join(folder_path, f)):
                     continue
-                print "opening ", f
                 yield open(os.path.join(folder_path, f), 'r')
 
     def getEntityChunck(self):
@@ -35,17 +32,18 @@ class PPRIterator:
         # extracts full ENTITIY and CANDIDATES structure from specified file
         l = f.readlines()
         start_chunck = 0
-        end_chunck = 0
         for k, line in enumerate(l):
-            if end_chunck > start_chunck:
-                start_chunck = end_chunck
             sline = line.split('\t')
             l[k] = sline
             if sline[0] == 'ENTITY' and k is not 0:
-                end_chunck = k
                 # print 'text: ',l[start_chunck]
                 # print start_chunck, 'and ', end_chunck
-                yield l[start_chunck:end_chunck]
+                yield l[start_chunck:k]
+                start_chunck = k
+
+        # funny... one of the files is empty
+        if len(l) > start_chunck:
+            yield l[start_chunck:]
 
     def getPharsedEntityChunck(self):
         # returns the entity chuncks for the PPRStatistiscs
@@ -56,7 +54,7 @@ class PPRIterator:
                 candidate_details = e_chunck[1][1:]
 
                 # get entity details
-                pec['mention'] = entity_details[2][11:] # getting rid of the the field name
+                pec['mention'] = entity_details[7][9:] # getting rid of the the field name
                 pec['url'] = entity_details[8][4:]
                 pec['original'] = entity_details[7][9:]
 
@@ -64,13 +62,13 @@ class PPRIterator:
                 pec['sensesDetails'] = []
                 for ii,cand in enumerate(candidate_details):
                     # the key of each link is the nomarlized Wikititle
-                    (pec['sensesDetails']).append({'normWikiTitle':cand[7][11:],'id':cand[1][3:],'inCount':cand[2][8:],'outCount':cand[3][9:],
+                    (pec['sensesDetails']).append({'normWikiTitle':cand[7][11:],'id':cand[1][3:],'inCount':int(cand[2][8:]),'outCount':int(cand[3][9:]),
                                                           'relatedSenses':cand[4][6:].split(';'),'url':cand[5][4:],'normalName':cand[7][11:]})
                 # return
                 yield pec
 
             f.close()
-            if self._limit_files > 0 and c >= self._limit_files:
+            if (not self._limit_files == 0) and c >= self._limit_files:
                 break
 
 class PPRStatistics:
@@ -79,10 +77,65 @@ class PPRStatistics:
         self.ppr_itr = _ppr_itr
         self.mentionCounts = dict()
         self.mentionLinks = dict()
+        self.mentionLinksUrl = dict()
         self.conceptCounts = dict()
-        self.conceptGraph = dict()
         if load_file is not None:
             self.loadFromFile(load_file)
+
+    def _sortedList(self, l):
+        l = [(k,v) for k,v in l.items()]
+        l.sort(key=lambda (k,v):-v)
+        return l
+
+    def getCandidatesForMention(self, mention, p=0.01, t=5):
+        """
+        Returns the most probable sense + all other candidates where p(candidate|mention)>=p
+        and with at least t appearances
+
+        :param mention:     the mention to search for
+        :return:            returns a dictionary: (candidate,count)
+        """
+        mention = mention.lower()
+        if mention not in self.mentionLinks:
+            return None
+
+        l = self._sortedList(self.mentionLinks[mention])
+        tot = sum([x[1] for x in l])
+        out = dict()
+        for x in l:
+            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[int(x[0])] = x[1]
+
+        # now calc actual priors
+        tot = sum([x for x in out.values()])
+        out = {x: float(y)/tot for x, y in out.iteritems()}
+        return out
+
+    def getCandidateUrlsForMention(self, mention, p=0.01, t=5):
+        """
+        Returns the most probable sense + all other candidates where p(candidate|mention)>=p
+        and with at least t appearances
+
+        :param mention:     the mention to search for
+        :return:            returns a dictionary: (candidate,count)
+        """
+        mention = mention.lower()
+        if mention not in self.mentionLinksUrl:
+            return None
+
+        l = self._sortedList(self.mentionLinksUrl[mention])
+        tot = sum([x[1] for x in l])
+        out = dict()
+        for x in l:
+            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[x[0]] = x[1]
+
+        # now calc actual priors
+        tot = sum([x for x in out.values()])
+        if tot == 0:
+            tot = 1
+        out = {x: float(y)/tot for x, y in out.iteritems()}
+        return out
 
     def calcStatistics(self):
         """
@@ -94,23 +147,16 @@ class PPRStatistics:
         print "getting statistics"
         for entity_chunck in self.ppr_itr.getPharsedEntityChunck():
             mention_name = entity_chunck['mention'].lower()
+            print mention_name
 
             self.mentionCounts[mention_name] = self.mentionCounts.get(mention_name, 0) + 1
             if not mention_name in self.mentionLinks:
                 self.mentionLinks[mention_name] = dict()
+                self.mentionLinksUrl[mention_name] = dict()
 
-            # adds links for the gold sense
-            gold_sense = entity_chunck['sensesDetails'][0]
-            self.mentionLinks[mention_name][gold_sense['id']] = self.mentionLinks[mention_name].get(gold_sense['id'], 0) + 1
-            self.conceptCounts[gold_sense['id']] = self.conceptCounts.get(gold_sense['id'], 0) + 1
-            self.conceptGraph[gold_sense['id']] = self.conceptGraph.get(gold_sense['id'],
-                                                                   {field: gold_sense[field] for field in ('normWikiTitle','inCount', 'outCount', 'relatedSenses', 'url') if field in gold_sense})
-            if len(entity_chunck['sensesDetails']) > 1:
-                # adds links for other senses
-                for sense in entity_chunck['sensesDetails'][1:]:
-                    self.mentionLinks[mention_name][sense['id']] = self.mentionLinks[mention_name].get(sense['id'], 0)
-                    self.conceptGraph[sense['id']] = self.conceptGraph.get(sense['id'],
-                                                                       {field: sense[field] for field in ('normWikiTitle','inCount','outCount','relatedSenses','url') if field in sense} )
+            for sense in entity_chunck['sensesDetails']:
+                self.mentionLinks[mention_name][sense['id']] = sense['inCount']
+                self.mentionLinksUrl[mention_name][sense['url']] = sense['inCount']
 
         self.prettyPrintStats()
 
@@ -119,8 +165,8 @@ class PPRStatistics:
         f = open(path, mode='w')
         f.write(json.dumps(self.mentionCounts)+'\n')
         f.write(json.dumps(self.mentionLinks)+'\n')
+        f.write(json.dumps(self.mentionLinksUrl)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
-        f.write(json.dumps(self.conceptGraph))
         f.close()
 
     def loadFromFile(self, path):
@@ -129,8 +175,8 @@ class PPRStatistics:
         l = f.readlines()
         self.mentionCounts = json.loads(l[0])
         self.mentionLinks = json.loads(l[1])
-        self.conceptCounts = json.loads(l[2])
-        self.conceptGraph = json.loads(l[3])
+        self.mentionLinksUrl = json.loads(l[2])
+        self.conceptCounts = json.loads(l[3])
         f.close()
 
     def prettyPrintStats(self, limit = 5):
@@ -138,7 +184,6 @@ class PPRStatistics:
             print 'mentionCounts: ',{k: self.mentionCounts.get(k) for k in self.mentionCounts.keys()[:limit]}
             print 'mentionLinks: ',{k: self.mentionLinks.get(k) for k in self.mentionLinks.keys()[:limit]}
             print 'conceptCounts: ', {k: self.conceptCounts.get(k) for k in self.conceptCounts.keys()[:limit]}
-            print 'conceptGraph: ', {k: self.conceptGraph.get(k) for k in self.conceptGraph.keys()[:limit]}
         except :
             print "Unexpected error:", sys.exc_info()[0]
 
@@ -151,7 +196,8 @@ if __name__ == "__main__":
     elif (not os.path.isdir(path)):
         path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
-    ppr_itr = PPRIterator(limit_files = 2, path = path + '/data/PPRforNED/AIDA_candidates')
+    ppr_itr = PPRIterator(path = path + '/data/PPRforNED/AIDA_candidates')
     ppr_stats = PPRStatistics(ppr_itr)
     ppr_stats.calcStatistics()
     ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
+    ppr_stats.prettyPrintStats()

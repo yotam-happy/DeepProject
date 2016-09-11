@@ -2,6 +2,8 @@ from WikilinksIterator import WikilinksNewIterator
 import json
 import random
 import sys
+import numpy as np
+import math
 
 class WikilinksStatistics:
     """
@@ -34,6 +36,17 @@ class WikilinksStatistics:
         self.contextDictionary = dict()
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
+
+        # Is the log justified??? I don't know
+        self.conceptCountsMean = np.mean([math.log(x) for x in self.conceptCounts.values()])
+        self.conceptCountsVariance = np.var([math.log(x) for x in self.conceptCounts.values()])
+
+    def getConceptPrior(self, concept):
+        # Is the log justified??? I don't know
+        if concept in self.conceptCounts:
+            return (math.log(self.conceptCounts[concept]) - self.conceptCountsMean) / self.conceptCountsVariance
+        else:
+            return 0
 
     def getRandomWordSubset(self, p, baseSubset=None):
         '''
@@ -99,13 +112,17 @@ class WikilinksStatistics:
         :return:            returns a dictionary: (candidate,count)
         """
         if mention.lower() not in self.mentionLinks:
-            return None
+            return {} # TODO: Fix to {}
         l = self._sortedList(self.mentionLinks[mention.lower()])
-        tot =sum([x[1] for x in l])
+        tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
             if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[x[0]] = x[1]
+                out[int(x[0])] = x[1]
+
+        # now calc actual priors
+        tot = sum([x for x in out.values()])
+        out = {x: float(y)/tot for x, y in out.iteritems()}
         return out
 
     def getGoodMentionsToDisambiguate(self):

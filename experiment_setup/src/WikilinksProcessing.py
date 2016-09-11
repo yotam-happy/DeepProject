@@ -185,10 +185,19 @@ if __name__ == "__main__":
     #stats.printSomeStats()
 
     # filter sets
-    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-    stats = WikilinksStatistics(None, load_from_file_path='../../data/wikilinks/all-split/train-stats')
-    good = stats.getGoodMentionsToDisambiguate(f=10)
-    print "n of good mentions: ", len(good)
-    copyWithFilter("../../data/wikilinks/all-split/train", '../../data/wikilinks/small/train', good)
-    copyWithFilter("../../data/wikilinks/all-split/test", '../../data/wikilinks/small/test', good)
-    copyWithFilter("../../data/wikilinks/all-split/validation", '../../data/wikilinks/small/evaluation', good)
+#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+#    stats = WikilinksStatistics(None, load_from_file_path='../../data/wikilinks/all-split/train-stats')
+#    good = stats.getGoodMentionsToDisambiguate(f=10)
+#    print "n of good mentions: ", len(good)
+#    copyWithFilter("../../data/wikilinks/all-split/train", '../../data/wikilinks/small/train', good)
+#    copyWithFilter("../../data/wikilinks/all-split/test", '../../data/wikilinks/small/test', good)
+#    copyWithFilter("../../data/wikilinks/all-split/validation", '../../data/wikilinks/small/evaluation', good)
+
+    #fix
+    iter = WikilinksNewIterator(path="../data/wikilinks/filtered/train")
+    writer = wlink_writer('../data/wikilinks/fixed')
+    for i, wlink in enumerate(iter.wikilinks()):
+       writer.save(wlink)
+       if i % 10000 == 0:
+           print "resolve ids: ", i
+    writer.finalize()

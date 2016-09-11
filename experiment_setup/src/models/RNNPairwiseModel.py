@@ -11,19 +11,22 @@ class RNNPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, stats=None, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True, addPriorFeature=False):
+    def __init__(self, w2v, stats, context_window_sz = 10, dropout = 0.0,
+                 noise=None, stripStropWords=True, stochasticContextTrimming=False):
         self._stopwords = stopwords.words('english') if stripStropWords else None
         self._w2v = w2v
+        self._stats = stats
         self._batch_left_X = []
         self._batch_right_X = []
-        self._batch_candidates_X = []
+        self._batch_mention_X = []
+        self._batch_candidate1_X = []
+        self._batch_candidate2_X = []
+        self._batch_extra_features_X = []
         self._batchY = []
         self._context_window_sz = context_window_sz
         self._train_loss = []
-        self._stats = stats
-        self._addPriorFeature = addPriorFeature
-        if addPriorFeature and stats is None:
-            raise Exception("If addPriorFeature is True then stat object must be supplied")
+        self._extraFeatures = 4
+        self._stochasticContextTrimming = stochasticContextTrimming
 
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
@@ -31,35 +34,51 @@ class RNNPairwiseModel:
 
         left_context_input = Input(shape=(self._context_window_sz,self._w2v.wordEmbeddingsSz), name='left_context_input')
         right_context_input = Input(shape=(self._context_window_sz,self._w2v.wordEmbeddingsSz), name='right_context_input')
-        candidates_input = Input(shape=((self._w2v.conceptEmbeddingsSz + 1) * 2,), name='candidates_input')
+        mention_input = Input(shape=(self._w2v.conceptEmbeddingsSz,), name='mention_input')
+        candidate1_input = Input(shape=(self._w2v.conceptEmbeddingsSz,), name='candidate1_input')
+        candidate2_input = Input(shape=(self._w2v.conceptEmbeddingsSz,), name='candidate2_input')
+        extra_features_input = Input(shape=(self._extraFeatures,), name='extra_features_input')
 
         if noise is not None:
             left_context_input_n = GaussianNoise(noise)(left_context_input)
             right_context_input_n = GaussianNoise(noise)(right_context_input)
-            candidates_input_n = GaussianNoise(noise)(candidates_input)
+            mention_input_n = GaussianNoise(noise)(mention_input)
+            candidate1_input_n = GaussianNoise(noise)(candidate1_input)
+            candidate2_input_n = GaussianNoise(noise)(candidate2_input)
+            extra_features_input_n = GaussianNoise(noise)(extra_features_input)
         else:
             left_context_input_n = left_context_input
             right_context_input_n = right_context_input
-            candidates_input_n = candidates_input
+            mention_input_n = mention_input
+            candidate1_input_n = candidate1_input
+            candidate2_input_n = candidate2_input
+            extra_features_input_n = extra_features_input
 
         left_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu', dropout_U=dropout, dropout_W=dropout)(left_context_input_n)
         right_lstm = GRU(self._w2v.wordEmbeddingsSz, activation='relu', dropout_U=dropout, dropout_W=dropout)(right_context_input_n)
 
-        x = merge([left_lstm, right_lstm,candidates_input_n], mode='concat')
+        x = merge([left_lstm, right_lstm, mention_input_n, candidate1_input_n, candidate2_input_n, extra_features_input_n], mode='concat')
         x = Dense(300, activation='relu')(x)
         if dropout > 0.0:
             x = Dropout(dropout)(x)
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
-        model = Model(input=[left_context_input, right_context_input,candidates_input], output=[out])
+        model = Model(input=[left_context_input, right_context_input, mention_input, candidate1_input_n, candidate2_input_n, extra_features_input_n], output=[out])
         model.compile(optimizer='adagrad', loss='binary_crossentropy')
         self.model = model
 
-    def calcPrior(self, word, sense):
-        s = {int(x): y for x,y in self._stats.getCandidatesForMention(word).iteritems()}
-        tot = sum(s.itervalues())
-        return float(s[sense]) / tot if sense in s else 0
+    def _context2vec(self, ctx, reverse=False):
+        context_ar = self.wordListToVectors(ctx) if ctx is not None else []
+        if reverse:
+            context_ar = context_ar[::-1]
+        if len(context_ar) >= self._context_window_sz:
+            context = np.array(context_ar[-self._context_window_sz:,:])
+        else:
+            context = np.zeros((self._context_window_sz,self._w2v.wordEmbeddingsSz))
+            if len(context_ar) != 0:
+                context[-len(context_ar):,] = np.array(context_ar)
+        return context
 
     def _2vec(self, wikilink, candidate1, candidate2):
         """
@@ -80,36 +99,16 @@ class RNNPairwiseModel:
             return candidate1
 
         candidate1_vec = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1]]
-        candidate1_prior = self.calcPrior(wikilink['word'], candidate1) if self._addPriorFeature else 0
         candidate2_vec = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2]]
-        candidate2_prior = self.calcPrior(wikilink['word'], candidate2) if self._addPriorFeature else 0
+        extraFeatures_vec = np.array(self.getExtraFeatures(wikilink, candidate1, candidate2))
 
-        candidates = np.zeros(((self._w2v.conceptEmbeddingsSz + 1) * 2))
-        candidates[0:self._w2v.conceptEmbeddingsSz] = candidate1_vec
-        candidates[self._w2v.conceptEmbeddingsSz:self._w2v.conceptEmbeddingsSz * 2] = candidate2_vec
-        candidates[self._w2v.conceptEmbeddingsSz * 2:self._w2v.conceptEmbeddingsSz * 2] = candidate1_prior
-        candidates[self._w2v.conceptEmbeddingsSz * 2 + 1:self._w2v.conceptEmbeddingsSz * 2 + 1] = candidate2_prior
+        left_context = self._context2vec(wikilink['left_context'] if 'left_context' in wikilink else [], False)
+        right_context = self._context2vec(wikilink['right_context'] if 'right_context' in wikilink else [], True)
 
-        left_context_ar = self.wordListToVectors(wikilink['left_context']) if 'left_context' in wikilink else []
-        if (len(left_context_ar) >= self._context_window_sz):
-            left_context = np.array(left_context_ar[-self._context_window_sz:,:])
-        else:
-            left_context = np.zeros((self._context_window_sz,self._w2v.wordEmbeddingsSz))
-            if len(left_context_ar) != 0:
-                left_context[-len(left_context_ar):,] = np.array(left_context_ar)
+        mention_ar = self.wordListToVectors(wikilink['mention_as_list']) if 'mention_as_list' in wikilink else []
+        mention_vec = np.mean(mention_ar, axis=0) if mention_ar.shape[0] > 0 else np.zeros(self._w2v.wordEmbeddingsSz)
 
-        if 'right_context' in wikilink:
-            right_context_ar = self.wordListToVectors(wikilink['right_context'])[::-1]
-        else:
-            right_context_ar = []
-        if (len(right_context_ar) >= self._context_window_sz):
-            right_context = np.array(right_context_ar[-self._context_window_sz:,:])
-        else:
-            right_context = np.zeros((self._context_window_sz,self._w2v.wordEmbeddingsSz))
-            if len(right_context_ar) != 0:
-                right_context[-len(right_context_ar):,] = np.array(right_context_ar)
-
-        return (left_context, right_context,candidates)
+        return left_context, right_context, mention_vec, candidate1_vec, candidate2_vec, extraFeatures_vec
 
     def wordListToVectors(self, l):
         o = []
@@ -130,31 +129,42 @@ class RNNPairwiseModel:
         if not isinstance(vecs, tuple):
             return # nothing to train on
 
-        (left_X, right_X, candidates_X) = vecs
+        (left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X) = vecs
         Y = np.array([1,0] if candidate1 == correct else [0,1])
         # Check for nan
-        if np.isnan(np.sum(left_X)) or np.isnan(np.sum(right_X)) or np.isnan(np.sum(candidates_X)):
+        if np.isnan(np.sum(left_X)) or np.isnan(np.sum(right_X)) \
+                or np.isnan(np.sum(candidate1_X)) or np.isnan(np.sum(candidate2_X)) \
+                or np.isnan(np.sum(extra_features_X)) or np.isnan(np.sum(mention_X)):
             print "Input has NaN, ignoring..."
             return
-        self._trainXY(left_X, right_X, candidates_X,Y)
+        self._trainXY(left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X, Y)
 
-    def _trainXY(self,left_X, right_X, candidates_X,Y):
+    def _trainXY(self, left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X, Y):
         self._batch_left_X.append(left_X)
         self._batch_right_X.append(right_X)
-        self._batch_candidates_X.append(candidates_X)
+        self._batch_mention_X.append(mention_X)
+        self._batch_candidate1_X.append(candidate1_X)
+        self._batch_candidate2_X.append(candidate2_X)
+        self._batch_extra_features_X.append(extra_features_X)
         self._batchY.append(Y)
 
         if len(self._batchY) >= self._batch_size:
             # pushes numeric data into batch vector
             batch_left_X = np.array(self._batch_left_X)
             batch_right_X = np.array(self._batch_right_X)
-            batch_candidates_X = np.array(self._batch_candidates_X)
+            batch_mention_X = np.array(self._batch_mention_X)
+            batch_candidate1_X = np.array(self._batch_candidate1_X)
+            batch_candidate2_X = np.array(self._batch_candidate2_X)
+            batch_extra_features_X = np.array(self._batch_extra_features_X)
             batchY = np.array(self._batchY)
 
             # training on batch is specifically good for cases were data doesn't fit into memory
             loss = self.model.train_on_batch({'left_context_input':batch_left_X,
                                               'right_context_input':batch_right_X,
-                                              'candidates_input':batch_candidates_X},
+                                              'mention_input':batch_mention_X,
+                                              'candidate1_input':batch_candidate1_X,
+                                              'candidate2_input': batch_candidate2_X,
+                                              'extra_features_input': batch_extra_features_X},
                                              batchY)
             self._train_loss.append(loss)
             print 'Done batch. Size of batch - ', batchY.shape, '; loss: ', loss
@@ -162,7 +172,10 @@ class RNNPairwiseModel:
 
             self._batch_left_X = []
             self._batch_right_X = []
-            self._batch_candidates_X = []
+            self._batch_mention_X = []
+            self._batch_candidate1_X = []
+            self._batch_candidate2_X = []
+            self._batch_extra_features_X = []
             self._batchY = []
 
     def plotTrainLoss(self,pairwise_model,st=0):
@@ -188,16 +201,29 @@ class RNNPairwiseModel:
     def finilizeTraining(self):
         return
 
+    def getExtraFeatures(self, wlink, candidate1, candidate2):
+        candidates = self._stats.getCandidatesForMention(wlink["word"])
+        candidate1_prior = self._stats.getConceptPrior(candidate1)
+        candidate2_prior = self._stats.getConceptPrior(candidate2)
+        candidate1_conditional_prior = candidates[candidate1] if candidate1 in candidates else 0
+        candidate2_conditional_prior = candidates[candidate2] if candidate2 in candidates else 0
+        return [candidate1_prior, candidate2_prior, candidate1_conditional_prior, candidate2_conditional_prior]
+
     def predict(self, wikilink, candidate1, candidate2):
         vecs = self._2vec(wikilink, candidate1, candidate2)
         if not isinstance(vecs, tuple):
             return vecs
-        (left_X, right_X, candidates_X) = vecs
+        (left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X) = vecs
         left_X = left_X.reshape(1,left_X.shape[0],left_X.shape[1])
         right_X = right_X.reshape(1,right_X.shape[0],right_X.shape[1])
-        candidates_X = candidates_X.reshape(1,candidates_X.shape[0])
-        Y = self.model.predict({'left_context_input':left_X,
-                                'right_context_input':right_X,
-                                'candidates_input':candidates_X},
+        candidate1_X = candidate1_X.reshape(1,candidate1_X.shape[0])
+        candidate2_X = candidate2_X.reshape(1,candidate2_X.shape[0])
+        extra_features_X = extra_features_X.reshape(1,extra_features_X.shape[0])
+        Y = self.model.predict({'left_context_input': left_X,
+                                'right_context_input': right_X,
+                                'mention_input': mention_X,
+                                'candidate1_input': candidate1_X,
+                                'candidate2_input': candidate2_X,
+                                'extra_features_input': extra_features_X},
                                batch_size=1)
         return candidate1 if Y[0][0] > Y[0][1] else candidate2

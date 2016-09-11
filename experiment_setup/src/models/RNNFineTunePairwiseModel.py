@@ -5,10 +5,16 @@ from keras.layers import *
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 
-class RNNFineTuneEmbdPairwiseModel:
+class RNNFineTunePairwiseModel:
     """
     This model is an enhancement of the SimpleNNN model that uses an 2 LSTMs
     to model the lelf context and the right context
+
+
+    !!! OUT OF DATE - Need to fit to new RNNPairwiseModel !!!
+
+
+
     """
 
     def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True):

@@ -12,20 +12,12 @@ I also recommend on Pycharm cell mode plugin for easier execution of code fragme
 """
 
 ## The cell seperator
-import os
 
-from ModelSingleGRU import ModelSingleGRU
-from VanilllaNNPairwiseModel import *
-from RNNModel import *
-from RNNModelFineTuneEmbd import *
-from KnockoutModel import *
-from WikilinksIterator import *
-from WikilinksStatistics import *
-from Word2vecLoader import *
 from Evaluation import *
+from KnockoutModel import *
 from ModelTrainer import *
-import pickle
-from DbWrapper import *
+from models.RNNPairwiseModel import *
+
 
 ##
 
@@ -62,7 +54,7 @@ def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, i
     senseFilter = train_stats.getSensesFor(wordFilter) if filterSenses else None
 
     knockout_model = KnockoutModel(pairwise_model, train_stats)
-    trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1, wordInclude=wordsForBroblem, wordExclude=wordFilter, senseFilter=senseFilter)
+    trainer = PairwiseModelTrainer(iter_train, train_stats, pairwise_model, epochs=10, wordInclude=wordsForBroblem, wordExclude=wordFilter, senseFilter=senseFilter)
     for train_session in xrange(20):
         # train
         print "Training... ", train_session
@@ -70,10 +62,9 @@ def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, i
 
         pairwise_model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
 
-        if doEvaluation:
-            eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats)
-            if filterWords or filterSenses:
-                eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats)
+        eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats)
+        if filterWords or filterSenses:
+            eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats)
 
 
     ## Plot train loss to file
@@ -92,8 +83,8 @@ if(not os.path.isdir(_path)):
 #_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/test-filtered")
 
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/filtered/train")
-_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/filtered/evaluation")
+_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/fixed/train")
+_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -115,7 +106,7 @@ Training double gru model
 print 'Training...'
 
 #_pairwise_model = RNNFineTuneEmbdPairwiseModel(_w2v, dropout=0.1)
-_pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1, addPriorFeature=True)
+_pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 

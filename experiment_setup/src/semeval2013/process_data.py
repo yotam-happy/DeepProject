@@ -1,12 +1,13 @@
-from DbWrapper import *
 import urllib2
-from Word2vecLoader import *
 import xml.etree.ElementTree as ET
-from RNNModel import *
-from KnockoutModel import *
 from multiprocessing.pool import ThreadPool
+
 from nltk.stem.wordnet import WordNetLemmatizer
+
 from DbWrapper import *
+from KnockoutModel import *
+from Word2vecLoader import *
+from models.RNNPairwiseModel import *
 
 _bbl_key = 'c2f19e32-3b8b-4f84-8e18-b68ad0b2a47f'
 query_count = 1

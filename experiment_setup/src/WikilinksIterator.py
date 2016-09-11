@@ -54,6 +54,8 @@ class WikilinksOldIterator:
                 print "opening ", fname
                 yield zf.open(fname)
 
+    def addMetionToContext(self, wlink):
+        mention = wlink['word']
     def wikilinks(self):
         """
         This is the main function - it is a generator that can be used as an iterator
@@ -65,6 +67,7 @@ class WikilinksOldIterator:
             for wlink in df.wlinks:
                 if(not 'wikiId' in wlink):
                     continue
+
                 yield wlink
             df = None
             c += 1
@@ -126,6 +129,10 @@ class WikilinksNewIterator:
                         else:
                             wlink['wikiId'] = wikiId
 
+                    if 'mention_as_list' not in wlink:
+                        mention_as_list = unicodedata.normalize('NFKD', wlink['word']).encode('ascii','ignore').lower()
+                        mention_as_list = nltk.word_tokenize(mention_as_list)
+                        wlink['mention_as_list'] = mention_as_list
 
                     # preprocess context (if not already processed
                     if 'right_context' in wlink and not isinstance(wlink['right_context'], list):
@@ -133,7 +140,6 @@ class WikilinksNewIterator:
                         r_context = unicodedata.normalize('NFKD', wlink['right_context']).encode('ascii','ignore').lower()
                         wlink['right_context'] = nltk.word_tokenize(r_context)
                         wlink['right_context'] = [w for w in wlink['right_context']]
-
                     if 'left_context' in wlink and not isinstance(wlink['left_context'], list):
                         wlink['left_context_text'] = wlink['left_context']
                         l_context = unicodedata.normalize('NFKD', wlink['left_context']).encode('ascii','ignore').lower()

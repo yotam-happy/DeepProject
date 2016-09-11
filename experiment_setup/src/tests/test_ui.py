@@ -1,23 +1,12 @@
 
 # loading w2v and stats
 ## The cell seperator
-import os
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtGui
+
 import deepesa_ui
-from ModelSingleGRU import ModelSingleGRU
-from VanilllaNNPairwiseModel import *
-from RNNModel import *
-from RNNModelFineTuneEmbd import *
-from KnockoutModel import *
-from WikilinksIterator import *
-from WikilinksStatistics import *
-from Word2vecLoader import *
-from Evaluation import *
 from ModelTrainer import *
-import pickle
-import ModelRunner
-import nltk
+
 ##
 """
 here we test the VanillaNN structure

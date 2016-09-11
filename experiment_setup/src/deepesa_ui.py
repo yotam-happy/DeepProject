@@ -9,12 +9,12 @@ import os
 
 from PyQt4 import QtCore, QtGui
 
-import RNNModel
 from DbWrapper import WikipediaDbWrapper
 from KnockoutModel import KnockoutModel
 from WikilinksIterator import WikilinksNewIterator
 from WikilinksStatistics import WikilinksStatistics
 from Word2vecLoader import Word2vecLoader
+from models import RNNPairwiseModel
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -151,7 +151,7 @@ class Ui_MainWindow(object):
             self.w2v_stats_dic = self.loadW2VandStats()
             self.iter =  self.w2v_stats_dic['iter'].get_wlink()
 
-        pairwise_model = RNNModel.RNNPairwiseModel(self.w2v_stats_dic['w2v'])
+        pairwise_model = RNNPairwiseModel.RNNPairwiseModel(self.w2v_stats_dic['w2v'])
         model_file = pairwise_model.loadModel((fname.__str__()).split('.model')[0])
         self.model = KnockoutModel(pairwise_model=model_file, stats=self.w2v_stats_dic['stats'])
         self.log_TXT.setText(str(fname)+' model was loaded....')

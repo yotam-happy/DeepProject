@@ -12,22 +12,11 @@ I also recommend on Pycharm cell mode plugin for easier execution of code fragme
 """
 
 ## The cell seperator
-import os
 
-from ModelSingleGRU import ModelSingleGRU
-from VanilllaNNPairwiseModel import *
-from RNNModel import *
-from RNNModelFineTuneEmbd import *
-from KnockoutModel import *
-from WikilinksIterator import *
-from WikilinksStatistics import *
-from Word2vecLoader import *
-from Evaluation import *
-from ModelTrainer import *
-import pickle
-import nltk
 from BabelfyTester import BabelfyTester
 from DbWrapper import *
+from Evaluation import *
+from ModelTrainer import *
 
 ##
 

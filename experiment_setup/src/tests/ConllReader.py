@@ -22,14 +22,16 @@ def _CoNLLFileToDocIterator(fname, split='testb'):
 
 
 def _CoNLLDocToSentenceIterator(docLines):
-    sent = []
-    for line in docLines:
-        if not line:
-            if len(sent) > 0:
-                yield sent
-            sent = []
-        else:
-            sent.append(line)
+    sent = [line for line in docLines if line]
+    yield sent
+#    sent = []
+#    for line in docLines:
+#        if not line:
+#            if len(sent) > 0:
+#                yield sent
+#            sent = []
+#        else:
+#            sent.append(line)
 
 def _CoNLLRawToTuplesIterator(lines):
     '''
@@ -64,8 +66,8 @@ def CoNLLWikilinkIterator(fname, split='testb', includeUnresolved=False):
                     wlink['wikiId'] = token[5] # BE CAREFUL!! This might be a different mapping then ours
                     wlink['word'] = token[0]
 
-                    left_context_text = ' '.join([x[0] for x in sent[:i]])
-                    right_context_text = ' '.join([x[0] for x in sent[i+1:]])
+                    left_context_text = ' '.join([x[0] for x in sent[:i+1]])
+                    right_context_text = ' '.join([x[0] for x in sent[i:]])
                     wlink['left_context_text'] = left_context_text
                     wlink['right_context_text'] = right_context_text
                     wlink['left_context'] = left_context_text.split(' ')
@@ -73,17 +75,10 @@ def CoNLLWikilinkIterator(fname, split='testb', includeUnresolved=False):
 
                     yield wlink
 
-if __name__ == "__main__":
-    from WikilinksStatistics import *
-    stats = WikilinksStatistics(None, "../data/wikilinks/train-stats")
-
-    total = 0
-    mentions_exist = 0
-    for i, wlink in enumerate(CoNLLWikilinkIterator('../data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv')):
-        cands = stats.getCandidatesForMention(wlink['word'])
-        total += 1
-        if cands is not None:
-            mentions_exist += 1
-        else:
-            print "not found: ", wlink['word']
-    print "mentions found: ", mentions_exist, "out of ", total, "(", float(mentions_exist) / total, "%)"
+def CoNLLasDocs(fname, split='testb'):
+    for (doc,docName) in _CoNLLFileToDocIterator('../data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', 'testb'):
+        docWords = []
+        for sent in _CoNLLDocToSentenceIterator(doc):
+            docWords += [token[0] for token in _CoNLLRawToTuplesIterator(sent)]
+        print docName, ": ", docWords
+        yield docName, docWords

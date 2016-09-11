@@ -20,23 +20,17 @@ class KnockoutModel:
         self._stats = stats
         self._pairwise_model = pairwise_model
 
-    def predict2(self, l_context, word, r_context, db):
-        _stopwords = stopwords.words('english')
-
-        l_context = [w for w in nltk.word_tokenize(l_context) if w not in _stopwords]
-        r_context = [w for w in nltk.word_tokenize(r_context) if w not in _stopwords]
-        wikilink = {"word": word, "left_context": l_context, "right_context": r_context}
-        id = self.predict(wikilink)
-        print str(id), " : ", db.getPageInfoById(id)
-        return str(id), " : ", db.getPageInfoById(id)
-
-    def predict(self, wikilink):
-        candidates = self._stats.getCandidatesForMention(wikilink["word"])
-        if candidates is None:
+    def predict(self, wikilink, candidates=None):
+        if candidates is None and self._stats is None:
+            #cant do nothin'
             return None
 
+        if candidates is None:
+            candidates = self._stats.getCandidatesForMention(wikilink["word"])
+            candidates = {int(x): y for x, y in candidates.iteritems()}
+
         # do a knockout
-        l = [int(candidate) for candidate in candidates.keys()]
+        l = [candidate for candidate in candidates.keys()]
         random.shuffle(l)
 
         while len(l) > 1:

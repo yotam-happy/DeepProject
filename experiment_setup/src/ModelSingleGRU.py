@@ -1,4 +1,4 @@
-from RNNModel import *
+from models.RNNPairwiseModel import *
 
 
 class ModelSingleGRU(RNNPairwiseModel):
