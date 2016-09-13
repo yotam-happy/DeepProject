@@ -62,9 +62,10 @@ def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, i
 
         pairwise_model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
 
-        eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
-        if filterWords or filterSenses:
-            eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
+        if doEvaluation:
+            eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
+            if filterWords or filterSenses:
+                eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
 
 
     ## Plot train loss to file
@@ -110,7 +111,7 @@ _pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 
-experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=True, filterWords=True)
+experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=False, filterWords=True)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
