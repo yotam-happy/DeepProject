@@ -80,7 +80,7 @@ class WikilinksStatistics:
         self.mentionLinks = json.loads(l[1])
         self.conceptCounts = json.loads(l[2])
         self.contextDictionary = json.loads(l[3])
-#        self.seenWith = json.loads(l[4])
+        self.seenWith = json.loads(l[4])
         f.close()
 
     def calcStatistics(self):
@@ -140,7 +140,7 @@ class WikilinksStatistics:
         out = {x: float(y)/tot for x, y in out.iteritems()}
         return out
 
-    def getCandidatesSeenWith(self, mention, p=0.01, t=5):
+    def getCandidatesSeenWith(self, sense, p=0.01, t=5):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -148,9 +148,10 @@ class WikilinksStatistics:
         :param mention:     the mention to search for
         :return:            returns a dictionary: (candidate,count)
         """
-        if mention.lower() not in self.mentionLinks:
+        sense = str(sense)
+        if sense not in self.seenWith:
             return {}
-        l = self._sortedList(self.mentionLinks[mention.lower()])
+        l = self._sortedList(self.seenWith[sense])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
@@ -210,13 +211,3 @@ class WikilinksStatistics:
         print("some ambiguous terms:")
         for w in wordsSorted[-10:]:
             print w
-
-stats = WikilinksStatistics(None, load_from_file_path="../data/wikilinks/train-stats")
-print "done"
-stats.calcMoreStatistics()
-print "done2"
-stats.saveToFile("../data/wikilinks/train-stats2")
-print len(stats.seenWith)
-for x, y in stats.seenWith.items():
-    print x, ": ", y
-print len(stats.mentionLinks.values())

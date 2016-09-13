@@ -113,11 +113,11 @@ _pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1)
 experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=True, filterWords=True)
 
 ## baseline
-_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-_iter_test = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
-_pairwise_model = BaselinePairwiseModel(_train_stats)
+#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+#_iter_test = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
+#_pairwise_model = BaselinePairwiseModel(_train_stats)
 #_pairwise_model = GuessPairwiseModel()
-knockout_model = KnockoutModel(_pairwise_model, _train_stats)
-evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
-evaluation.evaluate()
+#knockout_model = KnockoutModel(_pairwise_model, _train_stats)
+#evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
+#evaluation.evaluate()
 
