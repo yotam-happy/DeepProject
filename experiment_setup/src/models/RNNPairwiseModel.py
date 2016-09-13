@@ -25,7 +25,13 @@ class RNNPairwiseModel:
         self._batchY = []
         self._context_window_sz = context_window_sz
         self._train_loss = []
-        self._extraFeatures = 4
+
+        # TODO: I don't use conditional prior as it might interfere with learning as it is too strong in training time.
+        # TODO: and can be misleading when we sample senses that were not seen in for the given mention (as their
+        # TODO: conditional prior is always 0).
+        # TODO: Need to figure out if there's another solution
+        self._extraFeatures = 2
+
         self._stochasticContextTrimming = stochasticContextTrimming
 
         # model initialization
@@ -207,7 +213,8 @@ class RNNPairwiseModel:
         candidate2_prior = self._stats.getConceptPrior(candidate2)
         candidate1_conditional_prior = candidates[candidate1] if candidate1 in candidates else 0
         candidate2_conditional_prior = candidates[candidate2] if candidate2 in candidates else 0
-        return [candidate1_prior, candidate2_prior, candidate1_conditional_prior, candidate2_conditional_prior]
+        priors = [candidate1_prior, candidate2_prior, candidate1_conditional_prior, candidate2_conditional_prior]
+        return priors[:self._extraFeatures]
 
     def predict(self, wikilink, candidate1, candidate2):
         vecs = self._2vec(wikilink, candidate1, candidate2)
