@@ -54,7 +54,7 @@ def _CoNLLRawToTuplesIterator(lines):
             else:
                 yield (t[2], True, True, t[3], t[4], t[5], t[6] if len(t) >= 7 else None)
 
-def CoNLLWikilinkIterator(fname, split='testb', includeUnresolved=False):
+def CoNLLWikilinkIterator(fname, split='testa', includeUnresolved=False):
     for (doc,docName) in _CoNLLFileToDocIterator(fname, split):
         for sent in _CoNLLDocToSentenceIterator(doc):
             sent = [token for token in _CoNLLRawToTuplesIterator(sent)]
@@ -66,12 +66,13 @@ def CoNLLWikilinkIterator(fname, split='testb', includeUnresolved=False):
                     wlink['wikiId'] = token[5] # BE CAREFUL!! This might be a different mapping then ours
                     wlink['word'] = token[0]
 
-                    left_context_text = ' '.join([x[0] for x in sent[:i+1]])
-                    right_context_text = ' '.join([x[0] for x in sent[i:]])
+                    left_context_text = ' '.join([x[0] for x in sent[:i]])
+                    right_context_text = ' '.join([x[0] for x in sent[i+1:]])
                     wlink['left_context_text'] = left_context_text
                     wlink['right_context_text'] = right_context_text
                     wlink['left_context'] = left_context_text.split(' ')
                     wlink['right_context'] = right_context_text.split(' ')
+                    wlink['mention_as_list'] = sent[i][0].split(' ')
 
                     yield wlink
 

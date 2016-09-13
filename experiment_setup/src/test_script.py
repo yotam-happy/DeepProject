@@ -17,14 +17,14 @@ from Evaluation import *
 from KnockoutModel import *
 from ModelTrainer import *
 from models.RNNPairwiseModel import *
-
+from models.BaselinePairwiseModel import *
 
 ##
 
-def eval(experiment_name, path, train_session_nr, knockout_model, iter_eval, wordExclude=None, wordInclude=None, stats=None):
+def eval(experiment_name, path, train_session_nr, knockout_model, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
     # evaluate
     print "Evaluating " + experiment_name + "...", train_session_nr
-    evaluation = Evaluation(iter_eval, knockout_model, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude, stats=stats)
+    evaluation = Evaluation(iter_eval, knockout_model, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude, stats=stats, sampling=sampling)
     evaluation.evaluate()
 
     # save
@@ -54,17 +54,17 @@ def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, i
     senseFilter = train_stats.getSensesFor(wordFilter) if filterSenses else None
 
     knockout_model = KnockoutModel(pairwise_model, train_stats)
-    trainer = PairwiseModelTrainer(iter_train, train_stats, pairwise_model, epochs=10, wordInclude=wordsForBroblem, wordExclude=wordFilter, senseFilter=senseFilter)
-    for train_session in xrange(20):
+    trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1, wordInclude=wordsForBroblem, wordExclude=wordFilter, senseFilter=senseFilter)
+    for train_session in xrange(200):
         # train
         print "Training... ", train_session
         trainer.train()
 
         pairwise_model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
 
-        eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats)
+        eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
         if filterWords or filterSenses:
-            eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats)
+            eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
 
 
     ## Plot train loss to file
@@ -113,11 +113,11 @@ _pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1)
 experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=True, filterWords=True)
 
 ## baseline
-#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
-#_iter_test = WikilinksNewIterator(_path+"/data/intralinks/test")
-#_pairwise_model = BaselinePairwiseModel(_train_stats)
+_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+_iter_test = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
+_pairwise_model = BaselinePairwiseModel(_train_stats)
 #_pairwise_model = GuessPairwiseModel()
-#knockout_model = KnockoutModel(_pairwise_model, _train_stats)
-#evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
-#evaluation.evaluate()
+knockout_model = KnockoutModel(_pairwise_model, _train_stats)
+evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
+evaluation.evaluate()
 

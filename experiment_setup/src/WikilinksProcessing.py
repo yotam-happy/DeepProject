@@ -178,11 +178,11 @@ if __name__ == "__main__":
     #splitWikis(iter, '../../data/wikilinks/all-split')
 
     ## calculate statistics for ttrain
-    #iter = WikilinksNewIterator('../../data/wikilinks/all-split/train')
-    #stats = WikilinksStatistics(iter)
-    #stats.calcStatistics()
-    #stats.saveToFile('../../data/wikilinks/all-split/train-stats')
-    #stats.printSomeStats()
+    iter = WikilinksNewIterator('../data/wikilinks/all/train')
+    stats = WikilinksStatistics(iter)
+    stats.calcStatistics()
+    stats.saveToFile('../data/wikilinks/train-stats-new')
+    stats.printSomeStats()
 
     # filter sets
 #    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
@@ -194,10 +194,10 @@ if __name__ == "__main__":
 #    copyWithFilter("../../data/wikilinks/all-split/validation", '../../data/wikilinks/small/evaluation', good)
 
     #fix
-    iter = WikilinksNewIterator(path="../data/wikilinks/filtered/train")
-    writer = wlink_writer('../data/wikilinks/fixed')
-    for i, wlink in enumerate(iter.wikilinks()):
-       writer.save(wlink)
-       if i % 10000 == 0:
-           print "resolve ids: ", i
-    writer.finalize()
+#    iter = WikilinksNewIterator(path="../data/wikilinks/all/test")
+#    writer = wlink_writer('../data/wikilinks/fixed/test')
+#    for i, wlink in enumerate(iter.wikilinks()):
+#       writer.save(wlink)
+#       if i % 10000 == 0:
+#           print "resolve ids: ", i
+#    writer.finalize()

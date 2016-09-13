@@ -2,7 +2,7 @@ from WikilinksStatistics import *
 from Word2vecLoader import *
 
 
-class PairwiseModelTrainer:
+class ModelTrainer:
     """
     This class generates pairwise training examples from the corpus: (wikilink, candidate1, candidate2, correct)
     and feeds them to a model's train method
@@ -24,8 +24,9 @@ class PairwiseModelTrainer:
         self.senseFilter = {int(x) for x in senseFilter} if senseFilter is not None else None
 
         #setup all-sense negative-sampling
-        self._all_senses = [x for x in self._stats.conceptCounts.keys()]
-        self._all_senses_prob = 0.1
+        self._all_senses = [int(x) for x in self._stats.conceptCounts.keys()]
+        self._neg_sample_all_senses_prob = 0.1
+        self._pos_sample_unambiguous_prob = 0.05
 
     def getSenseNegSample(self):
         return self._all_senses[np.random.randint(len(self._all_senses))]
@@ -51,14 +52,16 @@ class PairwiseModelTrainer:
                 if self.senseFilter is not None:
                     candidates = {x:y for x,y in candidates.iteritems() if x not in self.senseFilter}
 
-                if candidates is None or len(candidates) < 2:
+#                if candidates is None or len(candidates) < 2:
+#                    continue
+                if candidates is None or (len(candidates) < 2 and np.random.rand() > self._pos_sample_unambiguous_prob):
                     continue
 
                 # get id vector
                 ids = [candidate for candidate in candidates.items() if int(candidate[0]) != actual]
 
                 for k in xrange(self._neg_sample):
-                    if np.random.rand() <= self._all_senses_prob:
+                    if len(ids) < 1 or np.random.rand() <= self._neg_sample_all_senses_prob:
                         wrong = self.getSenseNegSample()
                     else:
                         w = ids[np.random.randint(len(ids))]

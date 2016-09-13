@@ -1,10 +1,11 @@
+import numpy as np
 
 class Evaluation:
     """
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model, w2v=None, stats = None, wordExcludeFilter = None, wordIncludeFilter = None):
+    def __init__(self, test_iter, model, w2v=None, stats = None, wordExcludeFilter = None, wordIncludeFilter = None, sampling=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -15,6 +16,7 @@ class Evaluation:
         self._wordExcludeFilter = wordExcludeFilter
         self._wordIncludeFilter = wordIncludeFilter
         self._w2v = w2v
+        self._sampling = sampling
 
         self.n_samples = 0
         self.correct = 0
@@ -48,6 +50,9 @@ class Evaluation:
         self.possible = 0
 
         for wikilink in self._iter.wikilinks():
+            if self._sampling is not None and np.random.rand() > self._sampling:
+                continue
+
             if self._wordIncludeFilter is not None and wikilink["word"] not in self._wordIncludeFilter:
                 continue
             if self._wordExcludeFilter is not None and wikilink["word"] in self._wordExcludeFilter:

@@ -11,7 +11,7 @@ class RNNPairwiseModel:
     to model the lelf context and the right context
     """
 
-    def __init__(self, w2v, stats, context_window_sz = 10, dropout = 0.0,
+    def __init__(self, w2v, stats, context_window_sz = 20, dropout = 0.0,
                  noise=None, stripStropWords=True, stochasticContextTrimming=False):
         self._stopwords = stopwords.words('english') if stripStropWords else None
         self._w2v = w2v
@@ -216,6 +216,7 @@ class RNNPairwiseModel:
         (left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X) = vecs
         left_X = left_X.reshape(1,left_X.shape[0],left_X.shape[1])
         right_X = right_X.reshape(1,right_X.shape[0],right_X.shape[1])
+        mention_X = mention_X.reshape(1,mention_X.shape[0])
         candidate1_X = candidate1_X.reshape(1,candidate1_X.shape[0])
         candidate2_X = candidate2_X.reshape(1,candidate2_X.shape[0])
         extra_features_X = extra_features_X.reshape(1,extra_features_X.shape[0])

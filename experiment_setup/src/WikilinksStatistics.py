@@ -32,6 +32,7 @@ class WikilinksStatistics:
         self._wikilinks_iter = wikilinks_iter
         self.mentionCounts = dict()
         self.mentionLinks = dict()
+        self.seenWith = dict()
         self.conceptCounts = dict()
         self.contextDictionary = dict()
         if load_from_file_path is not None:
@@ -67,7 +68,8 @@ class WikilinksStatistics:
         f.write(json.dumps(self.mentionCounts)+'\n')
         f.write(json.dumps(self.mentionLinks)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
-        f.write(json.dumps(self.contextDictionary))
+        f.write(json.dumps(self.contextDictionary)+'\n')
+        f.write(json.dumps(self.seenWith))
         f.close()
 
     def loadFromFile(self, path):
@@ -78,6 +80,7 @@ class WikilinksStatistics:
         self.mentionLinks = json.loads(l[1])
         self.conceptCounts = json.loads(l[2])
         self.contextDictionary = json.loads(l[3])
+#        self.seenWith = json.loads(l[4])
         f.close()
 
     def calcStatistics(self):
@@ -103,6 +106,18 @@ class WikilinksStatistics:
                 for w in wlink['left_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
+    def calcMoreStatistics(self):
+        self.seenWith = dict()
+        # for each sense, count all other senses it was seen with
+        for candidates in self.mentionLinks.values():
+            for candidate in candidates.keys():
+                for other, count in candidates.items():
+                    if other != candidate:
+                        if not candidate in self.seenWith:
+                            self.seenWith[candidate] = dict()
+                        self.seenWith[candidate][other] = self.seenWith[candidate].get(other, 0) + count
+
+
     def getCandidatesForMention(self, mention, p=0.01, t=5):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
@@ -113,6 +128,28 @@ class WikilinksStatistics:
         """
         if mention.lower() not in self.mentionLinks:
             return {} # TODO: Fix to {}
+        l = self._sortedList(self.mentionLinks[mention.lower()])
+        tot = sum([x[1] for x in l])
+        out = dict()
+        for x in l:
+            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[int(x[0])] = x[1]
+
+        # now calc actual priors
+        tot = sum([x for x in out.values()])
+        out = {x: float(y)/tot for x, y in out.iteritems()}
+        return out
+
+    def getCandidatesSeenWith(self, mention, p=0.01, t=5):
+        """
+        Returns the most probable sense + all other candidates where p(candidate|mention)>=p
+        and with at least t appearances
+
+        :param mention:     the mention to search for
+        :return:            returns a dictionary: (candidate,count)
+        """
+        if mention.lower() not in self.mentionLinks:
+            return {}
         l = self._sortedList(self.mentionLinks[mention.lower()])
         tot = sum([x[1] for x in l])
         out = dict()
@@ -173,3 +210,13 @@ class WikilinksStatistics:
         print("some ambiguous terms:")
         for w in wordsSorted[-10:]:
             print w
+
+stats = WikilinksStatistics(None, load_from_file_path="../data/wikilinks/train-stats")
+print "done"
+stats.calcMoreStatistics()
+print "done2"
+stats.saveToFile("../data/wikilinks/train-stats2")
+print len(stats.seenWith)
+for x, y in stats.seenWith.items():
+    print x, ": ", y
+print len(stats.mentionLinks.values())

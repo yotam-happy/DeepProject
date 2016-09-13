@@ -106,10 +106,18 @@ class PPRStatistics:
             if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
                 out[int(x[0])] = x[1]
 
+        print out
         # now calc actual priors
         tot = sum([x for x in out.values()])
-        out = {x: float(y)/tot for x, y in out.iteritems()}
+        if tot == 0:
+            out = {x: 1.0 / len(out) for x, y in out.iteritems()}
+        else:
+            out = {x: float(y)/tot for x, y in out.iteritems()}
         return out
+
+    def getMostProbableSense(self, mention):
+        cands = self.getCandidateUrlsForMention(mention)
+        return max(cands.iterkeys(), key=(lambda key: cands[key]))
 
     def getCandidateUrlsForMention(self, mention, p=0.01, t=5):
         """
