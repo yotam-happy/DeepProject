@@ -33,18 +33,30 @@ class WikipediaDbWrapper:
         """
         Gets the wikipedia page title for a given id.
         """
-        if self._articleId is None:
-            raise "Must cache table!"
-        return self._articleId[conceptId] if conceptId in self._articleId else None
+        if self._articleId is not None:
+            return self._articleId[conceptId] if conceptId in self._articleId else None
+        else:
+            query = "SELECT title_resolver FROM article where id=%s"
+            self._cursor.execute(query, (conceptId,))
+            row = self._cursor.fetchone()
+            if row == None:
+                return None
+            return row[0]
 
     def getArticleIdByTitle(self, title):
         """
         Gets the wikipedia page title for a given id.
         """
-        if self._articleTitle is None:
-            raise "Must cache table!"
         title = self.stripTitle(title)
-        return self._articleTitle[title] if title in self._articleTitle else None
+        if self._articleTitle is not None:
+            return self._articleTitle[title] if title in self._articleTitle else None
+        else:
+            query = "SELECT id FROM article where title_resolver=%s"
+            self._cursor.execute(query, (title,))
+            row = self._cursor.fetchone()
+            if row == None:
+                return None
+            return int(row[0])
 
     def printSomeArticle(self):
         query = "SELECT title, id FROM article"
@@ -78,6 +90,32 @@ class WikipediaDbWrapper:
             if i % 100000 == 0:
                 print "caching article ", i
             i += 1
+
+    def updateTables(self):
+        print "self._cnx.autocommit:", self._cnx.autocommit
+        self._cnx.autocommit = False
+        n = 0
+        print "upating article table"
+        for id, title_processed in self._articleId.items():
+            self._cursor.execute("""
+            UPDATE article SET title_resolver=%s WHERE id=%s
+            """,(title_processed, id))
+            n+=1
+            print n
+            if (n % 10000) == 0:
+                print "done ", n
+
+        n = 0
+        print "upating pages_redirects table"
+        for id, s in self._pageInfoByIdCache.items():
+            self._cursor.execute("""
+            UPDATE pages_redirects SET title_resolver=%s WHERE page_id=%s
+            """, (title_processed, s[2]))
+            n += 1
+            if (n % 10000) == 0:
+                print "done ", n
+        self._cnx.commit()
+
     def cacheArticleInlinksTable(self):
         query = "SELECT target_id, inlink FROM inlinks"
         self._articleInlinks = dict()
@@ -168,6 +206,32 @@ class WikipediaDbWrapper:
                     candidate = x
             i+=1
         return candidate
+
+
+    def resolvePage2(self, title):
+        '''
+        Not trivial.
+        '''
+        title = urllib.unquote(title)
+        candidate = self.getArticleIdByTitle(title)
+        page_id, namespace, title, redirect = self.getPageInfoByTitle(title)
+        if self.getArticleTitleById(page_id) is not None:
+            candidate = page_id
+
+        i = 0
+        while page_id is not None and \
+                        redirect > -1 and \
+                        i < 3:
+            page_id, namespace, title, redirect = self.getPageInfoById(redirect)
+            if page_id is not None and self.getArticleTitleById(page_id) is not None:
+                candidate = page_id
+            elif title is not None:
+                x = self.getArticleIdByTitle(title)
+                if x is not None:
+                    candidate = x
+            i += 1
+        return candidate
+
 
 if __name__ == "__main__":
     wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
