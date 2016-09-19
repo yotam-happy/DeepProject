@@ -157,6 +157,12 @@ def copyWithFilter(src_path, dest_path, word_filter):
     writer.finalize()
 
 if __name__ == "__main__":
+    path = "/home/yotam/pythonWorkspace/deepProject"
+    if not os.path.isdir(path):
+        path = "/home/noambox/DeepProject"
+    if not os.path.isdir(path):
+        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+
     ## Resolving ids
     #wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
     #iter = WikilinksNewIterator(path="../../data/wikilinks/unprocessed", resolveIds=True, db=wikiDB)
@@ -177,12 +183,20 @@ if __name__ == "__main__":
     #iter = WikilinksNewIterator('../../data/wikilinks/randomized')
     #splitWikis(iter, '../../data/wikilinks/all-split')
 
-    ## calculate statistics for ttrain
-    iter = WikilinksNewIterator('../data/wikilinks/all/train')
-    stats = WikilinksStatistics(iter)
-    stats.calcStatistics()
-    stats.saveToFile('../data/wikilinks/train-stats-new')
-    stats.printSomeStats()
+    ## calculate statistics for train
+    # path = "/home/yotam/pythonWorkspace/deepProject"
+    # iter = WikilinksNewIterator(path + '/data/wikilinks/all/train')
+    # if not os.path.isdir(path):
+    #     path = "/home/noambox/DeepProject"
+    # if not os.path.isdir(path):
+    #     path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+    #     iter = WikilinksNewIterator(path + '/data/wikilinks/all/train')
+    #
+    # stats = WikilinksStatistics(iter)
+    # stats.calcStatistics()
+    # stats.calcMoreStatistics() # calc also the seenwith field
+    # stats.saveToFile(path + '/data/wikilinks/train-stats-new')
+    # stats.printSomeStats()
 
     # filter sets
 #    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
@@ -193,11 +207,13 @@ if __name__ == "__main__":
 #    copyWithFilter("../../data/wikilinks/all-split/test", '../../data/wikilinks/small/test', good)
 #    copyWithFilter("../../data/wikilinks/all-split/validation", '../../data/wikilinks/small/evaluation', good)
 
-    #fix
-#    iter = WikilinksNewIterator(path="../data/wikilinks/all/test")
-#    writer = wlink_writer('../data/wikilinks/fixed/test')
-#    for i, wlink in enumerate(iter.wikilinks()):
-#       writer.save(wlink)
-#       if i % 10000 == 0:
-#           print "resolve ids: ", i
-#    writer.finalize()
+    #fix - train, test and eval
+    data_part = 'evaluation'
+    print 'fixing ' + data_part
+    iter = WikilinksNewIterator(path=path + '/data/wikilinks/all/'+data_part)
+    writer = wlink_writer(path+'/data/wikilinks/fixed/'+data_part)
+    for i, wlink in enumerate(iter.wikilinks()):
+      writer.save(wlink)
+      if i % 10000 == 0:
+          print "resolve ids: ", i
+    writer.finalize()

@@ -11,18 +11,20 @@ def getValue(t):
 
 
 _path = "/home/yotam/pythonWorkspace/deepProject"
-print "Loading iterators+stats..."
+pc_name = 'yotam'
 if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+    pc_name = 'noam'
 
 # train on wikipedia intra-links corpus
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
 #_iter_train = WikilinksNewIterator(_path+"/data/intralinks/train-filtered")
 #_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/test-filtered")
 
+print "Loading iterators+stats..."
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/filtered/train")
-_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/filtered/evaluation")
+_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/all/train")
+_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/all/evaluation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -37,7 +39,10 @@ print 'conceptEmbeddings dict size: ',len(_w2v.conceptEmbeddings), " wanted", le
 print 'Done!'
 
 print 'Caching wikiDb'
-wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+if pc_name == 'yotam':
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+elif pc_name == 'noam':
+    wikiDB = WikipediaDbWrapper(user='root', password='ncTech#1', database='wikiprep-esa-en20151002', cache=True)
 print 'Done!'
 
 print 'loading model'
@@ -117,7 +122,7 @@ for i, wlink in enumerate(CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YA
         print "candidates: ", ppr_stats.getCandidateUrlsForMention(wlink['word'])
         print "resolved candidates: ", candidates_to_print
         print "gold sense: ", gold_sense_url
-        print "- error due to golf sense not in candidates"
+        print "- error due to gold sense not in candidates"
         print "-----"
         print ""
     else:
@@ -168,3 +173,4 @@ print "errors due to gold sense not in candidates: ", errors_due_to_gold_sense_n
 print "most probable sense correct: ", float(mps_correct) / total
 print ""
 print "accuracy: ", gotit, "out of ", total, "(", float(gotit) / total, "%)"
+print "p@1 score: ", float(gotit) / (total-errors_due_to_gold_sense_not_in_candidates) , "%"
