@@ -40,9 +40,9 @@ print 'Done!'
 
 print 'Caching wikiDb'
 if pc_name == 'yotam':
-    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=False)
 elif pc_name == 'noam':
-    wikiDB = WikipediaDbWrapper(user='root', password='ncTech#1', database='wikiprep-esa-en20151002', cache=True)
+    wikiDB = WikipediaDbWrapper(user='root', password='ncTech#1', database='wikiprep-esa-en20151002', cache=False)
 print 'Done!'
 
 print 'loading model'

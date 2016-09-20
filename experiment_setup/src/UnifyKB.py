@@ -20,6 +20,7 @@ It takes wikilink, intralink, PPRforNED and produces a single KB based on those
 #         f.write(json.dumps(self.conceptCounts)+'\n')
 #         f.write(json.dumps(self.contextDictionary)+'\n')
 #         f.write(json.dumps(self.seenWith))
+
 #     mentionCounts       dictionary of mention=count. Where mention is a surface term to be disambiguated
 #                         and count is how many times it was seen n the dataset
 #     conceptCounts       dictionary of concept=count. Where a concept is a wikipedia id (a sense), and count
@@ -51,16 +52,18 @@ def FullKnowledgeBase(path_list, dest_path = os.getcwd(), noPPR = False):
             contextDictionary_itr = json.loads(l[3])
             conceptCounts_itr = json.loads(l[3])
 
-        # TODO: change intersec criteria to expand mention links and recount mentionCount (check if the conceptID are the same for intra, wikilink and ppr)
-        # TODO: do the same for seenwith
-        # TODO: in conceptCounts take simple the one with higher score
+        # TODO: check if the conceptID are the same for intra, wikilink and ppr
+        # TODO: if no PPR: do the same for seenwith
 
-        update_out = updateIntersection(mentionCounts, mentionCounts_itr)
-        for i,k in enumerate(update_out['intrsc_keys']):
-            if update_out['map'][i]:
-                mentionCounts[k] = mentionCounts_itr[k]
-                mentionLinks[k] = mentionLinks_itr[k]
+        intrsc_out = returnMaxIntersection(mentionCounts, mentionCounts_itr)
+        mentionlinks_and_counts = updateMetionLinksAndMentionCounts(mentionLinks, mentionLinks_itr, mentionCounts, intrsc_out['intrsc_keys'])
+        mentionCounts = mentionlinks_and_counts['mentionCounts']
+        mentionLinks = mentionlinks_and_counts['mentionLinks']
+        mentionLinks[k] = mentionLinks_itr[k]
+        for i,k in enumerate(intrsc_out['intrsc_keys']):
+            if intrsc_out['map'][i]:
                 conceptCounts[k] = conceptCounts_itr[k]
+
                 if noPPR:
                     contextDictionary = dict()
                     seenWith = dict()
@@ -81,12 +84,13 @@ def FullKnowledgeBase(path_list, dest_path = os.getcwd(), noPPR = False):
 
     f.close()
 ##
-def updateIntersection( a, b):
+def returnMaxIntersection( a, b):
     """
-    takes the intersection of 2 dict and updates the first's intersected fields (a) according to the higher values
+    returns the intersection members of the dictionaries along with a binary vector of which mutual
+    values have higher value
     :param a:   mentionCounts dict()
     :param b:   mentionCounts_itr dict()
-    :return: out structure with updated input structs
+    :return z: out structure with updated input structs
     """
     intrsc_keys = set(a.keys()) & set(b.keys())
     a_intr_val = [a[k] for k in intrsc_keys]
@@ -94,6 +98,42 @@ def updateIntersection( a, b):
     max_ind = np.argmax(np.asarray([a_intr_val, b_intr_val]),0)
     return {'map': max_ind, 'intrsc_keys':intrsc_keys}
 ##
+def updateIntersection( a, b):
+    """
+    works simmilarily to returnMaxIntersection but also merges the dictionarise
+    :param a: dict
+    :param b: dict
+    :return d: the updated vector
+    """
+    intrsc_keys = set(a.keys()) & set(b.keys())
+    c = a.copy()
+    a_intr_val = [a[k] for k in intrsc_keys]
+    b_intr_val = [b[k] for k in intrsc_keys]
+    max_ind = np.argmax(np.asarray([a_intr_val, b_intr_val]),0)
+    for i,k in enumerate(intrsc_keys):
+        if max_ind[i]:
+            c[k] = b[k]
+
+    d = mergeDict( b, c)
+    return d
+##
+def updateMetionLinksAndMentionCounts(mlink, mlink_temp, mCounts, mutual_keys):
+    """
+    maxmerges mentionLinks and regenerates accordingly mentionCounts (sum of links)
+    :param mlink:
+    :param mlink_temp:
+    :param mCounts:
+    :param mutual_keys:
+    :return: dict of mentionLinks and mentionCounts
+    """
+    for i,k in enumerate(mutual_keys):
+        mlink[k] = updateIntersection( mlink[k], mlink_temp[k])
+        mCounts[k] = np.sum(mlink[k].values())
+
+    mentionLinks = mergeDict(mlink_temp, mlink)
+    return {'mentionLinks': mentionLinks, 'mentionCounts': mCounts}
+##
+
 def mergeDict(a, b):
     """
     merges dicts when b overrides key values that are mutual with a
