@@ -106,8 +106,9 @@ Training double gru model
 ## TRAIN DEBUGGING CELL
 print 'Training...'
 
+_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
 #_pairwise_model = RNNFineTuneEmbdPairwiseModel(_w2v, dropout=0.1)
-_pairwise_model = RNNPairwiseModel(_w2v, _train_stats, dropout=0.1)
+_pairwise_model = RNNFineTunePairwiseModel(_w2v, dropout=0.1, feature_generator=_feature_generator)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 

@@ -1,6 +1,6 @@
 from WikilinksStatistics import *
 from Word2vecLoader import *
-
+from bisect import bisect
 
 class ModelTrainer:
     """
@@ -23,10 +23,19 @@ class ModelTrainer:
         self.wordExclude = wordExclude
         self.senseFilter = {int(x) for x in senseFilter} if senseFilter is not None else None
 
-        #setup all-sense negative-sampling
-        self._all_senses = [int(x) for x in self._stats.conceptCounts.keys()]
-        self._neg_sample_all_senses_prob = 0.00
-        self._neg_sample_seenWith_prob = 0.1
+        # setup all-sense negative-sampling (define cumulative probability function)
+        # -- some ppl say that for long lists it is better to have small probs first due to precision issues
+        senses = [(int(x), int(y)) for x, y in self._stats.conceptCounts.items()]
+        senses = sorted(senses, key=lambda tup: tup[1])
+        self._all_senses, self._all_senses_cpf = [e[0] for e in senses], [e[1] for e in senses]
+        self._all_senses_cpf_total = 0
+        for i in xrange(len(self._all_senses_cpf)):
+            self._all_senses_cpf_total += self._all_senses_cpf[i]
+            self._all_senses_cpf[i] = self._all_senses_cpf_total
+
+        self._neg_sample_uniform = True
+        self._neg_sample_all_senses_prob = 0.0
+        self._neg_sample_seenWith_prob = 0.0
 
         self._t = 0
         self._x1 = 0
@@ -34,7 +43,11 @@ class ModelTrainer:
         self._x3 = 0
 
     def getSenseNegSample(self):
-        return self._all_senses[np.random.randint(len(self._all_senses))]
+        if (self._neg_sample_uniform):
+            return self._all_senses[np.random.randint(len(self._all_senses))]
+        x = np.random.randint(self._all_senses_cpf_total)
+        i = bisect(self._all_senses_cpf, x)
+        return self._all_senses[i]
 
     def train(self):
         print "start training..."
@@ -70,23 +83,23 @@ class ModelTrainer:
                     if r < self._neg_sample_all_senses_prob:
                         # get negative sample from all possible senses
                         neg_candidates = self._all_senses
+                        wrong = self.getSenseNegSample()
                         self._x1 += 1
                     elif r < self._neg_sample_all_senses_prob + self._neg_sample_seenWith_prob:
                         # get negative sample from senses seen with the correct one
                         neg_candidates = self._stats.getCandidatesSeenWith(actual).keys()
                         if len(neg_candidates) < 1:
                             continue
+                        wrong = neg_candidates[np.random.randint(len(neg_candidates))]
                         self._x2 += 1
                     else:
                         # get negative sample from senses seen for the current mention
                         neg_candidates = ids
                         if len(neg_candidates) < 1:
                             continue
+                        wrong = neg_candidates[np.random.randint(len(neg_candidates))][0]
                         self._x3 += 1
                     self._t += 1
-                    #if self._t % 1000 == 0:
-                    #    print "1: ", float(self._x1) / self._t, "2: ", float(self._x2) / self._t, "3: ", float(self._x3) / self._t
-                    wrong = neg_candidates[np.random.randint(len(neg_candidates))]
 
                     # train on both sides so we get a symmetric model
                     if random.randrange(2) == 0:
