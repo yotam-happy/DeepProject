@@ -183,17 +183,30 @@ class WikipediaDbWrapper:
         t = re.sub('[^0-9a-zA-Z]', '_', title.lower())
         return t
 
-    def resolvePage(self, title):
+    def resolvePage(self, title, verbose=False):
         '''
         Not trivial.
         '''
+        if verbose:
+            print "resolving title: ", title
         title = urllib.unquote(title)
+        if verbose:
+            print "unquoted: ", title
+
         candidate = self.getArticleIdByTitle(title)
+        if verbose:
+            print "self.getArticleIdByTitle: ", candidate
         page_id, namespace, title, redirect = self.getPageInfoByTitle(title)
+        if verbose:
+            print "self.getPageInfoByTitle: id: ", page_id, " redirect: ", redirect
         if self.getArticleTitleById(page_id) is not None:
+            if verbose:
+                print "self.getArticleTitleById: ", self.getArticleTitleById(page_id)
             candidate = page_id
 
         i = 0
+        if verbose:
+            print "resolving redirects"
         while page_id is not None and \
                 redirect > -1 and \
                 i < 3:
@@ -233,7 +246,7 @@ class WikipediaDbWrapper:
         return candidate
 
 
-if __name__ == "__main__":
-    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-    wikiDB.cacheArticleTable()
-    wikiDB.printSomeArticle()
+#if __name__ == "__main__":
+#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+#    wikiDB.cacheArticleTable()
+#    wikiDB.printSomeArticle()
