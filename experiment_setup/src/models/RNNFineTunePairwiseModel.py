@@ -17,21 +17,26 @@ class RNNFineTunePairwiseModel:
 
     """
 
-    def __init__(self, w2v, context_window_sz = 10, dropout = 0.0, noise = None, stripStropWords=True):
+    def __init__(self, w2v, context_window_sz=10, dropout=0.0, noise=None, stripStropWords=True,
+                 feature_generator=None, max_mention_words=5):
         self._stopwords = stopwords.words('english') if stripStropWords else None
         self._w2v = w2v
         self._batch_left_X = []
         self._batch_right_X = []
         self._batch_candidate1_X = []
         self._batch_candidate2_X = []
+        self._batch_mention_X = []
+        self._batch_extra_features_X = []
         self._batchY = []
         self._context_window_sz = context_window_sz
         self._train_loss = []
         self._batch_size = 512
+        self._max_mention_words = max_mention_words
+        self._feature_generator = feature_generator
         self.model = None
         self.compileModel(dropout=dropout, noise=noise)
 
-    def compileModel(self, dropout = 0.0, noise = None):
+    def compileModel(self, dropout=0.0, noise=None):
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
 
@@ -48,31 +53,51 @@ class RNNFineTunePairwiseModel:
         right_context_input = Input(shape=(self._context_window_sz,), dtype='int32', name='right_context_input')
         candidate1_input = Input(shape=(1,), dtype='int32', name='candidate1_input')
         candidate2_input = Input(shape=(1,), dtype='int32', name='candidate2_input')
+        mention_input = Input(shape=(self._max_mention_words,), dtype='int32', name='mention_input')
+        if self._feature_generator is not None:
+            extra_features_input = Input(shape=(self._feature_generator.numPairwiseFeatures(),), name='extra_features_input')
 
         left_context_embed = word_embed_layer(left_context_input)
         right_context_embed = word_embed_layer(right_context_input)
         candidate1_embed = concept_embed_layer(candidate1_input)
         candidate2_embed = concept_embed_layer(candidate2_input)
+        mention_embed = concept_embed_layer(mention_input)
         if noise is not None:
             left_context_embed = GaussianNoise(noise)(left_context_embed)
             right_context_embed = GaussianNoise(noise)(right_context_embed)
             candidate1_embed = GaussianNoise(noise)(candidate1_embed)
             candidate2_embed = GaussianNoise(noise)(candidate2_embed)
+            if self._feature_generator is not None:
+                extra_features_input_n = GaussianNoise(noise)(extra_features_input)
+        else:
+            extra_features_input_n = extra_features_input
 
         candidate1_flat = Flatten()(candidate1_embed)
         candidate2_flat = Flatten()(candidate2_embed)
+        mention_avg = merge(mention_embed, mode='ave')
 
         left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(left_context_embed)
         right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(right_context_embed)
 
-        x = merge([left_rnn, right_rnn,candidate1_flat,candidate2_flat], mode='concat')
+        if noise is not None:
+            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_avg, extra_features_input_n], mode='concat')
+        else:
+            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_avg], mode='concat')
+
         x = Dense(300, activation='relu')(x)
         if dropout > 0.0:
             x = Dropout(dropout)(x)
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
-        model = Model(input=[left_context_input, right_context_input,candidate1_input,candidate2_input], output=[out])
+        if noise is not None:
+            model = Model(input=[left_context_input, right_context_input, candidate1_input, candidate2_input,
+                                 mention_input, extra_features_input],
+                          output=[out])
+        else:
+            model = Model(input=[left_context_input, right_context_input, candidate1_input, candidate2_input,
+                                 mention_input],
+                          output=[out])
         model.compile(optimizer='adagrad', loss='binary_crossentropy')
         self.model = model
         print "model compiled!"
@@ -100,8 +125,12 @@ class RNNFineTunePairwiseModel:
 
         left_context = self.wordListToIndices(wikilink['left_context'], self._context_window_sz, reverse=False)
         right_context = self.wordListToIndices(wikilink['right_context'], self._context_window_sz, reverse=True)
+        mention = self.wordListToIndices(wikilink['mention_as_list'], self._max_mention_words, reverse=False)
 
-        return (left_context, right_context,candidate1_id, candidate2_id)
+        extraFeatures_vec = np.array(self._feature_generator.getPairwiseFeatures(wikilink, candidate1, candidate2)) \
+            if self._feature_generator is not None else None
+
+        return (left_context, right_context, mention, candidate1_id, candidate2_id, extraFeatures_vec)
 
     def wordListToIndices(self, l, output_len, reverse):
         o = []
@@ -128,39 +157,42 @@ class RNNFineTunePairwiseModel:
         if not isinstance(vecs, tuple):
             return # nothing to train on
 
-        (left_X, right_X, candidate1_X, candidate2_X) = vecs
+        (left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X) = vecs
         Y = np.array([1,0] if candidate1 == correct else [0,1])
-        self._trainXY(left_X, right_X, candidate1_X, candidate2_X, Y)
+        self._trainXY(left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X, Y)
 
-    def _trainXY(self,left_X, right_X, candidate1_X, candidate2_X, Y):
+    def _trainXY(self,left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X, Y):
         self._batch_left_X.append(left_X)
         self._batch_right_X.append(right_X)
+        self._batch_mention_X.append(mention_X)
         self._batch_candidate1_X.append(candidate1_X)
         self._batch_candidate2_X.append(candidate2_X)
+        self._batch_extra_features_X.append(extra_features_X)
         self._batchY.append(Y)
 
         if len(self._batchY) >= self._batch_size:
             # pushes numeric data into batch vector
-            batch_left_X = np.array(self._batch_left_X)
-            batch_right_X = np.array(self._batch_right_X)
-            batch_candidate1_X = np.array(self._batch_candidate1_X)
-            batch_candidate2_X = np.array(self._batch_candidate2_X)
+            batchX = {'left_context_input': np.array(self._batch_left_X),
+                      'right_context_input': np.array(self._batch_right_X),
+                      'mention_input': np.array(self._batch_mention_X),
+                      'candidate1_input': np.array(self._batch_candidate1_X),
+                      'candidate2_input': np.array(self._batch_candidate2_X)}
+            if self._feature_generator is not None:
+                batchX['extra_features_input'] = np.array(self._batch_extra_features_X)
             batchY = np.array(self._batchY)
 
             # training on batch is specifically good for cases were data doesn't fit into memory
-            loss = self.model.train_on_batch({'left_context_input':batch_left_X,
-                                              'right_context_input':batch_right_X,
-                                              'candidate1_input':batch_candidate1_X,
-                                              'candidate2_input':batch_candidate2_X},
-                                             batchY)
+            loss = self.model.train_on_batch(batchX, batchY)
             self._train_loss.append(loss)
             print 'Done batch. Size of batch - ', batchY.shape, '; loss: ', loss
             # print self.model.metrics_names
 
             self._batch_left_X = []
             self._batch_right_X = []
+            self._batch_mention_X = []
             self._batch_candidate1_X = []
             self._batch_candidate2_X = []
+            self._batch_extra_features_X = []
             self._batchY = []
 
     def plotTrainLoss(self,fname, st=0):
@@ -189,12 +221,15 @@ class RNNFineTunePairwiseModel:
         vecs = self._2vec(wikilink, candidate1, candidate2)
         if not isinstance(vecs, tuple):
             return vecs
-        (left_X, right_X, candidate1_X, candidate2_X) = vecs
-        left_X = left_X.reshape((1, left_X.shape[0]))
-        right_X = right_X.reshape((1, right_X.shape[0],))
-        Y = self.model.predict({'left_context_input':left_X,
-                                'right_context_input':right_X,
-                                'candidate1_input':candidate1_X,
-                                'candidate2_input':candidate2_X},
-                               batch_size=1)
+        (left_X, right_X, mention_X, candidate1_X, candidate2_X, extraFeatures_X) = vecs
+
+        X = {'left_context_input': left_X.reshape((1, left_X.shape[0])),
+             'right_context_input': right_X.reshape((1, right_X.shape[0],)),
+             'mention_input': mention_X.reshape((1, mention_X.shape[0],)),
+             'candidate1_input': candidate1_X,
+             'candidate2_input': candidate2_X}
+        if self._feature_generator is not None:
+            X['extra_features_input'] = np.array(extraFeatures_X.reshape(1,extraFeatures_X.shape[0]))
+
+        Y = self.model.predict(X, batch_size=1)
         return candidate1 if Y[0][0] > Y[0][1] else candidate2
