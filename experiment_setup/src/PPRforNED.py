@@ -96,23 +96,22 @@ class PPRStatistics:
         :return:            returns a dictionary: (candidate,count)
         """
         mention = mention.lower()
-        if mention not in self.mentionLinks:
-            return None
+        if mention not in self.mentionLinks or len(self.mentionLinks[mention]) == 0:
+            return {}
 
         l = self._sortedList(self.mentionLinks[mention])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
-            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[int(x[0])] = x[1]
+            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[int(x[0])] = x[1] if tot != 0 else 1
 
-        print out
         # now calc actual priors
         tot = sum([x for x in out.values()])
         if tot == 0:
-            out = {x: 1.0 / len(out) for x, y in out.iteritems()}
+            out = {int(x): 1.0 / len(out) for x, y in out.iteritems()}
         else:
-            out = {x: float(y)/tot for x, y in out.iteritems()}
+            out = {int(x): float(y)/tot for x, y in out.iteritems()}
         return out
 
     def getMostProbableSense(self, mention):
@@ -129,14 +128,14 @@ class PPRStatistics:
         """
         mention = mention.lower()
         if mention not in self.mentionLinksUrl:
-            return None
+            return {}
 
         l = self._sortedList(self.mentionLinksUrl[mention])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
-            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[x[0]] = x[1]
+            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[x[0]] = x[1] if tot != 0 else 1
 
         # now calc actual priors
         tot = sum([x for x in out.values()])

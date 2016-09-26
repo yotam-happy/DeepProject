@@ -58,13 +58,13 @@ class FeatureGenerator:
 
     def save(self, fname):
         f = open(fname, mode='w')
-        f.write(json.dumps(self.mention_features) + '\n')
-        f.write(json.dumps(self.entity_features) + '\n')
+        f.write(json.dumps({x: 1 for x in self.mention_features}) + '\n')
+        f.write(json.dumps({x: 1 for x in self.entity_features}) + '\n')
         f.close()
 
     def load(self, fname):
         f = open(fname, mode='r')
         l = f.readlines()
-        self.mention_features = json.loads(l[0])
-        self.entity_features = json.loads(l[1])
+        self.mention_features = json.loads(l[0]).keys()
+        self.entity_features = json.loads(l[1]).keys()
         f.close()

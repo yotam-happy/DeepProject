@@ -41,7 +41,7 @@ class Word2vecLoader:
             for line in iter(f):
                 s = line.split()
                 if filterSet is None or s[0] in filterSet:
-                    embedding[i,:] = np.array([float(x) for x in s[1:]])
+                    embedding[i, :] = np.array([float(x) for x in s[1:]])
                     embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
                     i += 1
         return embedding, embd_dict, embd_sz

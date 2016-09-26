@@ -17,7 +17,8 @@ from Evaluation import *
 from KnockoutModel import *
 from ModelTrainer import *
 from models.RNNPairwiseModel import *
-from models.BaselinePairwiseModel import *
+from models.RNNFineTunePairwiseModel import *
+from FeatureGenerator import *
 
 ##
 
@@ -79,13 +80,13 @@ if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
 # train on wikipedia intra-links corpus
-#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
-#_iter_train = WikilinksNewIterator(_path+"/data/intralinks/train-filtered")
-#_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/test-filtered")
+_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
+_iter_train = WikilinksNewIterator(_path+"/data/intralinks/filtered")
+_iter_eval = None
 
-_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/fixed/train")
-_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
+#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+#_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/all/train")
+#_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/all/evaluation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -107,8 +108,8 @@ Training double gru model
 print 'Training...'
 
 _feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-#_pairwise_model = RNNFineTuneEmbdPairwiseModel(_w2v, dropout=0.1)
-_pairwise_model = RNNFineTunePairwiseModel(_w2v, dropout=0.1, feature_generator=_feature_generator)
+#_pairwise_model = RNNFineTunePairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+_pairwise_model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 

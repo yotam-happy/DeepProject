@@ -54,27 +54,36 @@ def _CoNLLRawToTuplesIterator(lines):
             else:
                 yield (t[2], True, True, t[3], t[4], t[5], t[6] if len(t) >= 7 else None)
 
-def CoNLLWikilinkIterator(fname, split='testa', includeUnresolved=False):
-    for (doc,docName) in _CoNLLFileToDocIterator(fname, split):
-        for sent in _CoNLLDocToSentenceIterator(doc):
-            sent = [token for token in _CoNLLRawToTuplesIterator(sent)]
-            for i, token in enumerate(sent):
-                if token[1] and (includeUnresolved or token[2]):
-                    wlink = dict()
-                    wlink['wikiurl'] = token[4]
-                    wlink['yago2'] = token[3]
-                    wlink['wikiId'] = token[5] # BE CAREFUL!! This might be a different mapping then ours
-                    wlink['word'] = token[0]
+class CoNLLWikilinkIterator:
 
-                    left_context_text = ' '.join([x[0] for x in sent[:i]])
-                    right_context_text = ' '.join([x[0] for x in sent[i+1:]])
-                    wlink['left_context_text'] = left_context_text
-                    wlink['right_context_text'] = right_context_text
-                    wlink['left_context'] = left_context_text.split(' ')
-                    wlink['right_context'] = right_context_text.split(' ')
-                    wlink['mention_as_list'] = sent[i][0].split(' ')
+    # the new iterator does not support using a zip file.
+    def __init__(self, fname, split='testa', includeUnresolved=False):
+        self._fname = fname
+        self._split = split
+        self._includeUnresolved = includeUnresolved
 
-                    yield wlink
+    def wikilinks(self):
+        for (doc, docName) in _CoNLLFileToDocIterator(self._fname, self._split):
+            for sent in _CoNLLDocToSentenceIterator(doc):
+                sent = [token for token in _CoNLLRawToTuplesIterator(sent)]
+                for i, token in enumerate(sent):
+                    if token[1] and (self._includeUnresolved or token[2]):
+                        wlink = dict()
+                        wlink['wikiurl'] = token[4]
+                        wlink['yago2'] = token[3]
+                        wlink['wikiId'] = token[5]  # BE CAREFUL!! This might be a different mapping then ours
+                        wlink['word'] = token[0]
+
+                        left_context_text = ' '.join([x[0] for x in sent[:i]])
+                        right_context_text = ' '.join([x[0] for x in sent[i + 1:]])
+                        wlink['left_context_text'] = left_context_text
+                        wlink['right_context_text'] = right_context_text
+                        wlink['left_context'] = left_context_text.split(' ')
+                        wlink['right_context'] = right_context_text.split(' ')
+                        wlink['mention_as_list'] = sent[i][0].split(' ')
+
+                        yield wlink
+
 
 def CoNLLasDocs(fname, split='testb'):
     for (doc,docName) in _CoNLLFileToDocIterator('../data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', 'testb'):

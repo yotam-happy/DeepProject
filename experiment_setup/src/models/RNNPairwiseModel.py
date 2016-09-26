@@ -102,6 +102,8 @@ class RNNPairwiseModel:
         if cannot produce wikilink vec or vectors for both candidates then returns None
         if cannot produce vector to only one of the candidates then returns the id of the other
         """
+        candidate1 = int(candidate1)
+        candidate2 = int(candidate2)
         if candidate1 not in self._w2v.conceptDict and candidate2 not in self._w2v.conceptDict:
             return None
         if 'right_context' not in wikilink and 'left_context' not in wikilink:

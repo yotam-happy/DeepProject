@@ -4,6 +4,9 @@ import random
 import sys
 import numpy as np
 import math
+import nltk
+from nltk.corpus import stopwords
+import unicodedata
 
 class WikilinksStatistics:
     """
@@ -33,21 +36,25 @@ class WikilinksStatistics:
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.seenWith = dict()
+        self.titleIndex = dict()
         self.conceptCounts = dict()
         self.contextDictionary = dict()
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
 
-        # Is the log justified??? I don't know
-        self.conceptCountsMean = np.mean([math.log(x) for x in self.conceptCounts.values()])
-        self.conceptCountsVariance = np.var([math.log(x) for x in self.conceptCounts.values()])
+        self.conceptLogCountsVariance = np.var([math.log(float(x)) for x in self.conceptCounts.values()])
+        self.conceptCountsVariance = np.var([float(x) for x in self.conceptCounts.values()])
 
-    def getConceptPrior(self, concept):
-        # Is the log justified??? I don't know
-        if concept in self.conceptCounts:
-            return (math.log(self.conceptCounts[concept]) - self.conceptCountsMean) / self.conceptCountsVariance
+        self._stopwords = stopwords.words('english')
+
+
+    def getConceptPrior(self, concept, log=False):
+        if log:
+            return math.log(float(self.conceptCounts[concept])) / self.conceptLogCountsVariance \
+                if concept in self.conceptCounts else 0
         else:
-            return 0
+            return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
+                if concept in self.conceptCounts else 0
 
     def getRandomWordSubset(self, p, baseSubset=None):
         '''
@@ -69,7 +76,8 @@ class WikilinksStatistics:
         f.write(json.dumps(self.mentionLinks)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
         f.write(json.dumps(self.contextDictionary)+'\n')
-        f.write(json.dumps(self.seenWith))
+        f.write(json.dumps(self.titleIndex)+'\n')
+#        f.write(json.dumps(self.seenWith))
         f.close()
 
     def loadFromFile(self, path):
@@ -80,7 +88,8 @@ class WikilinksStatistics:
         self.mentionLinks = json.loads(l[1])
         self.conceptCounts = json.loads(l[2])
         self.contextDictionary = json.loads(l[3])
-        self.seenWith = json.loads(l[4])
+        self.titleIndex = json.loads(l[4])
+#        self.seenWith = json.loads(l[5])
         f.close()
 
     def calcStatistics(self):
@@ -106,6 +115,8 @@ class WikilinksStatistics:
                 for w in wlink['left_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
 
+        self.calcCandidatesByPartialTitle()
+
     def calcMoreStatistics(self):
         self.seenWith = dict()
         # for each sense, count all other senses it was seen with
@@ -113,12 +124,156 @@ class WikilinksStatistics:
             for candidate in candidates.keys():
                 for other, count in candidates.items():
                     if other != candidate:
-                        if not candidate in self.seenWith:
+                        if candidate not in self.seenWith:
                             self.seenWith[candidate] = dict()
                         self.seenWith[candidate][other] = self.seenWith[candidate].get(other, 0) + count
 
+    def calcCandidatesByPartialTitle(self, db):
+        query = "SELECT title, id FROM article"
+        self.titleIndex = dict()
 
-    def getCandidatesForMention(self, mention, p=0.01, t=5):
+        i = 0
+        db._cursor.execute(query)
+        while True:
+            row = db._cursor.fetchone()
+            if not row:
+                break
+            concept_id = int(row[1])
+            title = unicodedata.normalize('NFKD', row[0].decode("utf-8")).encode('ascii','ignore')
+            title_words = [str(w).lower() for w in nltk.word_tokenize(title)
+                           if w not in self._stopwords and len(w) > 2]
+            for w in title_words:
+                if w not in self.titleIndex:
+                    self.titleIndex[w] = dict()
+                self.titleIndex[w][concept_id]=1
+            i += 1
+            if i % 10000 == 0:
+                print i
+
+    def ngrams(self, words):
+        for k in xrange(len(words)):
+            for i in xrange(len(words) - k):
+                ngram = " ".join(words[i:i+k+1])
+                yield ngram
+
+    def calcCandidatesByPartialTitle3(self, db):
+        query = "SELECT title, id FROM article"
+        self.titleIndex = dict()
+
+        i = 0
+        db._cursor.execute(query)
+        while True:
+            row = db._cursor.fetchone()
+            if not row:
+                break
+            concept_id = int(row[1])
+            title = unicodedata.normalize('NFKD', row[0].decode("utf-8")).encode('ascii','ignore')
+            title_words = [str(w).lower() for w in nltk.word_tokenize(title)
+                           if w not in self._stopwords and len(w) > 2]
+            for k in xrange(len(title_words)):
+                ngram = " ".join(title_words[:k+1])
+                if ngram not in self.titleIndex:
+                    self.titleIndex[ngram] = dict()
+                self.titleIndex[ngram][concept_id]=1
+            i += 1
+            if i % 10000 == 0:
+                print i
+
+    def calcCandidatesByRedirectTitle(self, db):
+        db.cachePageInfoTable()
+        db.cacheArticleTable()
+
+        query = "SELECT title, page_id FROM pages_redirects"
+        self.titleIndex = dict()
+
+        i = 0
+        db._cursor.execute(query)
+        while True:
+            row = db._cursor.fetchone()
+            if not row:
+                break
+            concept_id = int(row[1])
+            title = unicodedata.normalize('NFKD', row[0].decode("utf-8")).encode('ascii','ignore')
+            title_words = [str(w).lower() for w in nltk.word_tokenize(title)
+                           if w not in self._stopwords and len(w) > 2]
+            for k in xrange(len(title_words)):
+                ngram = " ".join(title_words[:k+1])
+                if ngram not in self.titleIndex:
+                    self.titleIndex[ngram] = dict()
+                self.titleIndex[ngram][concept_id]=1
+            i += 1
+            if i % 10000 == 0:
+                print i
+
+    def calcCandidatesByPartialTitle2(self, db):
+        query = "SELECT title, id FROM article"
+        self.titleIndex = dict()
+
+        i = 0
+        db._cursor.execute(query)
+        while True:
+            row = db._cursor.fetchone()
+            if not row:
+                break
+            concept_id = int(row[1])
+            title = unicodedata.normalize('NFKD', row[0].decode("utf-8")).encode('ascii','ignore')
+            title_words = [str(w).lower() for w in nltk.word_tokenize(title)
+                           if w not in self._stopwords and len(w) > 2]
+            for ngram in self.ngrams(title_words):
+                if ngram not in self.titleIndex:
+                    self.titleIndex[ngram] = dict()
+                self.titleIndex[ngram][concept_id]=1
+            i += 1
+            if i % 10000 == 0:
+                print i
+
+    def calcCandidatesByPartialTitle(self, db):
+        query = "SELECT title, id FROM article"
+        self.titleIndex = dict()
+
+        i = 0
+        db._cursor.execute(query)
+        while True:
+            row = db._cursor.fetchone()
+            if not row:
+                break
+            concept_id = int(row[1])
+            title = unicodedata.normalize('NFKD', row[0].decode("utf-8")).encode('ascii','ignore')
+            title_words = [str(w).lower() for w in nltk.word_tokenize(title)
+                           if w not in self._stopwords and len(w) > 2]
+            for w in title_words:
+                if w not in self.titleIndex:
+                    self.titleIndex[w] = dict()
+                self.titleIndex[w][concept_id]=1
+            i += 1
+            if i % 10000 == 0:
+                print i
+
+    def getCandidatesForMention2(self, mention):
+        x = self.getCandidatesForMention(mention)
+
+        mention_words = [w for w in nltk.word_tokenize(mention.lower().decode("utf-8"))
+                         if w not in self._stopwords and len(w) > 2]
+        for word in mention_words:
+            if word in self.titleIndex:
+                for concept in self.titleIndex[word].keys():
+                    if concept not in x:
+                        x[int(concept)] = 0.01
+        return x
+
+    def getCandidatesForMention3(self, mention):
+        x = self.getCandidatesForMention(mention)
+
+        mention_words = [w for w in nltk.word_tokenize(mention.lower().decode("utf-8"))
+                         if w not in self._stopwords and len(w) > 2]
+        m = " ".join(mention_words)
+        if m in self.titleIndex:
+            for concept in self.titleIndex[m].keys():
+                if concept not in x:
+                    x[int(concept)] = 0.01
+        return x
+
+    def getCandidatesForMention(self, mention, p=0.001, t=3):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -140,7 +295,7 @@ class WikilinksStatistics:
         out = {x: float(y)/tot for x, y in out.iteritems()}
         return out
 
-    def getCandidatesSeenWith(self, sense, p=0.01, t=5):
+    def getCandidatesSeenWith(self, sense, p=0.001, t=3):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -211,3 +366,11 @@ class WikilinksStatistics:
         print("some ambiguous terms:")
         for w in wordsSorted[-10:]:
             print w
+
+#stats = WikilinksStatistics(None, load_from_file_path="../data/intralinks/train-stats-new2")
+#print len(stats.titleIndex)
+#from DbWrapper import *
+#wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=False)
+#stats.calcCandidatesByPartialTitle3(wikiDB)
+#stats.saveToFile("../data/intralinks/train-stats-new2")
+#print "hi"

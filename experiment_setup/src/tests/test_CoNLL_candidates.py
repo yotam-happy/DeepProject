@@ -14,7 +14,7 @@ if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
 # train on wikipedia intra-links corpus
-#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats-new2")
+_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats-new2")
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
 print "Done!"
 
@@ -58,7 +58,7 @@ for i, wlink in enumerate(CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YA
 
         prediction_possible += 1
         # 4. We have some candidates, and the gold sense is resolved and in the candidate list, can word our method!
-        candidates_ours = dict() #_train_stats.getCandidatesForMention3(wlink["word"])
+        candidates_ours = _train_stats.getCandidatesForMention(wlink["word"], addTitleMatch=True)
         #candidates_ours = _train_stats.getCandidatesSeenWith(gold_sense_id, p=0, t=0)
 
         total_our_candidates += len(candidates_ours)
@@ -66,6 +66,9 @@ for i, wlink in enumerate(CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YA
 
         if gold_sense_id in candidates_ours.keys():
             gold_sense_recall += 1
+        else:
+            print "gold sense not recalled for: ", wlink["word"], "(", gold_sense_url, ")"
+            candidates_ours
 
         ppr_candidates_in_ours = 0
         for cand in candidates_ppr:
