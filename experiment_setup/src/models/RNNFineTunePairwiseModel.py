@@ -5,28 +5,22 @@ from keras.layers import *
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 import theano as T
+import keras.backend as K
+from keras.engine.topology import Layer
 
-class NonZeroAverage(Layer):
-    """
-    Layer that averages over non-zero word embeddings to produce an average vector for e.g. an entity or an aspect.
-    Not fully implemented yet.
-    """
-    @property
-    def output_shape(self):
-        shape = list(self.input_shape)
-        assert len(shape) == 3 # only valid for 3D tensors
-        return tuple([shape[0], shape[2]])
 
-    def get_output(self, train=False):
-        x = self.get_input(train)
-        shape = list(self.input_shape)
-        sums = x.sum(axis=1)
-        c = T.neq(x,0).sum(axis=2)
-        count = T.neq(c,0).sum(axis=1)
-        t = [count] * shape[2]
-        stacked = T.stack(*t).transpose()
-        ave = sums / stacked
-        return ave.astype('float32')
+# nonzero_mean is mask_aware_mean taken from: https://github.com/fchollet/keras/issues/1579
+def nonzero_mean(x):
+    # recreate the masks - all zero rows have been masked
+    mask = K.not_equal(K.sum(K.abs(x), axis=2, keepdims=True), 0)
+
+    # number of that rows are not all zeros
+    n = K.sum(K.cast(mask, 'float32'), axis=1, keepdims=False)
+
+    # compute mask-aware mean of x
+    x_mean = K.sum(x, axis=1, keepdims=False) / n
+
+    return x_mean
 
 class RNNFineTunePairwiseModel:
     """
@@ -48,7 +42,7 @@ class RNNFineTunePairwiseModel:
         self._batch_right_X = []
         self._batch_candidate1_X = []
         self._batch_candidate2_X = []
-        self._batch_mention_X = [[] for i in xrange(max_mention_words)]
+        self._batch_mention_X = []
         self._batch_extra_features_X = []
         self._batchY = []
         self._context_window_sz = context_window_sz
@@ -63,31 +57,21 @@ class RNNFineTunePairwiseModel:
         # model initialization
         # Multi layer percepatron -2 hidden layers with 64 fully connected neurons
 
-#        word_embed_layer = Embedding(self._w2v.wordEmbeddings.shape[0],
-#                                     self._w2v.wordEmbeddingsSz,
-#                                     weights=[self._w2v.wordEmbeddings])
-#        concept_embed_layer = Embedding(self._w2v.conceptEmbeddings.shape[0],
-#                                        self._w2v.conceptEmbeddingsSz,
-#                                        input_length=1,
-#                                        weights=[self._w2v.conceptEmbeddings])
         word_embed_layer = Embedding(self._w2v.wordEmbeddings.shape[0],
                                      self._w2v.wordEmbeddingsSz,
+                                     input_length=self._context_window_sz,
                                      init=lambda shape, name=None: K.variable(self._w2v.wordEmbeddings, name=name))
         concept_embed_layer = Embedding(self._w2v.conceptEmbeddings.shape[0],
                                         self._w2v.conceptEmbeddingsSz,
-                                         input_length=1,
+                                        input_length=1,
                                         init=lambda shape, name=None: K.variable(self._w2v.conceptEmbeddings, name=name))
-
-        def wordEmbeddingsInit(shape, name=None):
-            value = np.random.random(shape)
-            return K.variable(value, name=name)
 
         left_context_input = Input(shape=(self._context_window_sz,), dtype='int32', name='left_context_input')
         right_context_input = Input(shape=(self._context_window_sz,), dtype='int32', name='right_context_input')
         candidate1_input = Input(shape=(1,), dtype='int32', name='candidate1_input')
         candidate2_input = Input(shape=(1,), dtype='int32', name='candidate2_input')
-#        mention_input = Input(shape=(self._max_mention_words,), dtype='int32', name='mention_input')
-#        mention_input = [Input(shape=(1,), dtype='int32', name='mention_input' + str(k))
+        mention_input = Input(shape=(self._max_mention_words,), dtype='int32', name='mention_input')
+#        mention_input = [Input(shape=(self._context_window_sz,), dtype='int32', name='mention_input' + str(k))
 #                         for k in xrange(self._max_mention_words)]
         if self._feature_generator is not None:
             extra_features_input = Input(shape=(self._feature_generator.numPairwiseFeatures(),), name='extra_features_input')
@@ -96,38 +80,39 @@ class RNNFineTunePairwiseModel:
         right_context_embed = word_embed_layer(right_context_input)
         candidate1_embed = concept_embed_layer(candidate1_input)
         candidate2_embed = concept_embed_layer(candidate2_input)
-#        mention_embed = word_embed_layer(mention_input)
+        mention_embed = word_embed_layer(mention_input)
 #        mention_embed = [word_embed_layer(i) for i in mention_input]
         if noise is not None:
             left_context_embed = GaussianNoise(noise)(left_context_embed)
             right_context_embed = GaussianNoise(noise)(right_context_embed)
             candidate1_embed = GaussianNoise(noise)(candidate1_embed)
             candidate2_embed = GaussianNoise(noise)(candidate2_embed)
-#            mention_embed = GaussianNoise(noise)(mention_embed)
+            mention_embed = GaussianNoise(noise)(mention_embed)
 #            mention_embed = [GaussianNoise(noise)(i) for i in mention_embed]
             if self._feature_generator is not None:
                 extra_features_input_n = GaussianNoise(noise)(extra_features_input)
         else:
             extra_features_input_n = extra_features_input
 
-#        mention_flat = Flatten()(mention_embed)
 #        mention_flat = [Flatten()(i) for i in mention_embed]
         candidate1_flat = Flatten()(candidate1_embed)
         candidate2_flat = Flatten()(candidate2_embed)
 
- #       mention_avg = merge(mention_flat, mode='ave')
+        mention_flat = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz, ))(mention_embed)
+        #mention_flat = Reshape((None, self._w2v.conceptEmbeddingsSz))(mention_flat)
+        #mention_flat = Flatten()(mention_flat)
 
         left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(left_context_embed)
         right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=False, dropout_U=dropout, dropout_W=dropout)(right_context_embed)
 
-#        if noise is not None:
-#            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_avg, extra_features_input_n], mode='concat')
-#        else:
-#            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_avg], mode='concat')
         if noise is not None:
-            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, extra_features_input_n], mode='concat')
+            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_flat, extra_features_input_n], mode='concat')
         else:
-            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat], mode='concat')
+            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, mention_flat], mode='concat')
+#        if noise is not None:
+#            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat, extra_features_input_n], mode='concat')
+#        else:
+#            x = merge([left_rnn, right_rnn, candidate1_flat, candidate2_flat], mode='concat')
 
         x = Dense(300, activation='relu')(x)
         if dropout > 0.0:
@@ -135,22 +120,22 @@ class RNNFineTunePairwiseModel:
         x = Dense(50, activation='relu')(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
-        if self._feature_generator is not None:
-            model = Model(input=[left_context_input, right_context_input, candidate1_input,
-                                 candidate2_input, extra_features_input],
-                          output=[out])
-        else:
-            model = Model(input=[left_context_input, right_context_input, candidate1_input,
-                                 candidate2_input],
-                          output=[out])
-#        if noise is not None:
+#        if self._feature_generator is not None:
 #            model = Model(input=[left_context_input, right_context_input, candidate1_input,
-#                                 candidate2_input, extra_features_input] + mention_input,
+#                                 candidate2_input, extra_features_input],
 #                          output=[out])
 #        else:
 #            model = Model(input=[left_context_input, right_context_input, candidate1_input,
-#                                 candidate2_input] + mention_input,
+#                                 candidate2_input],
 #                          output=[out])
+        if noise is not None:
+            model = Model(input=[left_context_input, right_context_input, candidate1_input,
+                                 candidate2_input, extra_features_input, mention_input],
+                          output=[out])
+        else:
+            model = Model(input=[left_context_input, right_context_input, candidate1_input,
+                                 candidate2_input, mention_input],
+                          output=[out])
         model.compile(optimizer='adagrad', loss='binary_crossentropy')
         self.model = model
         print "model compiled!"
@@ -190,10 +175,11 @@ class RNNFineTunePairwiseModel:
         for w in l:
             if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
                 o.append(self._w2v.wordDict[w])
+        if len(o) == 0:
+            o.append(self._w2v.wordDict[self._w2v.DUMMY_KEY])
         if reverse:
             o = o[::-1]
-
-        arr = np.zeros((self._context_window_sz,))
+        arr = np.zeros((output_len,))
         n = len(o) if len(o) <= output_len else output_len
         arr[:n] = np.array(o)[:n]
         return arr
@@ -217,8 +203,9 @@ class RNNFineTunePairwiseModel:
     def _trainXY(self,left_X, right_X, mention_X, candidate1_X, candidate2_X, extra_features_X, Y):
         self._batch_left_X.append(left_X)
         self._batch_right_X.append(right_X)
-        for i in xrange(self._max_mention_words):
-            self._batch_mention_X[i].append(mention_X[i])
+        self._batch_mention_X.append(mention_X)
+        #       for i in xrange(self._max_mention_words):
+ #           self._batch_mention_X[i].append(mention_X[i])
         self._batch_candidate1_X.append(candidate1_X)
         self._batch_candidate2_X.append(candidate2_X)
         self._batch_extra_features_X.append(extra_features_X)
@@ -229,7 +216,8 @@ class RNNFineTunePairwiseModel:
             batchX = {'left_context_input': np.array(self._batch_left_X),
                       'right_context_input': np.array(self._batch_right_X),
                       'candidate1_input': np.array(self._batch_candidate1_X),
-                      'candidate2_input': np.array(self._batch_candidate2_X)}
+                      'candidate2_input': np.array(self._batch_candidate2_X),
+                      'mention_input': np.array(self._batch_mention_X)}
             if self._feature_generator is not None:
                 batchX['extra_features_input'] = np.array(self._batch_extra_features_X)
 #            for i in xrange(self._max_mention_words):
@@ -244,7 +232,7 @@ class RNNFineTunePairwiseModel:
 
             self._batch_left_X = []
             self._batch_right_X = []
-            self._batch_mention_X = [[] for i in xrange(self._max_mention_words)]
+            self._batch_mention_X = []
             self._batch_candidate1_X = []
             self._batch_candidate2_X = []
             self._batch_extra_features_X = []

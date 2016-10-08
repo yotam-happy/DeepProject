@@ -6,7 +6,7 @@ import os
 
 from WikilinksIterator import WikilinksNewIterator
 from WikilinksStatistics import WikilinksStatistics
-
+import keras as K
 
 class Word2vecLoader:
     """
@@ -16,10 +16,12 @@ class Word2vecLoader:
     call loadEmbeddings() to do so
     """
 
-    def __init__(self, wordsFilePath="vecs", conceptsFilePath="context"):
+    def __init__(self, wordsFilePath="vecs", conceptsFilePath="context", debug=False):
         self._wordsFilePath = wordsFilePath
         self._conceptsFilePath = conceptsFilePath
+        self._debug = debug
 
+        self.DUMMY_KEY = '~@@dummy@@~'
         self.wordEmbeddings = None
         self.wordDict = dict()
         self.wordEmbeddingsSz = 0
@@ -27,38 +29,48 @@ class Word2vecLoader:
         self.conceptDict = dict()
         self.conceptEmbeddingsSz = 0
 
-
     def _loadEmbedding(self, path, filterSet, int_key = False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
             dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
-            embd_sz = int(embd_sz)
+            embd_sz = int(embd_sz) + 1
+            if self._debug:
+                dict_sz = 10000 if dict_sz > 10000 else dict_sz
 
             embd_dict = dict()
             embedding = np.zeros((dict_sz+1,embd_sz))
 
-            i = 1
+            # Adds a dummy key. The dummy is a (0,...,0,1) vector where all real vectors are (?,...,?,0)
+            embd_dict[self.DUMMY_KEY] = 1
+            embedding[1, embd_sz-1] = 1.0
+
+            i = 2
             for line in iter(f):
                 s = line.split()
                 if filterSet is None or s[0] in filterSet:
-                    embedding[i, :] = np.array([float(x) for x in s[1:]])
+                    embedding[i, :-1] = np.array([float(x) for x in s[1:]])
                     embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
                     i += 1
+                    if self._debug and i > 10000:
+                        break
         return embedding, embd_dict, embd_sz
 
-    def _randomEmbedding(self, path, filterSet, int_key = False, zero=False):
+    def _randomEmbedding(self, path, filterSet, int_key = False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
             dict_sz = int(dict_sz) if int(dict_sz) < len(filterSet) else len(filterSet)
-            embd_sz = int(embd_sz)
+            embd_sz = int(embd_sz) + 1
+            if self._debug:
+                dict_sz = 10000 if dict_sz > 10000 else dict_sz
 
             embd_dict = dict()
             embedding = np.random.uniform(-1 / np.sqrt(embd_sz * 4), 1 / np.sqrt(embd_sz * 4), (dict_sz+1,embd_sz))
-            if zero:
-                embedding = np.zeros((dict_sz+1,embd_sz))
+            embedding[0, :] = np.zeros((1,embd_sz))
+            embedding[:, -1] = np.zeros((dict_sz+1, 1))
+            embedding[1, -1] = 1.0
 
             print "rnd embd"
-            i = 1
+            i = 2
             for line in iter(f):
                 s = line.split()
                 if filterSet is None or s[0] in filterSet:
@@ -140,7 +152,6 @@ class Word2vecLoader:
             #self._saveEmbeddingDump(self._conceptsFilePath+'.preprocessed.npy',
             #                        self._conceptsFilePath+'.preprocessed.dict',
             #                        self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz)
-
 
 if __name__ == "__main__":
     w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
