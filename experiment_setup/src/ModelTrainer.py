@@ -8,17 +8,18 @@ class ModelTrainer:
     and feeds them to a model's train method
     """
 
-    def __init__(self, iter, stats, model, epochs = 10,
-                 wordInclude = None, wordExclude=None, senseFilter = None):
+    def __init__(self, iter, stats, model, epochs=10, neg_sample=1,
+                 wordInclude=None, wordExclude=None, senseFilter=None, pointwise=False):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
         """
-        self._neg_sample = 1
+        self._neg_sample = neg_sample
         self._iter = iter
         self._model = model
         self._stats = stats
         self._epochs = epochs
+        self._pointwise = pointwise
         self.wordInclude = wordInclude
         self.wordExclude = wordExclude
         self.senseFilter = {int(x) for x in senseFilter} if senseFilter is not None else None
@@ -36,11 +37,6 @@ class ModelTrainer:
         self._neg_sample_uniform = True
         self._neg_sample_all_senses_prob = 0.0
         self._neg_sample_seenWith_prob = 0.0
-
-        self._t = 0
-        self._x1 = 0
-        self._x2 = 0
-        self._x3 = 0
 
     def getSenseNegSample(self):
         if (self._neg_sample_uniform):
@@ -76,6 +72,8 @@ class ModelTrainer:
                 # get id vector
                 ids = [candidate for candidate in candidates.items() if int(candidate[0]) != actual]
 
+                # get list of negative samples
+                neg = []
                 for k in xrange(self._neg_sample):
 
                     # do negative sampling (get a negative sample)
@@ -84,28 +82,33 @@ class ModelTrainer:
                         # get negative sample from all possible senses
                         neg_candidates = self._all_senses
                         wrong = self.getSenseNegSample()
-                        self._x1 += 1
                     elif r < self._neg_sample_all_senses_prob + self._neg_sample_seenWith_prob:
                         # get negative sample from senses seen with the correct one
                         neg_candidates = self._stats.getCandidatesSeenWith(actual).keys()
                         if len(neg_candidates) < 1:
                             continue
                         wrong = neg_candidates[np.random.randint(len(neg_candidates))]
-                        self._x2 += 1
                     else:
                         # get negative sample from senses seen for the current mention
                         neg_candidates = ids
                         if len(neg_candidates) < 1:
                             continue
                         wrong = neg_candidates[np.random.randint(len(neg_candidates))][0]
-                        self._x3 += 1
-                    self._t += 1
+                    neg.append(wrong)
 
-                    # train on both sides so we get a symmetric model
-                    if random.randrange(2) == 0:
-                        self._model.train(wikilink, actual, wrong, actual)
-                    else:
-                        self._model.train(wikilink, wrong, actual, actual)
+                # train
+                if len(neg) > 0:
+                    if self._pointwise:
+                        self._model.train(wikilink, actual, actual)
+                    for wrong in neg:
+                        if self._pointwise:
+                            self._model.train(wikilink, wrong, actual)
+                        else:
+                            # train on both sides so we get a symmetric model
+                            if random.randrange(2) == 0:
+                                self._model.train(wikilink, actual, wrong, actual)
+                            else:
+                                self._model.train(wikilink, wrong, actual, actual)
 
         self._model.finilizeTraining()
         print "done training."

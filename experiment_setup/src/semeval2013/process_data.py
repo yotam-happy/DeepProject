@@ -5,7 +5,7 @@ from multiprocessing.pool import ThreadPool
 from nltk.stem.wordnet import WordNetLemmatizer
 
 from DbWrapper import *
-from KnockoutModel import *
+from PairwisePredict import *
 from Word2vecLoader import *
 from models.RNNPairwiseModel import *
 
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     print "loading model"
     pairwise_model = RNNPairwiseModel(w2v)
     pairwise_model.loadModel(path + "/models/wiki-intralinks.0.out")
-    knockout_model = KnockoutModel(pairwise_model,train_stats)
+    knockout_model = PairwisePredict(pairwise_model, train_stats)
     print 'Done!'
 
     wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')

@@ -1,5 +1,5 @@
 from DbWrapper import *
-from KnockoutModel import *
+from PairwisePredict import *
 from PPRforNED import *
 from Word2vecLoader import *
 from models.RNNPairwiseModel import *

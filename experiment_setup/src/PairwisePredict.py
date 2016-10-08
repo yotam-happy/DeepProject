@@ -6,7 +6,7 @@ import random
 from WikilinksStatistics import *
 
 
-class KnockoutModel:
+class PairwisePredict:
     """
     This model takes a pairwise model that can train/predict on pairs of candidates for a wikilink
     and uses it to train/predict on a list candidates using a knockout method.

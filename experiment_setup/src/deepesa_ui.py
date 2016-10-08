@@ -10,7 +10,7 @@ import os
 from PyQt4 import QtCore, QtGui
 
 from DbWrapper import WikipediaDbWrapper
-from KnockoutModel import KnockoutModel
+from PairwisePredict import PairwisePredict
 from WikilinksIterator import WikilinksNewIterator
 from WikilinksStatistics import WikilinksStatistics
 from Word2vecLoader import Word2vecLoader
@@ -153,7 +153,7 @@ class Ui_MainWindow(object):
 
         pairwise_model = RNNPairwiseModel.RNNPairwiseModel(self.w2v_stats_dic['w2v'])
         model_file = pairwise_model.loadModel((fname.__str__()).split('.model')[0])
-        self.model = KnockoutModel(pairwise_model=model_file, stats=self.w2v_stats_dic['stats'])
+        self.model = PairwisePredict(pairwise_model=model_file, stats=self.w2v_stats_dic['stats'])
         self.log_TXT.setText(str(fname)+' model was loaded....')
         self.db = WikipediaDbWrapper(user='root', password=self.password, database='wikiprep-esa-en20151002')
 

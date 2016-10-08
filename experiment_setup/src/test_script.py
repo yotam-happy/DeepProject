@@ -14,18 +14,21 @@ I also recommend on Pycharm cell mode plugin for easier execution of code fragme
 ## The cell seperator
 
 from Evaluation import *
-from KnockoutModel import *
+from PairwisePredict import *
 from ModelTrainer import *
 from models.RNNPairwiseModel import *
 from models.RNNFineTunePairwiseModel import *
 from FeatureGenerator import *
-
+from PointwisePredict import *
+from models.RNNPointwiseModel import *
+from models.BaselinePairwiseModel import *
+from PairwisePredict import *
 ##
 
-def eval(experiment_name, path, train_session_nr, knockout_model, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
+def eval(experiment_name, path, train_session_nr, predictor, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
     # evaluate
     print "Evaluating " + experiment_name + "...", train_session_nr
-    evaluation = Evaluation(iter_eval, knockout_model, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude, stats=stats, sampling=sampling)
+    evaluation = Evaluation(iter_eval, predictor, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude, stats=stats, sampling=sampling)
     evaluation.evaluate()
 
     # save
@@ -35,11 +38,12 @@ def eval(experiment_name, path, train_session_nr, knockout_model, iter_eval, wor
     precision_f.close()
 
 
-def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, iter_eval, filterWords = False, filterSenses = False, doEvaluation=True, p=1.0):
+def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval, filterWords = False,
+               filterSenses = False, doEvaluation=True, p=1.0, pointwise=False):
     '''
     :param experiment_name: all saved files start with this name
     :param path:            path to save files
-    :param pairwise_model:  pairwise model to train
+    :param model:           model to train
     :param train_stats:     stats object of the training set
     :param iter_train:      iterator for the training set
     :param iter_eval:       iterator for the evaluation set
@@ -51,26 +55,34 @@ def experiment(experiment_name, path, pairwise_model, train_stats, iter_train, i
     '''
 
     wordsForBroblem = train_stats.getRandomWordSubset(p)
-    wordFilter = train_stats.getRandomWordSubset(0.1, baseSubset=wordsForBroblem) if filterWords or filterSenses else None
+    wordFilter = train_stats.getRandomWordSubset(0.1, baseSubset=wordsForBroblem) if filterWords or filterSenses \
+        else None
     senseFilter = train_stats.getSensesFor(wordFilter) if filterSenses else None
 
-    knockout_model = KnockoutModel(pairwise_model, train_stats)
-    trainer = ModelTrainer(iter_train, train_stats, pairwise_model, epochs=1, wordInclude=wordsForBroblem, wordExclude=wordFilter, senseFilter=senseFilter)
+    if pointwise:
+        predictor = PointwisePredict(model, train_stats)
+        trainer = ModelTrainer(iter_train, train_stats, model, epochs=1, wordInclude=wordsForBroblem,
+                               wordExclude=wordFilter, senseFilter=senseFilter, pointwise=True, neg_sample=4)
+    else:
+        predictor = PairwisePredict(model, train_stats)
+        trainer = ModelTrainer(iter_train, train_stats, model, epochs=1, wordInclude=wordsForBroblem,
+                               wordExclude=wordFilter, senseFilter=senseFilter)
+
     for train_session in xrange(200):
         # train
         print "Training... ", train_session
         trainer.train()
 
-        pairwise_model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
+        model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
 
         if doEvaluation:
-            eval(experiment_name + ".eval", path, train_session, knockout_model, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
+            eval(experiment_name + ".eval", path, train_session, predictor, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
             if filterWords or filterSenses:
-                eval(experiment_name + ".unseen.eval", path, train_session, knockout_model, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
+                eval(experiment_name + ".unseen.eval", path, train_session, predictor, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
 
 
     ## Plot train loss to file
-    pairwise_model.plotTrainLoss(path + "/models/" + experiment_name + ".train_loss.png", st=10)
+    model.plotTrainLoss(path + "/models/" + experiment_name + ".train_loss.png", st=10)
 
 ##
 
@@ -82,11 +94,11 @@ if(not os.path.isdir(_path)):
 # train on wikipedia intra-links corpus
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
 _iter_train = WikilinksNewIterator(_path+"/data/intralinks/filtered")
-_iter_eval = None
+_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/filtered")
 
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-#_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/all/train")
-#_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/all/evaluation")
+#_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/ambiguos_1/train")
+#_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/ambiguos_1/evaluation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -96,31 +108,41 @@ wD = _train_stats.contextDictionary
 cD = _train_stats.conceptCounts
 _w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
 #_w2v.randomEmbeddings(wordDict=wD, conceptDict=cD)
-print 'wordEmbedding dict size: ',len(_w2v.wordEmbeddings), " wanted: ", len(wD)
-print 'conceptEmbeddings dict size: ',len(_w2v.conceptEmbeddings), " wanted", len(cD)
+print 'wordEmbedding dict size: ', len(_w2v.wordEmbeddings), " wanted: ", len(wD)
+print 'conceptEmbeddings dict size: ', len(_w2v.conceptEmbeddings), " wanted", len(cD)
 print 'Done!'
 
 """
 Training double gru model
 """
 
-## TRAIN DEBUGGING CELL
-print 'Training...'
+## TRAIN PAIRWISE MODEL
+#print 'Training...'
 
-_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
+#_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
 #_pairwise_model = RNNFineTunePairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-_pairwise_model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+#_pairwise_model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
 #_pairwise_model = VanillaNNPairwiseModel(_w2v)
 #_pairwise_model.loadModel(_path + "/models/model.10.out")
 
-experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval, doEvaluation=False, filterWords=True)
+#experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval,
+#           doEvaluation=False, filterWords=True, p=1.0)
+
+## TRAIN POINTWISE MODEL
+print 'Training...'
+
+_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
+model = RNNPointwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+
+experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
+           doEvaluation=True, filterWords=True, pointwise=True)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-#_iter_test = WikilinksNewIterator(_path+"/data/wikilinks/fixed/evaluation")
+#_iter_test = WikilinksNewIterator(_path+"/data/wikilinks/all/evaluation")
 #_pairwise_model = BaselinePairwiseModel(_train_stats)
 #_pairwise_model = GuessPairwiseModel()
-#knockout_model = KnockoutModel(_pairwise_model, _train_stats)
-#evaluation = Evaluation(_iter_test, knockout_model, stats=_train_stats)
+#predictor = PairwisePredict(_pairwise_model, _train_stats)
+#evaluation = Evaluation(_iter_test, predictor, stats=_train_stats)
 #evaluation.evaluate()
 
