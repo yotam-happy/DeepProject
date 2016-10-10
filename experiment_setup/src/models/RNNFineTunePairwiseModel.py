@@ -23,17 +23,6 @@ def nonzero_mean(x):
     return x_mean
 
 class RNNFineTunePairwiseModel:
-    """
-    This model is an enhancement of the SimpleNNN model that uses an 2 LSTMs
-    to model the lelf context and the right context
-
-
-    !!! OUT OF DATE - Need to fit to new RNNPairwiseModel !!!
-
-
-
-    """
-
     def __init__(self, w2v, context_window_sz=10, dropout=0.0, noise=None, stripStropWords=True,
                  feature_generator=None, max_mention_words=5):
         self._stopwords = stopwords.words('english') if stripStropWords else None
