@@ -1,8 +1,7 @@
-import json
 import os
-import sys
+import json
 
-import numpy as np
+import sys
 
 
 class PPRIterator:
@@ -97,37 +96,28 @@ class PPRStatistics:
         :return:            returns a dictionary: (candidate,count)
         """
         mention = mention.lower()
-        if mention not in self.mentionLinks or len(self.mentionLinks[mention]) == 0:
-            return {}
+        if mention not in self.mentionLinks:
+            return None
 
         l = self._sortedList(self.mentionLinks[mention])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
-            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[int(x[0])] = x[1] if tot != 0 else 1
+            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[int(x[0])] = x[1]
 
+        print out
         # now calc actual priors
         tot = sum([x for x in out.values()])
         if tot == 0:
-            out = {int(x): 1.0 / len(out) for x, y in out.iteritems()}
+            out = {x: 1.0 / len(out) for x, y in out.iteritems()}
         else:
-            out = {int(x): float(y)/tot for x, y in out.iteritems()}
+            out = {x: float(y)/tot for x, y in out.iteritems()}
         return out
 
     def getMostProbableSense(self, mention):
         cands = self.getCandidateUrlsForMention(mention)
         return max(cands.iterkeys(), key=(lambda key: cands[key]))
-
-    def getCandidateProbabilityYamadaStyle(self,concept): # TODO: change wikistats to same code...
-        counter = 0.0
-        for links in self.mentionLinks.iteritems():
-            if concept in links[1].keys():
-                counter+=1.0
-        return float(counter)/ len(self.mentionCounts)
-
-    def getCandidateConditionalProbabilty(self, concept, mention):
-        return float(self.mentionLinks[mention][concept]) / np.sum(self.mentionLinks[mention].values())
 
     def getCandidateUrlsForMention(self, mention, p=0.01, t=5):
         """
@@ -139,14 +129,14 @@ class PPRStatistics:
         """
         mention = mention.lower()
         if mention not in self.mentionLinksUrl:
-            return {}
+            return None
 
         l = self._sortedList(self.mentionLinksUrl[mention])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
-            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[x[0]] = x[1] if tot != 0 else 1
+            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[x[0]] = x[1]
 
         # now calc actual priors
         tot = sum([x for x in out.values()])
@@ -175,7 +165,6 @@ class PPRStatistics:
             for sense in entity_chunck['sensesDetails']:
                 self.mentionLinks[mention_name][sense['id']] = sense['inCount']
                 self.mentionLinksUrl[mention_name][sense['url']] = sense['inCount']
-                self.conceptCounts[sense['id']] = self.conceptCounts.get(sense['id'], 0) + 1 # FIXME apperantly adding the conceptCounts made something wrong (might need to be fixed)
 
         self.prettyPrintStats()
 
