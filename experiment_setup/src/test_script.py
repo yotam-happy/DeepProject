@@ -116,26 +116,23 @@ print 'Done!'
 Training double gru model
 """
 
-## TRAIN PAIRWISE MODEL
-#print 'Training...'
-
-#_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-#_pairwise_model = RNNFineTunePairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#_pairwise_model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#_pairwise_model = VanillaNNPairwiseModel(_w2v)
-#_pairwise_model.loadModel(_path + "/models/model.10.out")
-
-#experiment("small", _path, _pairwise_model, _train_stats, _iter_train, _iter_eval,
-#           doEvaluation=False, filterWords=True, p=1.0)
-
-## TRAIN POINTWISE MODEL
+# TRAIN PAIRWISE MODEL
 print 'Training...'
 
 _feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-model = RNNPointwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-
+model = RNNFineTunePairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+#model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+#model = VanillaNNPairwiseModel(_w2v)
 experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-           doEvaluation=True, filterWords=True, pointwise=True)
+           doEvaluation=False, filterWords=True, p=1.0)
+
+## TRAIN POINTWISE MODEL
+print 'Training...'
+#_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
+#model = RNNPointwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
+
+#experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
+#           doEvaluation=True, filterWords=True, pointwise=True)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
