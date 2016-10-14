@@ -2,7 +2,7 @@
 This scrip is used for creating files of features and labeling instead
 of using a generator
 """
-from blaze.compute.tests.test_pyfunc import inc
+# from blaze.compute.tests.test_pyfunc import inc
 
 from DbWrapper import WikipediaDbWrapper
 from PPRforNED import PPRStatistics
@@ -67,10 +67,11 @@ yamada_base_features = pd.DataFrame()
 print 'Start creating base DS!'
 
 train_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='train')
-test_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='testa', includeUnresolved=False)
+testa_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='testa', includeUnresolved=False)
+testb_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='testb', includeUnresolved=False)
 
 count = 0
-for wlink_list in train_iter.wikilinks(all_mentions_per_doc = True):
+for wlink_list in testb_iter.wikilinks(all_mentions_per_doc = True):
     for feature_vec in fg.getMentionListFeatures(wlink_list):
         yamada_base_features = pd.concat([ yamada_base_features, feature_vec ])
     # yamada_base_features = pd.concat([yamada_base_features, wlink_features.next()])
@@ -82,7 +83,7 @@ print 'done iterating!'
 # save
 
 # yamada_base_features.to_pickle(_path +"/data/CoNLL/train_data_base_conll")
-yamada_base_features.to_pickle(_path +"/data/CoNLL/train_data_base_conll")
+yamada_base_features.to_pickle(_path +"/data/CoNLL/testb_data_base_conll")
 
 
 ##

@@ -1,23 +1,22 @@
 from sklearn import metrics
-from sklearn.ensemble import GradientBoostingRegressor as gbtr
+from sklearn.ensemble import GradientBoostingRegressor
 
 
 class GBTRmodel:
 
-    def __init__(self, itr, stats, DB, feature_generator, n_epoch, model = None):
+    def __init__(self, itr = None, stats = None, db = None, feature_generator = None, n_epoch = None, model = None):
         self._stats = stats
         self._iter =itr
-        self._db = DB
+        self._db = db
         self._n_epoch = n_epoch
         if model:
             self._clf = model
         else:
             # initialize GBTR (it is the classification model and not the regresion because the
             # logistic regression loss)
-            self._clf = gbtr(loss = 'huber', learning_rate= 0.02, n_estimators=1e4, max_depth=3, max_features=None) # TODO: Check deviance loss with GBTC
+            self._clf = GradientBoostingRegressor(loss = 'huber', learning_rate= 0.02, n_estimators=10000, max_depth=3, max_features=None) # TODO: Check deviance loss with GBTC
 
-    def train(self,  data, label):
-
+    def fit(self,  data, label):
         # train individually on every mention appearing in that doc using the _model
         self._clf.fit(X = data, y = label)
         return

@@ -129,8 +129,6 @@ class FeatureGenerator:
 
                 # up to here we have the full base structure in a matrix except of the n_candidates feature
                 if 'rnn_model_feature' in self.mention_features:
-                    print ' *** mention: ',wlink['word']
-                    print ' *** cands: ',candidates.keys()
                     # candidates = self._stats.getCandidatesForMention(wlink['word'])
                     if pointwise_feature:
                         # taking the mean and variance of the a_beats_b matrix and the normalized sum of votes
@@ -146,11 +144,6 @@ class FeatureGenerator:
                                 var_cond.append(np.var(cond_mat[row, range_ind]))
                                 votes_prec.append( np.sum(votes_mat[row, range_ind]) / float((num_cands-1) * 2))
 
-                            # print row
-                            # print 'cond_mat: ',cond_mat[row,range_ind ]
-                            # print 'mean_cond: ', np.mean(cond_mat[row,range_ind ])
-                            # print 'var_cond: ',np.var(cond_mat[row, range_ind])
-                            # print 'mean mat: ', mean_cond
                         elif num_cands == 1:
                             mean_cond = 1
                             var_cond = 0
@@ -160,9 +153,6 @@ class FeatureGenerator:
                         feature_df['var_model_score'] = var_cond
                         feature_df['votes_model_score'] = votes_prec
 
-                        # print np.asanyarray(
-                        #     [np.concatenate(np.mean(cond_mat[row, :]), np.var(cond_mat[row, :]), np.sum(votes_mat[row, :]) / float((len(candidates)-1) * 2))
-                        #      for row in xrange(len(candidates))])
 
                     else:
                         # this entire line concatinates the candidate features to the exsisting base so the eventually we have for each candidate -
@@ -179,9 +169,6 @@ class FeatureGenerator:
                 feature_df['#s'] = features[-1] * np.ones(feature_df.shape[0])
                 feature_df['label'] = 2 * (np.asarray(feature_df.index) == float(wlink['wikiId'])) - 1
                 yield feature_df
-                # for sense in feature_df.index:
-                #     yield {'candidate':sense, 'feature':np.append(feature_df.loc[sense].as_matrix(), features[-1])}
-
 
     def save(self, fname):
         f = open(fname, mode='w')
