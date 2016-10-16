@@ -1,13 +1,14 @@
 import unicodedata
 import re
+from unidecode import unidecode
 
-
-def normalize_unicode(str):
-    s = str.decode("utf-8", 'ignore').lower()
-    s = unicodedata.normalize('NFKD', s)
-    s = s.encode('ascii', 'ignore')
-    return s
-
+def normalize_unicode(s):
+    if type(s) == bytearray:
+        return unidecode(unicode(str(s), 'utf-8')).lower()
+    elif type(s) == unicode:
+        return unidecode(s).lower()
+    else:
+        return unidecode(unicode(s, 'utf-8')).lower()
 
 def strip_wiki_title(title):
     t = re.sub('[^0-9a-zA-Z]+', '_', normalize_unicode(title))

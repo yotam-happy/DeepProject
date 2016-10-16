@@ -53,7 +53,7 @@ def _CoNLLRawToTuplesIterator(lines):
             if t[3] == '--NME--':
                 yield (t[2], True, False, None, None, None, None)
             else:
-                yield (t[2], True, True, t[3], t[4], t[5], t[6] if len(t) >= 7 else None)
+                yield (t[2], True, True, t[3], t[4], int(t[5]), t[6] if len(t) >= 7 else None)
 
 class CoNLLWikilinkIterator:
 
