@@ -10,27 +10,16 @@ class PairwisePredict:
     """
     This model takes a pairwise model that can train/predict on pairs of candidates for a wikilink
     and uses it to train/predict on a list candidates using a knockout method.
-    The candidates are taken from a stats object
     """
 
-    def __init__(self, pairwise_model, stats):
+    def __init__(self, pairwise_model):
         """
         :param pairwise_model:  The pairwise model used to do prediction/training on a triplet
                                 (wikilink,candidate1,candidate2)
-        :param stats:           A statistics object used to get list of candidates
         """
-        self._stats = stats
         self._pairwise_model = pairwise_model
 
-    def predictRepeated(self, wikilink, candidates=None, repeats=20):
-        if candidates is None and self._stats is None:
-            #cant do nothin'
-            return None
-
-        if candidates is None:
-            candidates = self._stats.getCandidatesForMention(wikilink["word"])
-            candidates = {int(x): y for x, y in candidates.iteritems()}
-
+    def predictRepeated(self, wikilink, candidates, repeats=20):
         # do a knockout
         l = [candidate for candidate in candidates.keys()]
 
@@ -58,21 +47,13 @@ class PairwisePredict:
         return final
 
 
-    def predict(self, wikilink, candidates=None):
-        if candidates is None and self._stats is None:
-            #cant do nothin'
-            return None
-
-        if candidates is None:
-            candidates = self._stats.getCandidatesForMention(wikilink["word"])
-            candidates = {int(x): y for x, y in candidates.iteritems()}
-
+    def predict(self, wikilink, candidates):
         # do a knockout
         l = [candidate for candidate in candidates.keys()]
         random.shuffle(l)
         return self._predict(wikilink, l)
 
-    def predict2(self, wikilink, candidates=None, returnProbMode = False):
+    def predict2(self, wikilink, candidates, returnProbMode = False):
         """
         pairwise prediction between all possible pairs of candidates (no self pairs)
         every comprison is calculated twice for eliminating order importance
@@ -82,20 +63,12 @@ class PairwisePredict:
                                 i beats j. Returns also cond_prob (Same idea with conditional probability of i beats j)
         :return:
         """
-        if candidates is None and self._stats is None:
-            #cant do nothin'
-            return None
-
-        if candidates is None:
-            candidates = self._stats.getCandidatesForMention(wikilink["word"])
-            candidates = {int(x): y for x, y in candidates.iteritems()}
-
         l = [candidate for candidate in candidates.keys()]
         if len(l) == 1:
             return l[0]
 
-        cond_prob = np.ones(  ( len(candidates.keys()), len(candidates.keys()) )  )
-        cond_votes = np.zeros(  ( len(candidates.keys()), len(candidates.keys()) )  )
+        cond_prob = np.ones((len(candidates.keys()), len(candidates.keys())))
+        cond_votes = np.zeros((len(candidates.keys()), len(candidates.keys())))
         ranking = {x:0.0 for x in l}
 
         # by using a and b we diminish the importance of order in the input
@@ -157,13 +130,13 @@ class PairwisePredict:
             return winner, first_cand_winner_prob, second_cand_winner_prob, a_beats_b, b_beats_a
 
     def _predict(self, wikilink, l):
-
         while len(l) > 1:
             # create a list of surviving candidates by comparing couples
             next_l = []
 
             for i in range(0, len(l) - 1, 2):
-                a = self._pairwise_model.predict(wikilink, l[i], l[i+1])
+                pr = self._pairwise_model.predict(wikilink, l[i], l[i+1])
+                a = l[i] if pr > 0.5 else l[i+1]
                 if a is not None:
                     next_l.append(a)
 
