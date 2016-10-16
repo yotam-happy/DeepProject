@@ -2,8 +2,8 @@ from DbWrapper import *
 from PairwisePredict import *
 from PPRforNED import *
 from Word2vecLoader import *
-from models.RNNPairwiseModel import *
-from models.RNNPointwiseModel import *
+from models.RNNFineTunePairwiseModel import *
+from models.DeepModel import DeepModel
 from tests.ConllReader import *
 from ModelTrainer import *
 from FeatureGenerator import *
@@ -21,48 +21,41 @@ if(not os.path.isdir(_path)):
 # train on wikipedia intra-links corpus
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+
+ppr_stats = PPRStatistics(None, _path+"/data/PPRforNED/ppr_stats")
+cD = ppr_stats.conceptCounts
 print "Done!"
 
 print 'Loading embeddings...'
-_w2v = Word2vecLoader(wordsFilePath=_path+"/data/word2vec/dim300vecs",
-                     conceptsFilePath=_path+"/data/word2vec/dim300context_vecs")
-wD = _train_stats.contextDictionary
-cD = _train_stats.conceptCounts
-_w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
-#_w2v.randomEmbeddings(wordDict=wD, conceptDict=cD)
-print 'wordEmbedding dict size: ',len(_w2v.wordEmbeddings), " wanted: ", len(wD)
+_w2v = Word2vecLoader(wordsFilePath=_path+"/data/word2vec/new/dim300vecs",
+                     conceptsFilePath=_path+"/data/word2vec/new/dim300context_vecs")
+
+_w2v.loadEmbeddings(conceptDict=cD)
+#_w2v.randomEmbeddings(conceptDict=cD)
+print 'wordEmbedding dict size: ',len(_w2v.wordEmbeddings)
 print 'conceptEmbeddings dict size: ',len(_w2v.conceptEmbeddings), " wanted", len(cD)
 print 'Done!'
 
-print 'Caching wikiDb'
-wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=False)
+print 'Connecting to db'
+wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002',
+                            concept_filter=_w2v.conceptDict)
 print 'Done!'
 
-ppr_stats = PPRStatistics(None, _path+"/data/PPRforNED/ppr_stats")
-
-#print 'loading pairwise model'
-#model_path = _path + '/models/small.0.out'
-#_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-#model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#model.loadModel(model_path)
-#predictor = PairwisePredict(model, None)
-#print 'Done!'
-
-print 'loading pointwise model'
-model_path = _path + '/models/small.0.out'
-_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-model = RNNPointwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#model.loadModel(model_path)
-predictor = PointwisePredict(model, None)
+print 'loading model'
+model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_stats, db=wikiDB)
+predictor = model.getPredictor()
 print 'Done!'
 
 # Pre training (fine tuning model using training set)
 print 'pretraining'
 model.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 train_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='train')
-trainer = ModelTrainer(train_iter, ppr_stats, model, epochs=5, pointwise=True)
+trainer = ModelTrainer(train_iter, ppr_stats, model, epochs=20, neg_sample=5)
 trainer.train()
+model.saveModel(_path + '/models/basic_model')
 print 'Done!'
+
+not_tried = 0
 
 total = 0
 gotit = 0
@@ -76,7 +69,7 @@ wrong_when_mps_correct = 0
 
 correct_when_tried = 0
 mps_when_tried = 0
-
+print 'predicting'
 f = open(_path +"/test_conll.log", "w")
 test_iter = CoNLLWikilinkIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv')
 for i, wlink in enumerate(test_iter.wikilinks()):
@@ -85,13 +78,13 @@ for i, wlink in enumerate(test_iter.wikilinks()):
     #TODO: backtrack the mapping
     gold_sense_url = wlink['wikiurl'][wlink['wikiurl'].rfind('/')+1:]
     gold_sense_id = wikiDB.resolvePage(gold_sense_url)
-#    candidates = {wikiDB.resolvePage(x[x.rfind('/')+1:]): y
-#                  for x, y in ppr_stats.getCandidateUrlsForMention(wlink['word']).iteritems()
-#                  if wikiDB.resolvePage(x[x.rfind('/')+1:]) is not None}
-#    candidates_to_print = {x[x.rfind('/')+1:]: y
-#                  for x, y in ppr_stats.getCandidateUrlsForMention(wlink['word']).iteritems()
-#                  if wikiDB.resolvePage(x[x.rfind('/')+1:]) is not None}
-    candidates = _train_stats.getCandidatesForMention(wlink['word'])
+
+    candidates = {}
+    for x,y in ppr_stats.getCandidateUrlsForMention(wlink['word']).iteritems():
+        z = wikiDB.resolvePage(x[x.rfind('/')+1:])
+        if z is not None:
+            candidates[z] = y
+#    candidates = _train_stats.getCandidatesForMention(wlink['word'])
     candidates_to_print = None
 
     mps = ppr_stats.getMostProbableSense(wlink['word'])
@@ -111,8 +104,10 @@ for i, wlink in enumerate(test_iter.wikilinks()):
         # 1. we could not resolve any candidates. This is usually due to the candidates being pruned for being too short
         # our only option is to get the most probable sense out of the raw candidate urls
 
+        not_tried += 1
         if mps == gold_sense_url:
             correct_result = True
+            correct_result_by_title = True
         else:
             errors_when_no_resolved_candidates += 1
             f.write('mention  : ' + str(wlink['word']) + "\n")
@@ -158,7 +153,6 @@ for i, wlink in enumerate(test_iter.wikilinks()):
             predicted = [x for x in candidates][0]
         else:
             predicted = predictor.predict(wlink, candidates)
-            #predicted = knockout_model.predict2(wlink, candidates)
 
         if predicted == gold_sense_id:
             correct_result = True
@@ -172,12 +166,10 @@ for i, wlink in enumerate(test_iter.wikilinks()):
             cands_title = [(x[0][x[0].rfind('/')+1:],x[1]) for x in cands_title.items()]
             cands_title.sort(key=getValue, reverse=True)
 
-            candidates_ppr = [(wikiDB.getArticleTitleById(x), y) for x, y in candidates.items()]
+            candidates_ppr = [(wikiDB.getPageTitle(x), y) for x, y in candidates.items()]
             candidates_ppr.sort(key=getValue, reverse=True)
-            candidates_wl = [(wikiDB.getArticleTitleById(x), y) for x, y in _train_stats.getCandidatesForMention(wlink['word']).items()]
+            candidates_wl = [(wikiDB.getPageTitle(x), y) for x, y in _train_stats.getCandidatesForMention(wlink['word']).items()]
             candidates_wl.sort(key=getValue, reverse=True)
-#            candidates_seenWith = [(wikiDB.getArticleTitleById(x), y) for x, y in _train_stats.getCandidatesForMention(wlink['word']).items()]
-#            candidates_seenWith.sort(key=getValue, reverse=True)
 
             f.write("pprforned: " + str(candidates_ppr) + "\n")
             f.write("wlinks   : " + str(candidates_wl) + "\n")
@@ -185,7 +177,7 @@ for i, wlink in enumerate(test_iter.wikilinks()):
 
             f.write('candidates: ' + str(cands_title) + "\n")
             f.write('correct: ' + str(wlink['wikiurl'][wlink['wikiurl'].rfind('/')+1:]) + "\n")
-            f.write("predicted: " + str(wikiDB.getArticleTitleById(predicted)) + "\n")
+            f.write("predicted: " + str(wikiDB.getPageTitle(predicted)) + "\n")
             f.write("- unexplained error\n")
             f.write("-----\n")
             f.write("\n")
@@ -206,9 +198,11 @@ f.write("errors due to gold sense not in candidates: " + str(errors_due_to_gold_
 f.write("most probable sense correct: " + str(float(mps_correct) / total) + "\n")
 f.write("correct when  mps wrong: " + str(float(correct_when_mps_wrong) / total) + "\n")
 f.write("wrong when mps correct: " + str(float(wrong_when_mps_correct) / total) + "\n")
-f.write("correct when tried: " + str(float(correct_when_tried) / total) + "%; mps when tried: " + str(float(mps_when_tried) / total) + "\n")
+f.write("correct when tried (p@1): " + str(float(correct_when_tried) / total) + "%; mps when tried: " + str(float(mps_when_tried) / total) + "\n")
+f.write("not tried: " + str(not_tried) + "\n")
 f.write("\n")
 f.write("accuracy: " + str(gotit) + "out of " + str(total) + "(" + str(float(gotit) / total) + "%)\n")
+
 f.close()
 
 print "finished"
