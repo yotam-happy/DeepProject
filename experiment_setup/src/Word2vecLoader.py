@@ -29,7 +29,7 @@ class Word2vecLoader:
         self.conceptDict = dict()
         self.conceptEmbeddingsSz = 0
 
-    def _loadEmbedding(self, path, filterSet, int_key = False):
+    def _loadEmbedding(self, path, filterSet, int_key=False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
             dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
@@ -38,7 +38,7 @@ class Word2vecLoader:
                 dict_sz = 10000 if dict_sz > 10000 else dict_sz
 
             embd_dict = dict()
-            embedding = np.zeros((dict_sz+1,embd_sz))
+            embedding = np.zeros((dict_sz + 2, embd_sz))
 
             # Adds a dummy key. The dummy is a (0,...,0,1) vector where all real vectors are (?,...,?,0)
             embd_dict[self.DUMMY_KEY] = 1
@@ -58,15 +58,18 @@ class Word2vecLoader:
     def _randomEmbedding(self, path, filterSet, int_key = False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
-            dict_sz = int(dict_sz) if int(dict_sz) < len(filterSet) else len(filterSet)
+            dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
             embd_sz = int(embd_sz) + 1
             if self._debug:
                 dict_sz = 10000 if dict_sz > 10000 else dict_sz
 
             embd_dict = dict()
+            embd_dict[self.DUMMY_KEY] = 1
+
             embedding = np.random.uniform(-1 / np.sqrt(embd_sz * 4), 1 / np.sqrt(embd_sz * 4), (dict_sz+1,embd_sz))
             embedding[0, :] = np.zeros((1,embd_sz))
-            embedding[:, -1] = np.zeros((dict_sz+1, 1))
+            embedding[1, :] = np.zeros((1,embd_sz))
+            embedding[:, -1] = np.zeros((1, dict_sz+1))
             embedding[1, -1] = 1.0
 
             print "rnd embd"
@@ -77,29 +80,6 @@ class Word2vecLoader:
                     embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
                     i += 1
             return embedding, embd_dict, embd_sz
-
-
-    def _loadEmbeddingDump(self, np_array_path, dict_path):
-        '''
-        Loads processed embeddings that were saved
-        '''
-        dict_file = open(dict_path,'rb')
-        embd_dict = pickle.load(dict_file)
-        embd_sz = pickle.load(dict_file)
-        dict_file.close()
-        embd = np.load(np_array_path)
-        return (embd, embd_dict, embd_sz)
-
-    def _saveEmbeddingDump(self, np_array_path, dict_path, embd, embd_dict, embd_sz):
-        try:
-            dict_file = open(dict_path,'wb')
-            pickle.dump(self.wordEmbeddings, dict_file)
-            pickle.dump(embd_dict, dict_file)
-            pickle.dump(embd_sz, dict_file)
-            dict_file.close()
-            np.save(np_array_path, embd)
-        except:
-            print "couldn't load embeddings... continue"
 
     def meanOfWordList(self, l):
         sum = np.zeros(self.embeddingSize)
@@ -115,7 +95,7 @@ class Word2vecLoader:
 
     def randomEmbeddings(self, wordDict=None, conceptDict=None):
         self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
-            self._randomEmbedding(self._wordsFilePath, wordDict, zero=True)
+            self._randomEmbedding(self._wordsFilePath, wordDict)
         self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
             self._randomEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
 
@@ -128,30 +108,12 @@ class Word2vecLoader:
         :param conceptDict: If specified, only concepts appearing in concept dict will be kept in memory
         """
         print "loading word embeddings...", self._conceptsFilePath
-        if os.path.isfile(self._wordsFilePath+'.preprocessed.dict') \
-                and os.path.isfile(self._wordsFilePath+'.preprocessed.npy'):
-            self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
-                self._loadEmbeddingDump(self._wordsFilePath+'.preprocessed.npy', self._wordsFilePath+'.preprocessed.dict')
-        else:
-            self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
-                self._loadEmbedding(self._wordsFilePath, wordDict)
-            print "saving embeddings..."
-            #self._saveEmbeddingDump(self._wordsFilePath+'.preprocessed.npy',
-            #                        self._wordsFilePath+'.preprocessed.dict',
-            #                        self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz)
+        self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \
+            self._loadEmbedding(self._wordsFilePath, wordDict)
 
         print "loading concept embeddings..."
-        if os.path.isfile(self._conceptsFilePath+'.preprocessed.dict') \
-                and os.path.isfile(self._conceptsFilePath+'.preprocessed.npy'):
-            self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
-                self._loadEmbeddingDump(self._conceptsFilePath+'.preprocessed.npy', self._conceptsFilePath+'.preprocessed.dict')
-        else:
-            self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
-                self._loadEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
-            print "saving embeddings..."
-            #self._saveEmbeddingDump(self._conceptsFilePath+'.preprocessed.npy',
-            #                        self._conceptsFilePath+'.preprocessed.dict',
-            #                        self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz)
+        self.conceptEmbeddings, self.conceptDict, self.conceptEmbeddingsSz = \
+            self._loadEmbedding(self._conceptsFilePath, conceptDict, int_key=True)
 
 if __name__ == "__main__":
     w2v = Word2vecLoader(wordsFilePath="..\\..\\data\\word2vec\\dim300vecs",
