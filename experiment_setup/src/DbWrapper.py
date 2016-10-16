@@ -8,7 +8,7 @@ class WikipediaDbWrapper:
     Note this class is not thread safe or anything so be aware...
     """
 
-    def __init__(self, user, password, database, host='127.0.0.1'):
+    def __init__(self, user, password, database, host='127.0.0.1', concept_filter=None):
         """
         All the parameters are self explanatory...
         """
@@ -17,32 +17,7 @@ class WikipediaDbWrapper:
         self._cursor = self._cnx.cursor(buffered=True)
         self._articleInlinks = None
 
-        self.cc = 0
-        self.cc1 = 0
-        self.cc2 = 0
-        self.cc3 = 0
-
-    def getArticleTitleById(self, conceptId):
-        """
-        Gets the wikipedia page title for a given id.
-        """
-        query = "SELECT title_resolver FROM article where id=%s"
-        self._cursor.execute(query, (conceptId,))
-        row = self._cursor.fetchone()
-        if row == None:
-            return None
-        return row[0]
-
-    def getArticleIdByTitle(self, title):
-        """
-        Gets the wikipedia page title for a given id.
-        """
-        query = "SELECT id FROM article where title_resolver=%s"
-        self._cursor.execute(query, (title,))
-        row = self._cursor.fetchone()
-        if row == None:
-            return None
-        return int(row[0])
+        self.concept_filter = concept_filter
 
     def updatePageTableTitleForLookupColumn(self):
         self._cnx.autocommit = False
@@ -66,49 +41,14 @@ class WikipediaDbWrapper:
             if i % 1000000 == 0:
                 self._cnx.commit()
 
-
-    def updateTables(self):
-        print "self._cnx.autocommit:", self._cnx.autocommit
-        self._cnx.autocommit = False
-        n = 0
-        print "upating article table"
-        for id, title_processed in self._articleId.items():
-            self._cursor.execute("""
-            UPDATE article SET title_resolver=%s WHERE id=%s
-            """,(title_processed, id))
-            n+=1
-            print n
-            if (n % 10000) == 0:
-                print "done ", n
-
-        n = 0
-        print "upating pages_redirects table"
-        for id, s in self._pageInfoByIdCache.items():
-            self._cursor.execute("""
-            UPDATE pages_redirects SET title_resolver=%s WHERE page_id=%s
-            """, (title_processed, s[2]))
-            n += 1
-            if (n % 10000) == 0:
-                print "done ", n
-        self._cnx.commit()
-
-    def getPageInfoByTitle(self, title):
-        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE title = %s"
-        self._cursor.execute(query, (utils.text.strip_wiki_title(title),))
-        row = self._cursor.fetchone()
-        if row == None:
-            return (None,None,None,None)
-        return (row[0], row[1], row[2].decode("utf-8"), row[3])
-
-    def getPageInfoById(self, page_id):
-        query = "SELECT page_id, namespace, title, redirect FROM pages_redirects WHERE page_id = %s"
+    def getPageTitle(self, page_id):
+        query = "SELECT page_title FROM page " \
+                "WHERE page_id = %s and page_namespace = 0"
         self._cursor.execute(query, (page_id,))
         row = self._cursor.fetchone()
-        if row == None:
-            return (None,None,None,None)
-        return (row[0], row[1], row[2].decode("utf-8"), row[3])
+        return row[0] if row is not None else None
 
-    def resolvePage2(self, title, verbose=False, use_pagelink_table=False):
+    def resolvePage(self, title, verbose=False, print_errors=True, use_pagelink_table=False):
         '''
         Resolving a page id.
         We first use utils.text.strip_wiki_title to compute a cleaned title
@@ -138,8 +78,8 @@ class WikipediaDbWrapper:
         self._cursor.execute(query, (title,))
         row = self._cursor.fetchone()
         if row is None:
-            if verbose:
-                print "could not find page (in main namespace)"
+            if verbose or print_errors:
+                print "could not find page (in main namespace): ", title
             return None
 
         page_id = int(row[0])
@@ -148,11 +88,18 @@ class WikipediaDbWrapper:
         if verbose:
             print "got page id =", page_id, "; title =", page_title, "; redirect =", page_red
 
-        while page_red == 1:
+        c = 0
+        while page_red == 1 and c:
+            if c == 5:
+                if verbose or print_errors:
+                    print "too many redirects"
+                return None
+            c += 1
+
             # query next page using redirect table
             query = "SELECT page_id, page_is_redirect, page_title FROM page " \
                     "WHERE page_namespace = 0 AND page_title IN " \
-                    "(SELECT rd_title FROM redirect WHERE rd_namespace = 0 AND rd_from = $s)"
+                    "(SELECT rd_title FROM redirect WHERE rd_namespace = 0 AND rd_from = %s)"
             self._cursor.execute(query, (page_id,))
             row = self._cursor.fetchone()
 
@@ -162,13 +109,13 @@ class WikipediaDbWrapper:
                 # try using pagelink (some older redirects can only be found here)
                 query = "SELECT page_id, page_is_redirect, page_title FROM page " \
                         "WHERE page_namespace = 0 AND page_title IN " \
-                        "(SELECT pl_title FROM pagelink WHERE pl_namespace = 0 AND pl_from = $s)"
+                        "(SELECT pl_title FROM pagelink WHERE pl_namespace = 0 AND pl_from = %s)"
                 self._cursor.execute(query, (page_id,))
                 row = self._cursor.fetchone()
 
             if row is None:
-                if verbose:
-                    print "could not resolve redirect"
+                if verbose or print_errors:
+                    print "could not resolve redirect for", page_id
                 return None
 
             page_id = int(row[0])
@@ -177,46 +124,14 @@ class WikipediaDbWrapper:
             if verbose:
                 print "got page id =", page_id, "; title =", page_title, "; redirect =", page_red
 
+        if self.concept_filter is not None and page_id not in self.concept_filter:
+            if verbose:
+                print "concept", page_id, " is filtered"
+            return None
+
         if verbose:
             print "return", page_id
         return page_id
-
-    def resolvePage(self, title, verbose=False):
-        '''
-        Not trivial.
-        '''
-        if verbose:
-            print "resolving title: ", title
-        title = urllib.unquote(title)
-        if verbose:
-            print "unquoted: ", title
-
-        candidate = self.getArticleIdByTitle(title)
-        if verbose:
-            print "self.getArticleIdByTitle: ", candidate
-        page_id, namespace, title, redirect = self.getPageInfoByTitle(title)
-        if verbose:
-            print "self.getPageInfoByTitle: id: ", page_id, " redirect: ", redirect
-        if self.getArticleTitleById(page_id) is not None:
-            if verbose:
-                print "self.getArticleTitleById: ", self.getArticleTitleById(page_id)
-            candidate = page_id
-
-        i = 0
-        if verbose:
-            print "resolving redirects"
-        while page_id is not None and \
-                redirect > -1 and \
-                i < 3:
-            page_id, namespace, title, redirect = self.getPageInfoById(redirect)
-            if page_id is not None and self.getArticleTitleById(page_id) is not None:
-                candidate = page_id
-            elif title is not None:
-                x = self.getArticleIdByTitle(title)
-                if x is not None:
-                    candidate = x
-            i+=1
-        return candidate
 
 if __name__ == "__main__":
     wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
