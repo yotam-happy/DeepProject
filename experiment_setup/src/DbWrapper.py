@@ -12,12 +12,30 @@ class WikipediaDbWrapper:
         """
         All the parameters are self explanatory...
         """
+        self._user = user
+        self._password = password
+        self._database = database
+        self._host = host
 
-        self._cnx = mysql.connector.connect(user=user, password=password, host=host, database=database)
+        self._cnx = mysql.connector.connect(user=user, password=password, host=host, database=database,
+                                            connection_timeout=1)
         self._cursor = self._cnx.cursor(buffered=True)
         self._articleInlinks = None
 
         self.concept_filter = concept_filter
+
+    def resetConnection(self):
+        try:
+            self._cursor.close()
+        except:
+            print "some error"
+        try:
+            self._cnx.close()
+        except:
+            print "some error"
+        self._cnx = mysql.connector.connect(user=self._user, password=self._password, host=self._host,
+                                            database=self._database, connection_timeout=1)
+        self._cursor = self._cnx.cursor(buffered=True)
 
     def updatePageTableTitleForLookupColumn(self):
         self._cnx.autocommit = False
@@ -48,7 +66,21 @@ class WikipediaDbWrapper:
         row = self._cursor.fetchone()
         return row[0] if row is not None else None
 
-    def resolvePage(self, title, verbose=False, print_errors=True, use_pagelink_table=False):
+    def resolvePage(self, title, verbose=False, print_errors=False, use_pagelink_table=False):
+        for i in xrange(3):
+            try:
+                return self._resolvePage(title,
+                                         verbose=verbose,
+                                         print_errors=print_errors,
+                                         use_pagelink_table=use_pagelink_table)
+            except:
+                print "reseting connection..."
+                self.resetConnection()
+        if verbose or print_errors:
+            print "could not resolve due to connection problems"
+        return None
+
+    def _resolvePage(self, title, verbose=False, print_errors=True, use_pagelink_table=False):
         '''
         Resolving a page id.
         We first use utils.text.strip_wiki_title to compute a cleaned title
@@ -89,7 +121,7 @@ class WikipediaDbWrapper:
             print "got page id =", page_id, "; title =", page_title, "; redirect =", page_red
 
         c = 0
-        while page_red == 1 and c:
+        while page_red == 1:
             if c == 5:
                 if verbose or print_errors:
                     print "too many redirects"
@@ -133,6 +165,6 @@ class WikipediaDbWrapper:
             print "return", page_id
         return page_id
 
-if __name__ == "__main__":
-    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-    wikiDB.updatePageTableTitleForLookupColumn()
+#if __name__ == "__main__":
+#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+#    wikiDB.updatePageTableTitleForLookupColumn()

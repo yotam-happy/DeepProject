@@ -2,7 +2,6 @@ from DbWrapper import *
 from PairwisePredict import *
 from PPRforNED import *
 from Word2vecLoader import *
-from models.RNNFineTunePairwiseModel import *
 from models.DeepModel import DeepModel
 from tests.ConllReader import *
 from ModelTrainer import *

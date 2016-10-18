@@ -3,7 +3,7 @@ import os
 import sys
 
 import numpy as np
-
+import math
 
 class PPRIterator:
 
@@ -63,7 +63,7 @@ class PPRIterator:
                 pec['sensesDetails'] = []
                 for ii,cand in enumerate(candidate_details):
                     # the key of each link is the nomarlized Wikititle
-                    (pec['sensesDetails']).append({'normWikiTitle':cand[7][11:],'id':cand[1][3:],'inCount':int(cand[2][8:]),'outCount':int(cand[3][9:]),
+                    (pec['sensesDetails']).append({'normWikiTitle':cand[7][11:],'id':int(cand[1][3:]),'inCount':int(cand[2][8:]),'outCount':int(cand[3][9:]),
                                                           'relatedSenses':cand[4][6:].split(';'),'url':cand[5][4:],'normalName':cand[7][11:]})
                 # return
                 yield pec
@@ -82,11 +82,32 @@ class PPRStatistics:
         self.conceptCounts = dict()
         if load_file is not None:
             self.loadFromFile(load_file)
+        self.conceptCountsSum = sum(self.conceptCounts.values())
+        self.conceptLogCountsVariance = np.var([math.log(float(x)) for x in self.conceptCounts.values()])
+        self.conceptCountsVariance = np.var([float(x) for x in self.conceptCounts.values()])
 
     def _sortedList(self, l):
         l = [(k,v) for k,v in l.items()]
         l.sort(key=lambda (k,v):-v)
         return l
+
+    def getCandidateConditionalPrior(self, concept, mention):
+        raise "not supported"
+
+    def getCandidatePrior(self, concept, normalized=False, log=False):
+        if concept not in self.conceptCounts:
+            return 0
+
+        if not normalized:
+            return float(self.conceptCounts[concept]) / self.conceptCountsSum
+
+        # if normalized, normalize by variance
+        if log:
+            return math.log(float(self.conceptCounts[concept])) / self.conceptLogCountsVariance \
+                if concept in self.conceptCounts else 0
+        else:
+            return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
+                if concept in self.conceptCounts else 0
 
     def getCandidatesForMention(self, mention, p=0.01, t=5):
         """
@@ -119,6 +140,12 @@ class PPRStatistics:
         cands = self.getCandidateUrlsForMention(mention)
         return max(cands.iterkeys(), key=(lambda key: cands[key]))
 
+    def getMostProbableSense2(self, cands):
+        cands = {x: self.conceptCounts[str(x)] if str(x) in self.conceptCounts else 0 for x in cands}
+        if len(cands) == 0:
+            return None
+        return max(cands.iterkeys(), key=(lambda key: cands[key]))
+
     def getCandidateProbabilityYamadaStyle(self,concept): # TODO: change wikistats to same code...
         counter = 0.0
         for links in self.mentionLinks.iteritems():
@@ -126,8 +153,6 @@ class PPRStatistics:
                 counter+=1.0
         return float(counter)/ len(self.mentionCounts)
 
-    def getCandidateConditionalProbabilty(self, concept, mention):
-        return float(self.mentionLinks[mention][concept]) / np.sum(self.mentionLinks[mention].values())
 
     def getCandidateUrlsForMention(self, mention, p=0.01, t=5):
         """
@@ -156,26 +181,23 @@ class PPRStatistics:
         return out
 
     def calcStatistics(self):
-        """
-        2. update mentionCounts and mentionLinks
-        3. update conceptCounts
-        4. update concepGraph = {"id_string": {"inLinks":, "outLinks":, "links":, }}
-        Notes: there is no context dictionary
-        """
+        self.mentionCounts = dict()
+        self.mentionLinks = dict()
+        self.mentionLinksUrl = dict()
+        self.conceptCounts = dict()
         print "getting statistics"
         for entity_chunck in self.ppr_itr.getPharsedEntityChunck():
             mention_name = entity_chunck['mention'].lower()
-            print mention_name
 
             self.mentionCounts[mention_name] = self.mentionCounts.get(mention_name, 0) + 1
-            if not mention_name in self.mentionLinks:
+            if mention_name not in self.mentionLinks:
                 self.mentionLinks[mention_name] = dict()
                 self.mentionLinksUrl[mention_name] = dict()
 
             for sense in entity_chunck['sensesDetails']:
                 self.mentionLinks[mention_name][sense['id']] = sense['inCount']
                 self.mentionLinksUrl[mention_name][sense['url']] = sense['inCount']
-                self.conceptCounts[sense['id']] = self.conceptCounts.get(sense['id'], 0) + 1 # FIXME apperantly adding the conceptCounts made something wrong (might need to be fixed)
+                self.conceptCounts[sense['id']] = sense['inCount']
 
         self.prettyPrintStats()
 
@@ -198,25 +220,24 @@ class PPRStatistics:
         self.conceptCounts = json.loads(l[3])
         f.close()
 
-    def prettyPrintStats(self, limit = 5):
+    def prettyPrintStats(self, limit=5):
         try:
-            print 'mentionCounts: ',{k: self.mentionCounts.get(k) for k in self.mentionCounts.keys()[:limit]}
-            print 'mentionLinks: ',{k: self.mentionLinks.get(k) for k in self.mentionLinks.keys()[:limit]}
+            print 'mentionCounts: ', {k: self.mentionCounts.get(k) for k in self.mentionCounts.keys()[:limit]}
+            print 'mentionLinks: ', {k: self.mentionLinks.get(k) for k in self.mentionLinks.keys()[:limit]}
             print 'conceptCounts: ', {k: self.conceptCounts.get(k) for k in self.conceptCounts.keys()[:limit]}
-        except :
+        except:
             print "Unexpected error:", sys.exc_info()[0]
 
-if __name__ == "__main__":
-
-    path = "/home/yotam/pythonWorkspace/deepProject"
-    print "Loading iterators+stats..."
-    if not os.path.isdir(path):
-        path = "/home/noambox/DeepProject"
-    elif (not os.path.isdir(path)):
-        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
-
-    ppr_itr = PPRIterator(path = path + '/data/PPRforNED/AIDA_candidates')
-    ppr_stats = PPRStatistics(ppr_itr)
-    ppr_stats.calcStatistics()
-    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
-    ppr_stats.prettyPrintStats()
+#if __name__ == "__main__":
+#
+#    path = "/home/yotam/pythonWorkspace/deepProject"
+#    print "Loading iterators+stats..."
+#    if not os.path.isdir(path):
+#        path = "/home/noambox/DeepProject"
+#    elif not os.path.isdir(path):
+#        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+#
+#    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
+#    ppr_stats = PPRStatistics(ppr_itr)
+#    ppr_stats.calcStatistics()
+#    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
