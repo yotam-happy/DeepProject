@@ -83,7 +83,7 @@ class PPRStatistics:
         if load_file is not None:
             self.loadFromFile(load_file)
         self.conceptCountsSum = sum(self.conceptCounts.values())
-        self.conceptLogCountsVariance = np.var([math.log(float(x)) for x in self.conceptCounts.values()])
+        self.conceptLogCountsVariance = np.var([math.log(float(x) + 1) for x in self.conceptCounts.values()])
         self.conceptCountsVariance = np.var([float(x) for x in self.conceptCounts.values()])
 
     def _sortedList(self, l):
@@ -103,7 +103,7 @@ class PPRStatistics:
 
         # if normalized, normalize by variance
         if log:
-            return math.log(float(self.conceptCounts[concept])) / self.conceptLogCountsVariance \
+            return math.log(float(self.conceptCounts[concept]) + 1) / self.conceptLogCountsVariance \
                 if concept in self.conceptCounts else 0
         else:
             return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
