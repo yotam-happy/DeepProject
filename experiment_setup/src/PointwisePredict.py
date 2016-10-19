@@ -1,10 +1,3 @@
-from WikilinksStatistics import *
-import random
-import nltk
-from nltk.corpus import stopwords
-import operator
-import itertools
-import math
 import operator
 
 class PointwisePredict:
@@ -22,12 +15,12 @@ class PointwisePredict:
         """
         self._pointwise_model = pointwise_model
 
-    def predict(self, wikilink, candidates=None):
+    def predict(self, mention, candidates=None):
         if len(candidates) < 1:
             return None
-        d = {candidate: self._predict(wikilink, candidate) for candidate in candidates.keys()}
+        d = {candidate: self._predict(mention, candidate) for candidate in candidates.keys()}
         return max(d.iteritems(), key=operator.itemgetter(1))[0]
 
-    def _predict(self, wikilink, candidate):
-        a = self._pointwise_model.predict(wikilink, candidate, None)
+    def _predict(self, mention, candidate):
+        a = self._pointwise_model.predict(mention, candidate, None)
         return a if a is not None else 0

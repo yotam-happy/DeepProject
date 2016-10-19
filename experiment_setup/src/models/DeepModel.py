@@ -195,7 +195,7 @@ class DeepModel:
         self.model = model
         print "model compiled!"
 
-    def _2vec(self, wikilink, candidate1, candidate2):
+    def _2vec(self, mention, candidate1, candidate2):
         """
         Transforms input to w2v vectors
         returns a tuple: (wikilink vec, candidate1 vec, candidate2 vec)
@@ -225,75 +225,69 @@ class DeepModel:
                 candidate1_X = np.array([self._w2v.conceptDict[candidate1]]) if candidate1 is not None else None
                 candidate2_X = np.array([self._w2v.conceptDict[candidate2]]) if candidate2 is not None else None
             else:
-                candidate1_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1]] if candidate1 is not None \
-                    else None
-                candidate2_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2]] if candidate2 is not None \
-                    else None
+                candidate1_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1]] \
+                    if candidate1 is not None else None
+                candidate2_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2]] \
+                    if candidate2 is not None else None
 
         # get context input
         if 'context' in self.inputs:
             if self._config['finetune_embd']:
-                left_context_X = self.wordListToIndices(wikilink['left_context'],
-                                                        self._config['context_window_size'],
-                                                        reverse=False)
-                right_context_X = self.wordListToIndices(wikilink['right_context'],
-                                                         self._config['context_window_size'],
-                                                         reverse=True)
+                left_context_X = self.wordIteratorToIndices(mention.left_context_iter(),
+                                                            self._config['context_window_size'])
+                right_context_X = self.wordIteratorToIndices(mention.right_context_iter(),
+                                                             self._config['context_window_size'])
             else:
-                left_context_X = self.wordListToVectors(wikilink['left_context'],
-                                                        self._config['context_window_size'],
-                                                        reverse=False)
-                right_context_X = self.wordListToVectors(wikilink['right_context'],
-                                                         self._config['context_window_size'],
-                                                         reverse=True)
+                left_context_X = self.wordIteratorToVectors(mention.left_context_iter(),
+                                                            self._config['context_window_size'])
+                right_context_X = self.wordIteratorToVectors(mention.right_context_iter(),
+                                                             self._config['context_window_size'])
 
         # get mention input
         if 'mention' in self.inputs:
             if self._config['finetune_embd']:
-                mention_X = self.wordListToIndices(wikilink['mention_as_list'],
-                                                   self._config['max_mention_words'],
-                                                   reverse=False)
+                mention_X = self.wordIteratorToIndices(mention.mention_text_tokenized(),
+                                                       self._config['max_mention_words'])
             else:
-                mention_ar = self.wordListToVectors(wikilink['mention_as_list'],
-                                                    self._config['max_mention_words'],
-                                                    reverse=False) if 'mention_as_list' in wikilink else []
-                mention_X = np.mean(mention_ar, axis=0) if mention_ar.shape[0] > 0 else np.zeros(
-                    self._w2v.wordEmbeddingsSz)
+                mention_ar = self.wordIteratorToVectors(mention.mention_text_tokenized(),
+                                                        self._config['max_mention_words'])
+                mention_X = np.mean(mention_ar, axis=0) if mention_ar.shape[0] > 0 \
+                    else np.zeros(self._w2v.wordEmbeddingsSz)
 
         if 'extra_features' in self.inputs:
             if self._config['pairwise']:
                 extra_features_X = \
-                    np.array(self._feature_generator.getPairwiseFeatures(wikilink, candidate1, candidate2))
+                    np.array(self._feature_generator.getPairwiseFeatures(mention, candidate1, candidate2))
             else:
                 extra_features_X = \
-                    np.array(self._feature_generator.getPointwiseFeatures(wikilink, candidate1))
+                    np.array(self._feature_generator.getPointwiseFeatures(mention, candidate1))
 
         return left_context_X, right_context_X, mention_X, candidate1_X, candidate2_X, extra_features_X
 
-
-    def wordListToIndices(self, l, output_len, reverse):
+    def wordIteratorToIndices(self, it, output_len):
         o = []
-        for w in l:
+        for i, w in enumerate(it):
+            if i >= output_len:
+                break
             if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
                 o.append(self._w2v.wordDict[w])
         if len(o) == 0:
             o.append(self._w2v.wordDict[self._w2v.DUMMY_KEY])
-        if reverse:
-            o = o[::-1]
+        o = o[:: -1]
         arr = np.zeros((output_len,))
         n = len(o) if len(o) <= output_len else output_len
         arr[:n] = np.array(o)[:n]
         return arr
 
-    def wordListToVectors(self, l, output_len, reverse):
+    def wordIteratorToVectors(self, it, output_len):
         o = []
-        for w in l:
+        for i, w in enumerate(it):
+            if i >= output_len:
+                break
             if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
                 o.append(self._w2v.wordEmbeddings[self._w2v.wordDict[w]])
         o = np.asarray(o)
-
-        if reverse:
-            o = o[::-1]
+        o = o[:: -1]
         if len(o) >= output_len:
             context = np.array(o[-self._config['context_window_size']:, :])
         else:
@@ -302,15 +296,15 @@ class DeepModel:
                 context[-len(o):, ] = np.array(o)
         return context
 
-    def train(self, wikilink, candidate1, candidate2, correct):
+    def train(self, mention, candidate1, candidate2, correct):
         """
         Takes a single example to train
-        :param wikilink:    The wikilink to train on
+        :param mention:    The mention to train on
         :param candidate1:  the first candidate
         :param candidate2:  the second candidate
         :param correct:     which of the two is correct (expected output)
         """
-        vecs = self._2vec(wikilink, candidate1, candidate2)
+        vecs = self._2vec(mention, candidate1, candidate2)
         if not isinstance(vecs, tuple):
             return # nothing to train on
 
@@ -341,10 +335,6 @@ class DeepModel:
             if 'extra_features' in self.inputs:
                 batchX['extra_features_input'] = np.array(self._batch_extra_features_X)
             batchY = np.array(self._batchY)
-
-            #for x,y in batchX.iteritems():
-            #    print x, ":", y.shape
-            #print "Y:", batchY.shape
 
             loss = self.model.train_on_batch(batchX, batchY)
             self._train_loss.append(loss)

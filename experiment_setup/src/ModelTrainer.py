@@ -8,8 +8,8 @@ class ModelTrainer:
     and feeds them to a model's train method
     """
 
-    def __init__(self, iter, stats, model, epochs=10, neg_sample=1,
-                 wordInclude=None, wordExclude=None, senseFilter=None, pointwise=False):
+    def __init__(self, iter, candidator, stats, model, epochs=10, neg_sample=1,
+                 mention_include=None, mention_exclude=None, sense_filter=None, pointwise=False):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -18,11 +18,12 @@ class ModelTrainer:
         self._iter = iter
         self._model = model
         self._stats = stats
+        self._candidator = candidator
         self._epochs = epochs
         self._pointwise = pointwise
-        self.wordInclude = wordInclude
-        self.wordExclude = wordExclude
-        self.senseFilter = {int(x) for x in senseFilter} if senseFilter is not None else None
+        self.mention_include = mention_include
+        self.mention_exclude = mention_exclude
+        self.sense_filter = {int(x) for x in sense_filter} if sense_filter is not None else None
 
         # setup all-sense negative-sampling (define cumulative probability function)
         # -- some ppl say that for long lists it is better to have small probs first due to precision issues
@@ -36,10 +37,9 @@ class ModelTrainer:
 
         self._neg_sample_uniform = True
         self._neg_sample_all_senses_prob = 0.0
-        self._neg_sample_seenWith_prob = 0.0
 
     def getSenseNegSample(self):
-        if (self._neg_sample_uniform):
+        if self._neg_sample_uniform:
             return self._all_senses[np.random.randint(len(self._all_senses))]
         x = np.random.randint(self._all_senses_cpf_total)
         i = bisect(self._all_senses_cpf, x)
@@ -51,25 +51,25 @@ class ModelTrainer:
         for epoch in xrange(self._epochs):
             print "training epoch ", epoch
 
-            for wikilink in self._iter.wikilinks():
-                if self.wordExclude is not None and wikilink["word"] in self.wordExclude:
+            for mention in self._iter.mentions():
+                if self.mention_exclude is not None and mention.mention_text() in self.mention_exclude:
                     continue
-                if self.wordInclude is not None and wikilink["word"] not in self.wordInclude:
-                    continue
-
-                actual = wikilink['wikiId']
-                if self.senseFilter is not None and actual in self.senseFilter:
+                if self.mention_include is not None and mention.mention_text() not in self.mention_include:
                     continue
 
-                candidates = self._stats.getCandidatesForMention(wikilink["word"])
-                if self.senseFilter is not None:
-                    candidates = {x:y for x,y in candidates.iteritems() if x not in self.senseFilter}
+                actual = mention.gold_sense_id()
+                if self.sense_filter is not None and actual in self.sense_filter:
+                    continue
+
+                candidates = self._candidator.get_candidates_for_mention(mention)
+                if self.sense_filter is not None:
+                    candidates = {x: y for x, y in candidates.iteritems() if x not in self.sense_filter}
 
                 if len(candidates) == 0:
                     continue
 
                 # get id vector
-                ids = [candidate for candidate in candidates.items() if int(candidate[0]) != actual]
+                ids = [candidate for candidate in candidates if int(candidate) != actual]
 
                 # get list of negative samples
                 neg = []
@@ -79,33 +79,26 @@ class ModelTrainer:
                     r = np.random.rand()
                     if r < self._neg_sample_all_senses_prob:
                         # get negative sample from all possible senses
-                        neg_candidates = self._all_senses
                         wrong = self.getSenseNegSample()
-                    elif r < self._neg_sample_all_senses_prob + self._neg_sample_seenWith_prob:
-                        # get negative sample from senses seen with the correct one
-                        neg_candidates = self._stats.getCandidatesSeenWith(actual).keys()
-                        if len(neg_candidates) < 1:
-                            continue
-                        wrong = neg_candidates[np.random.randint(len(neg_candidates))]
                     else:
                         # get negative sample from senses seen for the current mention
                         neg_candidates = ids
                         if len(neg_candidates) < 1:
                             continue
-                        wrong = neg_candidates[np.random.randint(len(neg_candidates))][0]
+                        wrong = neg_candidates[np.random.randint(len(neg_candidates))]
                     neg.append(wrong)
 
                 # train
                 if len(neg) > 0:
                     if self._pointwise:
-                        self._model.train(wikilink, actual, actual)
+                        self._model.train(mention, actual, actual)
                     for wrong in neg:
                         if self._pointwise:
-                            self._model.train(wikilink, wrong, actual)
+                            self._model.train(mention, wrong, actual)
                         else:
                             # train on both sides so we get a symmetric model
                             if random.randrange(2) == 0:
-                                self._model.train(wikilink, actual, wrong, actual)
+                                self._model.train(mention, actual, wrong, actual)
                             else:
-                                self._model.train(wikilink, wrong, actual, actual)
+                                self._model.train(mention, wrong, actual, actual)
         print "done training."

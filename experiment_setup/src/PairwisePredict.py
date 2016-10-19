@@ -19,41 +19,13 @@ class PairwisePredict:
         """
         self._pairwise_model = pairwise_model
 
-    def predictRepeated(self, wikilink, candidates, repeats=20):
+    def predict(self, mention):
         # do a knockout
-        l = [candidate for candidate in candidates.keys()]
-
-        ranking = {x:0.0 for x in l}
-
-        if math.pow(2.0, len(l)) <= repeats:
-            comb = itertools.permutations(l)
-            for perm in comb:
-                predicted = self._predict(wikilink, perm)
-                if predicted is not None:
-                    ranking[predicted] += 1.0
-        else:
-            for i in xrange(repeats):
-                random.shuffle(l)
-                predicted = self._predict(wikilink, l)
-                if predicted is not None:
-                    ranking[predicted] += 1.0
-
-        m = max(ranking.iteritems(), key=operator.itemgetter(1))[0]
-        mv = max(ranking.iteritems(), key=operator.itemgetter(1))[1]
-        if m == 0:
-            return None
-        finals = {x: candidates[x] for x,y in ranking.items() if y == mv}
-        final = max(finals.iteritems(), key=operator.itemgetter(1))[0]
-        return final
-
-
-    def predict(self, wikilink, candidates):
-        # do a knockout
-        l = [candidate for candidate in candidates.keys()]
+        l = [candidate for candidate in mention.candidates]
         random.shuffle(l)
-        return self._predict(wikilink, l)
+        return self._predict(mention, l)
 
-    def predict2(self, wikilink, candidates, returnProbMode = False):
+    def predict2(self, mention, returnProbMode = False):
         """
         pairwise prediction between all possible pairs of candidates (no self pairs)
         every comprison is calculated twice for eliminating order importance
@@ -63,12 +35,12 @@ class PairwisePredict:
                                 i beats j. Returns also cond_prob (Same idea with conditional probability of i beats j)
         :return:
         """
-        l = [candidate for candidate in candidates.keys()]
+        l = [candidate for candidate in mention.candidates]
         if len(l) == 1:
             return l[0]
 
-        cond_prob = np.ones((len(candidates.keys()), len(candidates.keys())))
-        cond_votes = np.zeros((len(candidates.keys()), len(candidates.keys())))
+        cond_prob = np.ones((len(mention.candidates), len(mention.candidates)))
+        cond_votes = np.zeros((len(mention.candidates), len(mention.candidates)))
         ranking = {x:0.0 for x in l}
 
         # by using a and b we diminish the importance of order in the input
@@ -76,9 +48,9 @@ class PairwisePredict:
             for j in xrange(i + 1, len(l)):
                 if returnProbMode:
                     a, i_beats_j_1 , j_beats_i_1, votes_i_1, votes_j_1 = \
-                        self.getWinnerProbAndUpdateVotes(wikilink, l[i], l[j] , cond_votes[i][j], cond_votes[j][i])
+                        self.getWinnerProbAndUpdateVotes(mention, l[i], l[j] , cond_votes[i][j], cond_votes[j][i])
                     b, j_beats_i_2, i_beats_j_2, votes_j_2, votes_i_2 = \
-                        self.getWinnerProbAndUpdateVotes(wikilink, l[j], l[i], cond_votes[j][i], cond_votes[i][j])
+                        self.getWinnerProbAndUpdateVotes(mention, l[j], l[i], cond_votes[j][i], cond_votes[i][j])
                     if a and b is not None:
                         cond_votes[i][j], cond_votes[j][i] = votes_i_1 + votes_i_2, votes_j_1 + votes_j_2
                     else:
@@ -89,10 +61,10 @@ class PairwisePredict:
                     cond_prob[j][i] = sum(filter(None, [j_beats_i_1, j_beats_i_2]))
                     cond_prob[j][i] *= 0.5 if cond_prob[i][j] is not None else 0
                 else:
-                    a = self._pairwise_model.predict(wikilink, l[i], l[j])
+                    a = self._pairwise_model.predict(mention, l[i], l[j])
                 if a is not None:
                     ranking[a] += 1
-                b = self._pairwise_model.predict(wikilink, l[j], l[i])
+                b = self._pairwise_model.predict(mention, l[j], l[i])
                 if b is not None:
                     ranking[b] += 1
 
@@ -100,21 +72,22 @@ class PairwisePredict:
         mv = max(ranking.iteritems(), key=operator.itemgetter(1))[1]
         if m == 0:
             return None
-        finals = {x: candidates[x] for x,y in ranking.items() if y == mv}
+        finals = {x: mention.candidates[x] for x,y in ranking.items() if y == mv}
         final = max(finals.iteritems(), key=operator.itemgetter(1))[0]
         if returnProbMode:
             # print 'candidates order: ',l
             # print 'cond_votes: ',filter(None, cond_votes.tolist())
-            final = l[np.argmax(np.sum(filter(None, cond_votes.tolist()),axis = 1))]
+            final = l[np.argmax(np.sum(filter(None, cond_votes.tolist()), axis=1))]
             return final, cond_prob, cond_votes
         else:
             return final
 
-    def getWinnerProbAndUpdateVotes(self, wlink, cand_first, cand_last, a_beats_b, b_beats_a):
+    def getWinnerProbAndUpdateVotes(self, mention, cand_first, cand_last, a_beats_b, b_beats_a):
         try:
-            winner , first_cand_winner_prob = self._pairwise_model.predict(wlink, cand_first, cand_last, return_score=True)
+            winner , first_cand_winner_prob = self._pairwise_model.predict(mention, cand_first, cand_last,
+                                                                           return_score=True)
         except:
-            print 'wlink: ',wlink['word'],'\t first: ',cand_first,'\t last: ',cand_last # FIXME
+            print 'wlink: ', mention.mention_text(), '\t first: ', cand_first, '\t last: ', cand_last # FIXME
 
         if winner is None:
             return None, None, None, None, None
@@ -129,13 +102,13 @@ class PairwisePredict:
             # print 'winner :', winner,'\n'
             return winner, first_cand_winner_prob, second_cand_winner_prob, a_beats_b, b_beats_a
 
-    def _predict(self, wikilink, l):
+    def _predict(self, mention, l):
         while len(l) > 1:
             # create a list of surviving candidates by comparing couples
             next_l = []
 
             for i in range(0, len(l) - 1, 2):
-                pr = self._pairwise_model.predict(wikilink, l[i], l[i+1])
+                pr = self._pairwise_model.predict(mention, l[i], l[i+1])
                 a = l[i] if pr > 0.5 else l[i+1]
                 if a is not None:
                     next_l.append(a)

@@ -7,7 +7,7 @@ of using a generator
 from DbWrapper import WikipediaDbWrapper
 from PPRforNED import PPRStatistics
 from WikilinksStatistics import WikilinksStatistics
-from tests.ConllReader import CoNLLWikilinkIterator
+from readers.conll_reader import CoNLLWikilinkIterator
 import os
 from FeatureGenerator import FeatureGenerator
 import numpy as np

@@ -136,10 +136,7 @@ class WikilinksStatistics:
             if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
                 out[int(x[0])] = x[1]
 
-        # now calc actual priors
-        tot = sum([x for x in out.values()])
-        out = {x: float(y)/tot for x, y in out.iteritems()}
-        return out
+        return {x for x, y in out.iteritems()}
 
     def getGoodMentionsToDisambiguate(self):
         """
@@ -190,10 +187,9 @@ class WikilinksStatistics:
         for w in wordsSorted[-10:]:
             print w
 
-#stats = WikilinksStatistics(None, load_from_file_path="../data/intralinks/train-stats-new2")
-#print len(stats.titleIndex)
-#from DbWrapper import *
-#wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=False)
-#stats.calcCandidatesByPartialTitle3(wikiDB)
-#stats.saveToFile("../data/intralinks/train-stats-new2")
-#print "hi"
+#from WikilinksIterator import *
+#_path = "/home/yotam/pythonWorkspace/deepProject"
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all"))
+#stats.calcStatistics()
+#stats.saveToFile("../data/intralinks/train-stats")
+#print "done"

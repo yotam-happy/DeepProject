@@ -138,7 +138,8 @@ class PPRStatistics:
 
     def getMostProbableSense(self, mention):
         cands = self.getCandidateUrlsForMention(mention)
-        return max(cands.iterkeys(), key=(lambda key: cands[key]))
+        counts = {cand: self.getCandidatePrior(cand, mention) for cand in cands}
+        return max(counts.iterkeys(), key=(lambda key: counts[key]))
 
     def getMostProbableSense2(self, cands):
         cands = {x: self.conceptCounts[str(x)] if str(x) in self.conceptCounts else 0 for x in cands}
@@ -173,12 +174,7 @@ class PPRStatistics:
             if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
                 out[x[0]] = x[1] if tot != 0 else 1
 
-        # now calc actual priors
-        tot = sum([x for x in out.values()])
-        if tot == 0:
-            tot = 1
-        out = {x: float(y)/tot for x, y in out.iteritems()}
-        return out
+        return {x for x, y in out.iteritems()}
 
     def calcStatistics(self):
         self.mentionCounts = dict()

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Evaluation:
     """
     This class evaluates a given model on the dataset given by test_iter.

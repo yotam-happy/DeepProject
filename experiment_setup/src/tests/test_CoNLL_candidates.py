@@ -3,7 +3,7 @@ from PairwisePredict import *
 from PPRforNED import *
 from Word2vecLoader import *
 from models.RNNPairwiseModel import *
-from tests.ConllReader import *
+from readers.conll_reader import *
 
 def getValue(t):
     return t[1]
