@@ -4,10 +4,11 @@ import numpy as np
 import pandas as pd
 
 import UnifyKB
-
+import utils.text
+from nltk.metrics.distance import edit_distance
 
 class FeatureGenerator:
-    def __init__(self, mention_features={}, entity_features={}, stats=None, db=None, knockout_model = None, pointwise_model = None, feature_consistancy = True):
+    def __init__(self, mention_features={}, entity_features={}, stats=None, db=None, knockout_model=None, pointwise_model=None):
         self._stats = stats
         self._db = db
         self.mention_features = mention_features
@@ -46,14 +47,11 @@ class FeatureGenerator:
         features_cand1 = self.getEntityFeatures(wlink, candidate1)
         features_cand2 = self.getEntityFeatures(wlink, candidate2)
         features_mention = self.getMentionFeatures(wlink)
-        return features_cand1 + features_cand2 + features_mention[0]
+        return features_cand1 + features_cand2 + features_mention
 
     def getPointwiseFeatures(self, wlink, entity):
         features_cand1 = self.getEntityFeatures(wlink, entity)
         features_mention = self.getMentionFeatures(wlink)
-        if self.pointwise_model is not None:
-            # TODO: pointwise model feature implementation
-            pass
         return features_cand1 + features_mention
 
     def numPairwiseFeatures(self):
@@ -68,18 +66,39 @@ class FeatureGenerator:
         features = []
 
         # Count features
-        if 'log_prior' in self.entity_features:
-            features.append(self._stats.getConceptPrior(entity, log=True))
         if 'prior' in self.entity_features:
-            features.append(self._stats.getConceptPrior(entity))
+            features.append(self._stats.getCandidatePrior(entity))
+        if 'normalized_prior' in self.entity_features:
+            features.append(self._stats.getCandidatePrior(entity, normalized=True))
+        if 'normalized_log_prior' in self.entity_features:
+            features.append(self._stats.getCandidatePrior(entity, normalized=True, log=True))
         if 'relative_prior' in self.entity_features:
             if entity in candidates:
                 count = 0
                 for cand, c in candidates.items():
-                    count += self._stats.getConceptPrior(cand)
-                features.append(float(self._stats.getConceptPrior(entity)) / count)
+                    count += self._stats.getCandidatePrior(cand)
+                if count == 0:
+                    features.append(float(0))
+                else:
+                    features.append(float(self._stats.getCandidatePrior(entity)) / count)
+            else:
+                features.append(float(0))
         if 'cond_prior' in self.entity_features:            #P(mention|sense)
-            features.append(candidates[entity] if entity in candidates else 0)
+            features.append(self._stats.getCandidateConditionalPrior(entity, wlink["word"]))
+
+        # string similarity features
+        page_title = self._db.getPageTitle(entity)
+        page_title = utils.text.normalize_unicode(page_title) if page_title is not None else None
+        mention = utils.text.normalize_unicode(wlink["word"])
+        if 'entity_title_starts_or_ends_with_mention':
+            x = 1 if page_title is not None and (page_title.startswith(mention) or page_title.endswith(mention)) else 0
+            features.append(x)
+        if 'mention_text_starts_or_ends_with_entity':
+            x = 1 if page_title is not None and (mention.startswith(page_title) or mention.endswith(page_title)) else 0
+            features.append(x)
+        if 'edit_distance':
+            features.append(edit_distance(page_title, mention) if page_title is not None else 0)
+
         return features
 
     def getMentionFeatures(self, wlink):
@@ -104,7 +123,7 @@ class FeatureGenerator:
         if 'n_candidates' in self.mention_features:
             features.append(len(candidates))
 
-        return features, candidates
+        return features
 
     def getMentionListFeatures(self,wlink_list, pointwise_feature = True):
         """
