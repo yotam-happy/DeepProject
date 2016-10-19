@@ -101,6 +101,8 @@ class WikilinksNewIterator:
             yield open(os.path.join(self._path, file), 'r')
 
     def wikilinks(self):
+        r = 0
+        t = 0
         for c, f in enumerate(self._wikilink_files()):
             lines = f.readlines()
             for line in lines:
@@ -118,6 +120,7 @@ class WikilinksNewIterator:
                     if not self._resolveIds:
                         wlink['wikiId'] = int(wlink['wikiId'])
                     else:
+                        t += 1
                         url = wlink['wikiurl']
                         if url.rfind('/') > -1:
                             url = url[url.rfind('/')+1:]
@@ -128,6 +131,9 @@ class WikilinksNewIterator:
                             continue
                         else:
                             wlink['wikiId'] = wikiId
+                            r += 1
+                        if t % 100000 == 0:
+                            print "% able to resolve:", 100 * float(r) / t, "% out of", t
 
                     if 'mention_as_list' not in wlink:
                         mention_as_list = unicodedata.normalize('NFKD', wlink['word']).encode('ascii','ignore').lower()
