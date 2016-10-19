@@ -22,18 +22,6 @@ def _CoNLLFileToDocIterator(fname, split='testb'):
         yield (curdoc, curdocName)
 
 
-def _CoNLLDocToSentenceIterator(docLines):
-    sent = [line for line in docLines if line]
-    yield sent
-#    sent = []
-#    for line in docLines:
-#        if not line:
-#            if len(sent) > 0:
-#                yield sent
-#            sent = []
-#        else:
-#            sent.append(line)
-
 def _CoNLLRawToTuplesIterator(lines):
     '''
     yields tuples:
@@ -46,7 +34,7 @@ def _CoNLLRawToTuplesIterator(lines):
             continue
         t = line.split('\t')
         if len(t) == 1:
-            yield (t[0], False, None, None, None, None, None)
+            yield (t[0], t[0], False, None, None, None, None, None)
         else:
             if t[1] != 'B':
                 continue
@@ -56,54 +44,40 @@ def _CoNLLRawToTuplesIterator(lines):
                 yield (t[2], True, True, t[3], t[4], int(t[5]), t[6] if len(t) >= 7 else None)
 
 class CoNLLWikilinkIterator:
-
     # the new iterator does not support using a zip file.
     def __init__(self, fname, split='testa', includeUnresolved = False):
         self._fname = fname
         self._split = split
         self._includeUnresolved = includeUnresolved
 
-    def wikilinks(self, all_mentions_per_doc = False):
-        if all_mentions_per_doc:
-            pass
-        mention_list_per_doc = []
+    def document_iterator(self):
         for (doc, docName) in _CoNLLFileToDocIterator(self._fname, self._split):
-            for sent in _CoNLLDocToSentenceIterator(doc):
-                sent = [token for token in _CoNLLRawToTuplesIterator(sent)]
-                for i, token in enumerate(sent):
-                    if token[1] and (self._includeUnresolved or token[2]):
-                        wlink = dict()
-                        wlink['wikiurl'] = token[4]
-                        wlink['yago2'] = token[3]
-                        wlink['wikiId'] = token[5]  # BE CAREFUL!! This might be a different mapping then ours
-                        wlink['word'] = token[0]
+            wlinks = []
+            tokens = []
+            tokens_raw = [token for token in _CoNLLRawToTuplesIterator(doc)]
+            for i, token in enumerate(tokens_raw):
+                if token[1] and (self._includeUnresolved or token[2]):
+                    wlink = dict()
+                    wlink['wikiurl'] = token[4]
+                    wlink['yago2'] = token[3]
+                    wlink['wikiId'] = token[5]  # BE CAREFUL!! This might be a different mapping then ours
+                    wlink['word'] = token[0]
+                    tokens += token[0].split()
 
-                        left_context_text = ' '.join([x[0] for x in sent[:i]])
-                        right_context_text = ' '.join([x[0] for x in sent[i + 1:]])
-                        wlink['left_context_text'] = left_context_text
-                        wlink['right_context_text'] = right_context_text
-                        wlink['left_context'] = left_context_text.split(' ')
-                        wlink['right_context'] = right_context_text.split(' ')
-                        wlink['mention_as_list'] = sent[i][0].split(' ')
-                        if all_mentions_per_doc:
-                            mention_list_per_doc.append(wlink)
-                            # print 'mention appended'
-                        else:
-                            # print 'wlink is output'
-                            yield wlink
-                if all_mentions_per_doc:
-                    # print 'mention list created'
-                    wlinks_doc = mention_list_per_doc
-                    mention_list_per_doc = []
-                    yield wlinks_doc
+                    left_context_text = ' '.join([x[0] for x in tokens_raw[:i]])
+                    right_context_text = ' '.join([x[0] for x in tokens_raw[i + 1:]])
+                    wlink['left_context_text'] = left_context_text
+                    wlink['right_context_text'] = right_context_text
+                    wlink['left_context'] = left_context_text.split(' ')
+                    wlink['right_context'] = right_context_text.split(' ')
+                    wlink['mention_as_list'] = tokens_raw[i][0].split(' ')
+                    wlinks.append(wlink)
+                else:
+                    tokens.append(token[0])
+            yield docName, wlinks, tokens
 
 
-def CoNLLasDocs(fname, split='testb'):
-    for (doc,docName) in _CoNLLFileToDocIterator('../data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', 'testb'):
-        docWords = []
-        for sent in _CoNLLDocToSentenceIterator(doc):
-            docWords += [token[0] for token in _CoNLLRawToTuplesIterator(sent)]
-        print docName, ": ", docWords
-        yield docName, docWords
-
-
+    def wikilinks(self, all_mentions_per_doc = False):
+        for docName, wlinks, tokens in self.document_iterator():
+            for wlink in wlinks:
+                yield wlink
