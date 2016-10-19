@@ -47,7 +47,6 @@ class ModelTrainer:
 
     def train(self):
         print "start training..."
-        self._model.startTraining()
 
         for epoch in xrange(self._epochs):
             print "training epoch ", epoch
@@ -109,6 +108,4 @@ class ModelTrainer:
                                 self._model.train(wikilink, actual, wrong, actual)
                             else:
                                 self._model.train(wikilink, wrong, actual, actual)
-
-        self._model.finilizeTraining()
         print "done training."
