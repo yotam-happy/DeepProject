@@ -44,25 +44,27 @@ model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_s
 predictor = model.getPredictor()
 print 'Done!'
 
-candidator = CandidatesUsingPPRStats(ppr_stats, wikiDB)
+#candidator = CandidatesUsingPPRStats(ppr_stats, wikiDB)
+candidator = CandidatesUsingStatisticsObject(_train_stats)
 
 # Pre training (fine tuning model using training set)
 print 'pretraining'
 model.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 train_iter = CoNLLIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='train')
-trainer = ModelTrainer(train_iter, candidator, ppr_stats, model, epochs=1, neg_sample=5)
+trainer = ModelTrainer(train_iter, candidator, _train_stats, model, epochs=10, neg_sample=5)
 trainer.train()
 model.saveModel(_path + '/models/basic_model')
 print 'Done!'
 
-not_tried = 0
+tried = 0
 
 total = 0
 gotit = 0
 errors_when_no_resolved_candidates = 0
 errors_due_to_unresolved_gold_sense = 0
 errors_due_to_gold_sense_not_in_candidates = 0
-
+n_candidates = 0
+nnn = 0
 mps_correct = 0
 correct_when_mps_wrong = 0
 wrong_when_mps_correct = 0
@@ -83,13 +85,15 @@ for doc in test_iter.documents():
         gold_sense_url = mention.gold_sense_url()[mention.gold_sense_url().rfind('/')+1:]
         gold_sense_id = wikiDB.resolvePage(gold_sense_url)
 
-        mps = ppr_stats.getMostProbableSense(mention.mention_text())
+        mps = ppr_stats.getMostProbableSense(mention)
         mps = mps[mps.rfind('/') + 1:]
         mps = mps.encode('utf8')
 
         if mps == gold_sense_url:
             mps_correct += 1
 
+        n_candidates += len(mention.candidates)
+        nnn += len(ppr_stats.getCandidateUrlsForMention(mention))
         total += 1
         if total % 100 == 0:
             print total, " (accuracy=", str(float(gotit) / total), ")"
@@ -97,22 +101,16 @@ for doc in test_iter.documents():
         correct_result = False
 
         if len(mention.candidates) == 0:
+            errors_when_no_resolved_candidates += 1
             # 1. we could not resolve any candidates. This is usually due to the candidates being pruned for being too short
             # our only option is to get the most probable sense out of the raw candidate urls
-
-            not_tried += 1
-            if mps == gold_sense_url:
-                correct_result = True
-                correct_result_by_title = True
-            else:
-                errors_when_no_resolved_candidates += 1
-                f.write('mention  : ' + mention.mention_text() + "\n")
-                f.write("candidates: " + str(ppr_stats.getCandidateUrlsForMention(mention.mention_text())) + "\n")
-                f.write("most probable sense: " + str(mps) + "\n")
-                f.write("gold sense: " + str(gold_sense_url) + "\n")
-                f.write("- error due to unresolved candidates\n")
-                f.write("-----\n")
-                f.write("\n")
+            f.write('mention  : ' + mention.mention_text() + "\n")
+            f.write("candidates: " + str(ppr_stats.getCandidateUrlsForMention(mention.mention_text())) + "\n")
+            f.write("most probable sense: " + str(mps) + "\n")
+            f.write("gold sense: " + str(gold_sense_url) + "\n")
+            f.write("- error due to unresolved candidates\n")
+            f.write("-----\n")
+            f.write("\n")
 
         elif gold_sense_id is None:
             # 2. We could resolve at least one of the senses but not the gold sense. In this case we can't win...
@@ -138,6 +136,7 @@ for doc in test_iter.documents():
             f.write("-----\n")
             f.write("\n")
         else:
+            tried += 1
             # 4. We have some candidates, and the gold sense is resolved and in the candidate list so lets test our method!
             if mps == gold_sense_url:
                 mps_when_tried += 1
@@ -147,7 +146,6 @@ for doc in test_iter.documents():
 
             if predicted == gold_sense_id:
                 correct_result = True
-                correct_when_tried += 1
             else:
                 f.write('left ctx : ' + str(mention.left_context(20)) + "\n")
                 f.write('mention  : ' + mention.mention_text() + "\n")
@@ -177,8 +175,9 @@ f.write("errors due to gold sense not in candidates: " + str(errors_due_to_gold_
 f.write("most probable sense correct: " + str(float(mps_correct) / total) + "\n")
 f.write("correct when  mps wrong: " + str(float(correct_when_mps_wrong) / total) + "\n")
 f.write("wrong when mps correct: " + str(float(wrong_when_mps_correct) / total) + "\n")
-f.write("correct when tried (p@1): " + str(float(correct_when_tried) / total) + "%; mps when tried: " + str(float(mps_when_tried) / total) + "\n")
-f.write("not tried: " + str(not_tried) + "\n")
+f.write("avg. candidates per case: " + str(float(n_candidates) / total) + "\n")
+f.write("correct when tried (p@1): " + str(float(gotit) / tried) + "%; mps when tried: " + str(float(mps_when_tried) / tried) + "\n")
+f.write("tried: " + str(float(tried) / total) + " (" + str(tried) + ")\n")
 f.write("\n")
 f.write("accuracy: " + str(gotit) + "out of " + str(total) + "(" + str(float(gotit) / total) + "%)\n")
 

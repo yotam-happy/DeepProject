@@ -65,8 +65,6 @@ class FeatureGenerator:
         return len(self.entity_features) + len(self.mention_features)
 
     def getEntityFeatures(self, mention, entity):
-        candidates = self._stats.getCandidatesForMention(mention.mention_text())
-
         features = []
 
         # Count features
@@ -77,9 +75,9 @@ class FeatureGenerator:
         if 'normalized_log_prior' in self.entity_features:
             features.append(self._stats.getCandidatePrior(entity, normalized=True, log=True))
         if 'relative_prior' in self.entity_features:
-            if entity in candidates:
+            if entity in mention.candidates:
                 count = 0
-                for cand in candidates:
+                for cand in mention.candidates:
                     count += self._stats.getCandidatePrior(cand)
                 if count == 0:
                     features.append(float(0))
@@ -88,7 +86,7 @@ class FeatureGenerator:
             else:
                 features.append(float(0))
         if 'cond_prior' in self.entity_features:            #P(mention|sense)
-            features.append(self._stats.getCandidateConditionalPrior(entity, mention.mention_text()))
+            features.append(self._stats.getCandidateConditionalPrior(entity, mention))
 
         # string similarity features
         page_title = self._db.getPageTitle(entity)
@@ -116,7 +114,7 @@ class FeatureGenerator:
         return features
 
     def getMentionFeatures(self, mention):
-        candidates = self._stats.getCandidatesForMention(mention.mention_text())
+        candidates = self._stats.getCandidatesForMention(mention)
 
         features = []
 

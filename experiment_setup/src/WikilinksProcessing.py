@@ -6,7 +6,7 @@ from urlparse import urlparse
 from WikilinksIterator import *
 from WikilinksStatistics import *
 from DbWrapper import *
-
+import utils.text
 def _urlHash(url):
     '''
     # uses the domain name as hash - to be on the strict side we put all wikilinks from the same domain on
@@ -152,30 +152,30 @@ def copyWithFilter(src_path, dest_path, word_filter):
     train_iter = WikilinksNewIterator(path=src_path)
     writer = wlink_writer(dest_path)
     for wlink in train_iter.wikilinks():
-        if wlink['word'] in word_filter:
+        if utils.text.strip_wiki_title(wlink['word']) in word_filter:
             writer.save(wlink)
     writer.finalize()
 
-if __name__ == "__main__":
-    ## Resolving ids
-    #wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002', cache=True)
-    #iter = WikilinksNewIterator(path="../../data/wikilinks/unprocessed", resolveIds=True, db=wikiDB)
-    #writer = wlink_writer('../../data/wikilinks/with-ids2')
-    #for i, wlink in enumerate(iter.wikilinks()):
-    #    writer.save(wlink)
-    #    if i % 10000 == 0:
-    #        print "resolve ids: ", i
-    #writer.finalize()
+#if __name__ == "__main__":
+    # Resolving ids
+#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+#    iter = WikilinksNewIterator(path="../../data/wikilinks/unprocessed", resolveIds=True, db=wikiDB)
+#    writer = wlink_writer('../../data/wikilinks/with-ids')
+#    for i, wlink in enumerate(iter.wikilinks()):
+#        writer.save(wlink)
+#        if i % 10000 == 0:
+#            print "resolve ids: ", i
+#    writer.finalize()
 
     ## shuffle the dataset
-    #random.seed()
-    #shuffler = ShuffleFiles('../../data/wikilinks/with-ids', '../../data/wikilinks/randomized')
-    #shuffler.work1()
-    #shuffler.work2()
+#    random.seed()
+#    shuffler = ShuffleFiles('../../data/wikilinks/with-ids', '../../data/wikilinks/randomized')
+#    shuffler.work1()
+#    shuffler.work2()
 
     ## split into train/validation/test (split by urls. All mentions from same url go to same folder)
-    #iter = WikilinksNewIterator('../../data/wikilinks/randomized')
-    #splitWikis(iter, '../../data/wikilinks/all-split')
+#    iter = WikilinksNewIterator('../../data/wikilinks/randomized')
+#    splitWikis(iter, '../../data/wikilinks/all-split')
 
     ## calculate statistics for ttrain
     #iter = WikilinksNewIterator('../data/intralinks/all')
@@ -185,11 +185,11 @@ if __name__ == "__main__":
     #stats.printSomeStats()
 
     # filter sets
-    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-    stats = WikilinksStatistics(None, load_from_file_path='../data/intralinks/train-stats')
-    good = stats.getGoodMentionsToDisambiguate()
-    print "n of good mentions: ", len(good)
-    copyWithFilter("../data/intralinks/all", '../data/intralinks/filtered', good)
+#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+#    stats = WikilinksStatistics(None, load_from_file_path='../../data/intralinks/train-stats')
+#    good = stats.getGoodMentionsToDisambiguate()
+#    print "n of good mentions: ", len(good)
+#    copyWithFilter("../../data/intralinks/all", '../../data/intralinks/filtered', good)
 
     #fix
 #    iter = WikilinksNewIterator(path="../data/intralinks/all")

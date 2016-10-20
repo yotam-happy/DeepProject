@@ -5,7 +5,7 @@ class CandidatesUsingPPRStats:
 
     def get_candidates_for_mention(self, mention):
         candidates = set()
-        for x in self._pprstats.getCandidateUrlsForMention(mention.mention_text()):
+        for x in self._pprstats.getCandidateUrlsForMention(mention):
             z = self._db.resolvePage(x[x.rfind('/') + 1:])
             if z is not None:
                 candidates.add(z)
@@ -23,10 +23,8 @@ class CandidatesUsingStatisticsObject:
     def __init__(self, stats):
         self._stats = stats
 
-    def get_candidates_to_mention(self, mention):
-        candidates = self._stats.getCandidatesForMention(mention.mention_text())
-        # return a set
-        return self._stats.getCandidatesForMention(mention.mention_text())
+    def get_candidates_for_mention(self, mention):
+        return self._stats.getCandidatesForMention(mention)
 
     def add_candidates_to_mention(self, mention):
         mention.candidates = self.get_candidates_for_mention(mention)

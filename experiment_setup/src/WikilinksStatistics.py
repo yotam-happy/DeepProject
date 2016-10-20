@@ -7,7 +7,7 @@ import unicodedata
 import nltk
 import numpy as np
 from nltk.corpus import stopwords
-
+import utils.text
 
 class WikilinksStatistics:
     """
@@ -48,9 +48,10 @@ class WikilinksStatistics:
         self._stopwords = stopwords.words('english')
 
     def getCandidateConditionalPrior(self, concept, mention):
-        if mention not in self.mentionLinks or concept not in self.mentionLinks[mention]:
+        mention_text = utils.text.strip_wiki_title(mention.mention_text())
+        if mention_text not in self.mentionLinks or concept not in self.mentionLinks[mention_text]:
             return 0
-        return float(self.mentionLinks[mention][concept]) / np.sum(self.mentionLinks[mention].values())
+        return float(self.mentionLinks[mention_text][concept]) / np.sum(self.mentionLinks[mention_text].values())
 
     def getCandidatePrior(self, concept, normalized=False, log=False):
         if not normalized:
@@ -104,12 +105,12 @@ class WikilinksStatistics:
         """
         print "getting statistics"
         for wlink in self._wikilinks_iter.wikilinks():
-            word = wlink['word'].lower()
+            mention_text = utils.text.strip_wiki_title(wlink['word'])
 
-            if not word in self.mentionLinks:
-                self.mentionLinks[word] = dict()
-            self.mentionLinks[word][wlink['wikiId']] = self.mentionLinks[word].get(wlink['wikiId'], 0) + 1
-            self.mentionCounts[word] = self.mentionCounts.get(word, 0) + 1
+            if mention_text not in self.mentionLinks:
+                self.mentionLinks[mention_text] = dict()
+            self.mentionLinks[mention_text][wlink['wikiId']] = self.mentionLinks[mention_text].get(wlink['wikiId'], 0) + 1
+            self.mentionCounts[mention_text] = self.mentionCounts.get(mention_text, 0) + 1
             self.conceptCounts[wlink['wikiId']] = self.conceptCounts.get(wlink['wikiId'], 0) + 1
 
             if 'right_context' in wlink:
@@ -127,9 +128,11 @@ class WikilinksStatistics:
         :param mention:     the mention to search for
         :return:            returns a dictionary: (candidate,count)
         """
-        if mention.lower() not in self.mentionLinks:
-            return {} # TODO: Fix to {}
-        l = self._sortedList(self.mentionLinks[mention.lower()])
+        mention_text = utils.text.strip_wiki_title(
+            mention.mention_text() if hasattr(mention, 'mention_text') else mention)
+        if mention_text not in self.mentionLinks:
+            return {}
+        l = self._sortedList(self.mentionLinks[mention_text])
         tot = sum([x[1] for x in l])
         out = dict()
         for x in l:
@@ -189,7 +192,7 @@ class WikilinksStatistics:
 
 #from WikilinksIterator import *
 #_path = "/home/yotam/pythonWorkspace/deepProject"
-#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all"))
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/wikilinks/with-ids"))
 #stats.calcStatistics()
-#stats.saveToFile("../data/intralinks/train-stats")
+#stats.saveToFile(_path + "/data/wikilinks/all-stats")
 #print "done"

@@ -109,7 +109,7 @@ class PPRStatistics:
             return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
                 if concept in self.conceptCounts else 0
 
-    def getCandidatesForMention(self, mention, p=0.01, t=5):
+    def getCandidatesForMention(self, mention, p=0.00, t=0):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -117,7 +117,7 @@ class PPRStatistics:
         :param mention:     the mention to search for
         :return:            returns a dictionary: (candidate,count)
         """
-        mention = mention.lower()
+        mention = (mention.mention_text() if hasattr(mention, 'mention_text') else mention).lower()
         if mention not in self.mentionLinks or len(self.mentionLinks[mention]) == 0:
             return {}
 
@@ -155,7 +155,7 @@ class PPRStatistics:
         return float(counter)/ len(self.mentionCounts)
 
 
-    def getCandidateUrlsForMention(self, mention, p=0.01, t=5):
+    def getCandidateUrlsForMention(self, mention, p=0.00, t=0):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -163,7 +163,7 @@ class PPRStatistics:
         :param mention:     the mention to search for
         :return:            returns a dictionary: (candidate,count)
         """
-        mention = mention.lower()
+        mention = (mention.mention_text() if hasattr(mention, 'mention_text') else mention).lower()
         if mention not in self.mentionLinksUrl:
             return {}
 
@@ -224,16 +224,16 @@ class PPRStatistics:
         except:
             print "Unexpected error:", sys.exc_info()[0]
 
-#if __name__ == "__main__":
-#
-#    path = "/home/yotam/pythonWorkspace/deepProject"
-#    print "Loading iterators+stats..."
-#    if not os.path.isdir(path):
-#        path = "/home/noambox/DeepProject"
-#    elif not os.path.isdir(path):
-#        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
-#
-#    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
-#    ppr_stats = PPRStatistics(ppr_itr)
-#    ppr_stats.calcStatistics()
-#    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
+if __name__ == "__main__":
+
+    path = "/home/yotam/pythonWorkspace/deepProject"
+    print "Loading iterators+stats..."
+    if not os.path.isdir(path):
+        path = "/home/noambox/DeepProject"
+    elif not os.path.isdir(path):
+        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+
+    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
+    ppr_stats = PPRStatistics(ppr_itr)
+    ppr_stats.calcStatistics()
+    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')

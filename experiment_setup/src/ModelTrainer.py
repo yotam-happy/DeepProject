@@ -1,6 +1,8 @@
 from WikilinksStatistics import *
 from Word2vecLoader import *
 from bisect import bisect
+import utils.text
+
 
 class ModelTrainer:
     """
@@ -52,16 +54,18 @@ class ModelTrainer:
             print "training epoch ", epoch
 
             for mention in self._iter.mentions():
-                if self.mention_exclude is not None and mention.mention_text() in self.mention_exclude:
+                mention_text = utils.text.strip_wiki_title(mention.mention_text())
+                if self.mention_exclude is not None and mention_text in self.mention_exclude:
                     continue
-                if self.mention_include is not None and mention.mention_text() not in self.mention_include:
+                if self.mention_include is not None and mention_text not in self.mention_include:
                     continue
 
                 actual = mention.gold_sense_id()
                 if self.sense_filter is not None and actual in self.sense_filter:
                     continue
 
-                candidates = self._candidator.get_candidates_for_mention(mention)
+                self._candidator.add_candidates_to_mention(mention)
+                candidates = mention.candidates
                 if self.sense_filter is not None:
                     candidates = {x: y for x, y in candidates.iteritems() if x not in self.sense_filter}
 
