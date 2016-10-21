@@ -37,6 +37,7 @@ class WikilinksStatistics:
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.conceptCounts = dict()
+        self.conceptCounts2 = dict()
         self.contextDictionary = dict()
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
@@ -48,12 +49,14 @@ class WikilinksStatistics:
         self._stopwords = stopwords.words('english')
 
     def getCandidateConditionalPrior(self, concept, mention):
+        concept = str(concept)
         mention_text = utils.text.strip_wiki_title(mention.mention_text())
         if mention_text not in self.mentionLinks or concept not in self.mentionLinks[mention_text]:
             return 0
         return float(self.mentionLinks[mention_text][concept]) / np.sum(self.mentionLinks[mention_text].values())
 
     def getCandidatePrior(self, concept, normalized=False, log=False):
+        concept = str(concept)
         if not normalized:
             return float(self.conceptCounts[concept]) / self.conceptCountsSum if concept in self.conceptCounts else 0
 
@@ -64,6 +67,10 @@ class WikilinksStatistics:
         else:
             return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
                 if concept in self.conceptCounts else 0
+
+    def getCandidatePriorYamadaStyle(self, entity):
+        entity = str(entity)
+        return float(self.conceptCounts2[entity]) / len(self.mentionCounts) if entity in self.conceptCounts2 else 0
 
     def getRandomWordSubset(self, p, baseSubset=None):
         '''
@@ -84,6 +91,7 @@ class WikilinksStatistics:
         f.write(json.dumps(self.mentionCounts)+'\n')
         f.write(json.dumps(self.mentionLinks)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
+        f.write(json.dumps(self.conceptCounts2)+'\n')
         f.write(json.dumps(self.contextDictionary)+'\n')
         f.close()
 
@@ -94,7 +102,8 @@ class WikilinksStatistics:
         self.mentionCounts = json.loads(l[0])
         self.mentionLinks = json.loads(l[1])
         self.conceptCounts = json.loads(l[2])
-        self.contextDictionary = json.loads(l[3])
+        self.conceptCounts2 = json.loads(l[3])
+        self.contextDictionary = json.loads(l[4])
         f.close()
 
     def calcStatistics(self):
@@ -119,6 +128,11 @@ class WikilinksStatistics:
             if 'left_context' in wlink:
                 for w in wlink['left_context']:
                     self.contextDictionary[w] = self.contextDictionary.get(w, 0) + 1
+
+        # counts mentions per concept
+        for mention, entities in self.mentionLinks.iteritems():
+            for entity in entities.keys():
+                self.conceptCounts2[entity] = self.conceptCounts2.get(entity, 0) + 1
 
     def getCandidatesForMention(self, mention, p=0.001, t=3):
         """
@@ -154,6 +168,7 @@ class WikilinksStatistics:
             l = self.getCandidatesForMention(mention)
             if l is not None and len(l) > 1:
                 s.add(mention)
+        print len(s)
         return s
 
     def prettyPrintMentionStats(self, m, db):
@@ -192,7 +207,7 @@ class WikilinksStatistics:
 
 #from WikilinksIterator import *
 #_path = "/home/yotam/pythonWorkspace/deepProject"
-#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/wikilinks/with-ids"))
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all"))
 #stats.calcStatistics()
-#stats.saveToFile(_path + "/data/wikilinks/all-stats")
+#stats.saveToFile(_path + "/data/intralinks/all-stats")
 #print "done"

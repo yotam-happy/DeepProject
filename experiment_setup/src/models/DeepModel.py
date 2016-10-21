@@ -133,8 +133,8 @@ class DeepModel:
         self._batch_mention_X = []
         self._batch_extra_features_X = []
         self._batchY = []
-        self._train_loss = []
-        self._batch_size = 512
+        self.train_loss = []
+        self._batch_size = 128
         self.inputs = {x for x in self._config['inputs']}
 
         if 'feature_generator' in self._config:
@@ -337,7 +337,7 @@ class DeepModel:
             batchY = np.array(self._batchY)
 
             loss = self.model.train_on_batch(batchX, batchY)
-            self._train_loss.append(loss)
+            self.train_loss.append(loss)
             print 'Done batch. Size of batch - ', batchY.shape, '; loss: ', loss
 
             self._batch_left_X = []
@@ -349,7 +349,7 @@ class DeepModel:
             self._batchY = []
 
     def plotTrainLoss(self,fname, st=0):
-        plt.plot(self._train_loss[st:])
+        plt.plot(self.train_loss[st:])
         plt.ylabel('Loss')
         plt.xlabel('Batch')
         plt.savefig(fname)

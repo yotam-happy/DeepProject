@@ -74,12 +74,14 @@ class PPRIterator:
 
 class PPRStatistics:
 
-    def __init__(self, _ppr_itr, load_file = None):
+    def __init__(self, _ppr_itr, load_file=None, fill_in=None):
+        self._fill_in = fill_in
         self.ppr_itr = _ppr_itr
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.mentionLinksUrl = dict()
         self.conceptCounts = dict()
+        self.conceptCounts2 = dict()
         if load_file is not None:
             self.loadFromFile(load_file)
         self.conceptCountsSum = sum(self.conceptCounts.values())
@@ -92,9 +94,10 @@ class PPRStatistics:
         return l
 
     def getCandidateConditionalPrior(self, concept, mention):
-        raise "not supported"
+        return 0 if self._fill_in is None else self._fill_in.getCandidateConditionalPrior(concept, mention)
 
     def getCandidatePrior(self, concept, normalized=False, log=False):
+        concept = unicode(concept)
         if concept not in self.conceptCounts:
             return 0
 
@@ -103,11 +106,9 @@ class PPRStatistics:
 
         # if normalized, normalize by variance
         if log:
-            return math.log(float(self.conceptCounts[concept]) + 1) / self.conceptLogCountsVariance \
-                if concept in self.conceptCounts else 0
+            return math.log(float(self.conceptCounts[concept]) + 1) / self.conceptLogCountsVariance
         else:
-            return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
-                if concept in self.conceptCounts else 0
+            return float(self.conceptCounts[concept]) / self.conceptCountsVariance
 
     def getCandidatesForMention(self, mention, p=0.00, t=0):
         """
@@ -137,23 +138,14 @@ class PPRStatistics:
         return out
 
     def getMostProbableSense(self, mention):
-        cands = self.getCandidateUrlsForMention(mention)
-        counts = {cand: self.getCandidatePrior(cand, mention) for cand in cands}
+        if len(mention.candidates) == 0:
+            return None
+        counts = {cand: self.getCandidatePrior(cand, mention) for cand in mention.candidates}
         return max(counts.iterkeys(), key=(lambda key: counts[key]))
 
-    def getMostProbableSense2(self, cands):
-        cands = {x: self.conceptCounts[str(x)] if str(x) in self.conceptCounts else 0 for x in cands}
-        if len(cands) == 0:
-            return None
-        return max(cands.iterkeys(), key=(lambda key: cands[key]))
-
-    def getCandidateProbabilityYamadaStyle(self,concept): # TODO: change wikistats to same code...
-        counter = 0.0
-        for links in self.mentionLinks.iteritems():
-            if concept in links[1].keys():
-                counter+=1.0
-        return float(counter)/ len(self.mentionCounts)
-
+    def getCandidatePriorYamadaStyle(self, entity):
+        entity = unicode(entity)
+        return float(self.conceptCounts2[entity]) / len(self.mentionCounts) if entity in self.conceptCounts2 else 0
 
     def getCandidateUrlsForMention(self, mention, p=0.00, t=0):
         """
@@ -181,6 +173,7 @@ class PPRStatistics:
         self.mentionLinks = dict()
         self.mentionLinksUrl = dict()
         self.conceptCounts = dict()
+        self.conceptCounts2 = dict()
         print "getting statistics"
         for entity_chunck in self.ppr_itr.getPharsedEntityChunck():
             mention_name = entity_chunck['mention'].lower()
@@ -195,6 +188,11 @@ class PPRStatistics:
                 self.mentionLinksUrl[mention_name][sense['url']] = sense['inCount']
                 self.conceptCounts[sense['id']] = sense['inCount']
 
+        # counts mentions per concept
+        for mention, entities in self.mentionLinks.iteritems():
+            for entity in entities.keys():
+                self.conceptCounts2[entity] = self.conceptCounts2.get(entity, 0) + 1
+
         self.prettyPrintStats()
 
     def saveToFile(self, path):
@@ -204,6 +202,7 @@ class PPRStatistics:
         f.write(json.dumps(self.mentionLinks)+'\n')
         f.write(json.dumps(self.mentionLinksUrl)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
+        f.write(json.dumps(self.conceptCounts2)+'\n')
         f.close()
 
     def loadFromFile(self, path):
@@ -214,6 +213,7 @@ class PPRStatistics:
         self.mentionLinks = json.loads(l[1])
         self.mentionLinksUrl = json.loads(l[2])
         self.conceptCounts = json.loads(l[3])
+        self.conceptCounts2 = json.loads(l[4])
         f.close()
 
     def prettyPrintStats(self, limit=5):
@@ -224,16 +224,16 @@ class PPRStatistics:
         except:
             print "Unexpected error:", sys.exc_info()[0]
 
-if __name__ == "__main__":
-
-    path = "/home/yotam/pythonWorkspace/deepProject"
-    print "Loading iterators+stats..."
-    if not os.path.isdir(path):
-        path = "/home/noambox/DeepProject"
-    elif not os.path.isdir(path):
-        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
-
-    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
-    ppr_stats = PPRStatistics(ppr_itr)
-    ppr_stats.calcStatistics()
-    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
+#if __name__ == "__main__":
+#
+#    path = "/home/yotam/pythonWorkspace/deepProject"
+#    print "Loading iterators+stats..."
+#    if not os.path.isdir(path):
+#        path = "/home/noambox/DeepProject"
+#    elif not os.path.isdir(path):
+#        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+#
+#    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
+#    ppr_stats = PPRStatistics(ppr_itr)
+#    ppr_stats.calcStatistics()
+#    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')

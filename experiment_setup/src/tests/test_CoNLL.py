@@ -19,7 +19,7 @@ if(not os.path.isdir(_path)):
 _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
 
-ppr_stats = PPRStatistics(None, _path+"/data/PPRforNED/ppr_stats")
+ppr_stats = PPRStatistics(None, _path+"/data/PPRforNED/ppr_stats", fill_in=_train_stats)
 cD = ppr_stats.conceptCounts
 
 print "Done!"
@@ -51,7 +51,7 @@ candidator = CandidatesUsingStatisticsObject(_train_stats)
 print 'pretraining'
 model.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 train_iter = CoNLLIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='train')
-trainer = ModelTrainer(train_iter, candidator, _train_stats, model, epochs=10, neg_sample=5)
+trainer = ModelTrainer(train_iter, candidator, ppr_stats, model, epochs=2, neg_sample=5)
 trainer.train()
 model.saveModel(_path + '/models/basic_model')
 print 'Done!'
@@ -64,10 +64,8 @@ errors_when_no_resolved_candidates = 0
 errors_due_to_unresolved_gold_sense = 0
 errors_due_to_gold_sense_not_in_candidates = 0
 n_candidates = 0
-nnn = 0
+nn = 0
 mps_correct = 0
-correct_when_mps_wrong = 0
-wrong_when_mps_correct = 0
 
 correct_when_tried = 0
 mps_when_tried = 0
@@ -79,6 +77,7 @@ for doc in test_iter.documents():
     # add candidates
     candidator.add_candidates_to_document(doc)
 
+    correct_per_doc = 0
     for mention in doc.mentions:
         #TODO: this is invalid?? Better not touch the gold sense.. Rather map candidates, choos the correct one, and
         #TODO: backtrack the mapping
@@ -86,14 +85,11 @@ for doc in test_iter.documents():
         gold_sense_id = wikiDB.resolvePage(gold_sense_url)
 
         mps = ppr_stats.getMostProbableSense(mention)
-        mps = mps[mps.rfind('/') + 1:]
-        mps = mps.encode('utf8')
 
-        if mps == gold_sense_url:
+        if gold_sense_id is not None and mps == gold_sense_id:
             mps_correct += 1
 
         n_candidates += len(mention.candidates)
-        nnn += len(ppr_stats.getCandidateUrlsForMention(mention))
         total += 1
         if total % 100 == 0:
             print total, " (accuracy=", str(float(gotit) / total), ")"
@@ -138,14 +134,15 @@ for doc in test_iter.documents():
         else:
             tried += 1
             # 4. We have some candidates, and the gold sense is resolved and in the candidate list so lets test our method!
-            if mps == gold_sense_url:
+            if mps == gold_sense_id:
                 mps_when_tried += 1
 
             predicted = None
             predicted = predictor.predict(mention)
 
             if predicted == gold_sense_id:
-                correct_result = True
+                gotit += 1
+                correct_per_doc += 1
             else:
                 f.write('left ctx : ' + str(mention.left_context(20)) + "\n")
                 f.write('mention  : ' + mention.mention_text() + "\n")
@@ -159,25 +156,18 @@ for doc in test_iter.documents():
                 f.write("-----\n")
                 f.write("\n")
 
-        if correct_result:
-            gotit += 1
-        if correct_result and mps != gold_sense_url:
-            correct_when_mps_wrong += 1
-        if not correct_result and mps == gold_sense_url:
-            wrong_when_mps_correct += 1
-
 f.write("errors when no resolved candidates: " + str(errors_when_no_resolved_candidates) +
         "out of " + str(total) + "(" + str(float(errors_when_no_resolved_candidates) / total) + "%)\n")
 f.write("errors due to unresolved gold sense: " + str(errors_due_to_unresolved_gold_sense) +
         "out of " + str(total) + "(" + str(float(errors_due_to_unresolved_gold_sense) / total) + "%)\n")
 f.write("errors due to gold sense not in candidates: " + str(errors_due_to_gold_sense_not_in_candidates) +
         "out of " + str(total) + "(" + str(float(errors_due_to_gold_sense_not_in_candidates) / total) + "%)\n")
-f.write("most probable sense correct: " + str(float(mps_correct) / total) + "\n")
-f.write("correct when  mps wrong: " + str(float(correct_when_mps_wrong) / total) + "\n")
-f.write("wrong when mps correct: " + str(float(wrong_when_mps_correct) / total) + "\n")
+f.write("most probable sense micro accuracy: " + str(float(mps_correct) / total) + "\n")
 f.write("avg. candidates per case: " + str(float(n_candidates) / total) + "\n")
-f.write("correct when tried (p@1): " + str(float(gotit) / tried) + "%; mps when tried: " + str(float(mps_when_tried) / tried) + "\n")
+f.write("\n")
 f.write("tried: " + str(float(tried) / total) + " (" + str(tried) + ")\n")
+f.write("mps when tried (micro: " + str(float(mps_when_tried) / tried) + "\n")
+f.write("correct when tried: micro p@1" + str(float(gotit) / tried) + "," + "%\n")
 f.write("\n")
 f.write("accuracy: " + str(gotit) + "out of " + str(total) + "(" + str(float(gotit) / total) + "%)\n")
 

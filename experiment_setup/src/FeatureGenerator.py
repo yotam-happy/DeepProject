@@ -70,6 +70,8 @@ class FeatureGenerator:
         # Count features
         if 'prior' in self.entity_features:
             features.append(self._stats.getCandidatePrior(entity))
+        if 'prior_yamada' in self.entity_features:
+            features.append(self._stats.getCandidatePriorYamadaStyle(entity))
         if 'normalized_prior' in self.entity_features:
             features.append(self._stats.getCandidatePrior(entity, normalized=True))
         if 'normalized_log_prior' in self.entity_features:
@@ -87,6 +89,8 @@ class FeatureGenerator:
                 features.append(float(0))
         if 'cond_prior' in self.entity_features:            #P(mention|sense)
             features.append(self._stats.getCandidateConditionalPrior(entity, mention))
+        if 'n_of_candidates' in self.entity_features:
+            features.append(len(mention.candidates))
 
         # string similarity features
         page_title = self._db.getPageTitle(entity)
@@ -103,36 +107,25 @@ class FeatureGenerator:
 
         # context similarity features
         if 'yamada_context_similarity' in self.entity_features:
-            if hasattr(mention.document(), 'yamada_context_embd'):
-                context_embd = mention.document().yamada_context_embd
-            else:
+            if not hasattr(mention.document(), 'yamada_context_embd'):
                 txt = ' '.join(mention.document().tokens)
                 context_embd = self.yamada_txt_to_embd.text_to_embedding(txt)
                 mention.document().yamada_context_embd = context_embd
-            self.yamada_txt_to_embd.entity_embd(unicode(self._db.getPageTitle(entity)))
+            context_embd = mention.document().yamada_context_embd
+            entity_embd = self.yamada_txt_to_embd.entity_embd(unicode(self._db.getPageTitle(entity)))
 
         return features
 
     def getMentionFeatures(self, mention):
-        candidates = self._stats.getCandidatesForMention(mention)
-
         features = []
 
-        # Count features
-        if 'yamadas_base' in self.mention_features:
-            # returns Yamadas local base features. The doc features are calculated differently.
-            # here an optional sense is a candidate (represented as 'e' for entity in Yamada)
-            for i, cand in enumerate(candidates.items()):
-                features.append(self._stats.getCandidateProbabilityYamadaStyle(str(cand[0]))) # entity prior Prob(sense)
-                features.append(cand[1]) # conditional entity prior Prob(sense|mention)
-            features.append(len(candidates)) # number of entity candidates (s) for mention m
-
-        if 'rnn_model_feature_local' in self.mention_features:
-            # getting the matrixes of conditional prob and ranking FIXME: flatten matrix and solve trunc_param issue
-            cond_mat, votes_mat = self.getCandidateListFeatures(mention, candidates, trunc_param=5)
-            features.append(cond_mat.flatten())
-
-        if 'n_candidates' in self.mention_features:
-            features.append(len(candidates))
-
+        if 'max_prior' in self.mention_features:
+            if not hasattr(mention.document(), 'max_prior'):
+                max_prior = 0
+                for m in mention.document().mentions:
+                    for entity in m.candidates:
+                        p = self._stats.getCandidateConditionalPrior(entity, mention)
+                        max_prior = p if p > max_prior else max_prior
+                mention.document().max_prior = max_prior
+            features.append(mention.document().max_prior)
         return features

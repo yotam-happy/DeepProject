@@ -47,62 +47,71 @@ class ModelTrainer:
         i = bisect(self._all_senses_cpf, x)
         return self._all_senses[i]
 
+    def train_on_mention(self, mention):
+        mention_text = utils.text.strip_wiki_title(mention.mention_text())
+
+        if self.mention_exclude is not None and mention_text in self.mention_exclude:
+            return
+        if self.mention_include is not None and mention_text not in self.mention_include:
+            return
+
+        actual = mention.gold_sense_id()
+        if self.sense_filter is not None and actual in self.sense_filter:
+            return
+
+        candidates = mention.candidates
+        if self.sense_filter is not None:
+            candidates = {x: y for x, y in candidates.iteritems() if x not in self.sense_filter}
+
+        if len(candidates) == 0:
+            return
+
+        # get id vector
+        ids = [candidate for candidate in candidates if int(candidate) != actual]
+
+        # get list of negative samples
+        neg = []
+        for k in xrange(self._neg_sample):
+
+            # do negative sampling (get a negative sample)
+            r = np.random.rand()
+            if r < self._neg_sample_all_senses_prob:
+                # get negative sample from all possible senses
+                wrong = self.getSenseNegSample()
+            else:
+                # get negative sample from senses seen for the current mention
+                neg_candidates = ids
+                if len(neg_candidates) < 1:
+                    continue
+                wrong = neg_candidates[np.random.randint(len(neg_candidates))]
+            neg.append(wrong)
+
+        # train
+        if len(neg) > 0:
+            if self._pointwise:
+                self._model.train(mention, actual, actual)
+            for wrong in neg:
+                if self._pointwise:
+                    self._model.train(mention, wrong, actual)
+                else:
+                    # train on both sides so we get a symmetric model
+                    if random.randrange(2) == 0:
+                        self._model.train(mention, actual, wrong, actual)
+                    else:
+                        self._model.train(mention, wrong, actual, actual)
+
     def train(self):
         print "start training..."
 
         for epoch in xrange(self._epochs):
             print "training epoch ", epoch
 
-            for mention in self._iter.mentions():
-                mention_text = utils.text.strip_wiki_title(mention.mention_text())
-                if self.mention_exclude is not None and mention_text in self.mention_exclude:
-                    continue
-                if self.mention_include is not None and mention_text not in self.mention_include:
-                    continue
+            for doc in self._iter.documents():
+                self._candidator.add_candidates_to_document(doc)
+                for mention in doc.mentions:
+                    self.train_on_mention(mention)
 
-                actual = mention.gold_sense_id()
-                if self.sense_filter is not None and actual in self.sense_filter:
-                    continue
-
-                self._candidator.add_candidates_to_mention(mention)
-                candidates = mention.candidates
-                if self.sense_filter is not None:
-                    candidates = {x: y for x, y in candidates.iteritems() if x not in self.sense_filter}
-
-                if len(candidates) == 0:
-                    continue
-
-                # get id vector
-                ids = [candidate for candidate in candidates if int(candidate) != actual]
-
-                # get list of negative samples
-                neg = []
-                for k in xrange(self._neg_sample):
-
-                    # do negative sampling (get a negative sample)
-                    r = np.random.rand()
-                    if r < self._neg_sample_all_senses_prob:
-                        # get negative sample from all possible senses
-                        wrong = self.getSenseNegSample()
-                    else:
-                        # get negative sample from senses seen for the current mention
-                        neg_candidates = ids
-                        if len(neg_candidates) < 1:
-                            continue
-                        wrong = neg_candidates[np.random.randint(len(neg_candidates))]
-                    neg.append(wrong)
-
-                # train
-                if len(neg) > 0:
-                    if self._pointwise:
-                        self._model.train(mention, actual, actual)
-                    for wrong in neg:
-                        if self._pointwise:
-                            self._model.train(mention, wrong, actual)
-                        else:
-                            # train on both sides so we get a symmetric model
-                            if random.randrange(2) == 0:
-                                self._model.train(mention, actual, wrong, actual)
-                            else:
-                                self._model.train(mention, wrong, actual, actual)
+            loss = sum(self._model.train_loss) / float(len(self._model.train_loss))
+            self._model.train_loss = []
+            print "avg. loss for epoch:", loss
         print "done training."
