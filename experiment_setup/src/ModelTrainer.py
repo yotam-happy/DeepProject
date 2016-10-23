@@ -11,7 +11,7 @@ class ModelTrainer:
     """
 
     def __init__(self, iter, candidator, stats, model, epochs=10, neg_sample=1,
-                 mention_include=None, mention_exclude=None, sense_filter=None, pointwise=False):
+                 mention_include=None, mention_exclude=None, sense_filter=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -22,7 +22,6 @@ class ModelTrainer:
         self._stats = stats
         self._candidator = candidator
         self._epochs = epochs
-        self._pointwise = pointwise
         self.mention_include = mention_include
         self.mention_exclude = mention_exclude
         self.sense_filter = {int(x) for x in sense_filter} if sense_filter is not None else None
@@ -88,10 +87,10 @@ class ModelTrainer:
 
         # train
         if len(neg) > 0:
-            if self._pointwise:
+            if not self._model._config['pairwise']:
                 self._model.train(mention, actual, actual)
             for wrong in neg:
-                if self._pointwise:
+                if not self._model._config['pairwise']:
                     self._model.train(mention, wrong, actual)
                 else:
                     # train on both sides so we get a symmetric model

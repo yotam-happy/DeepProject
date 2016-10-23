@@ -59,12 +59,13 @@ print 'Done!'
 tried = 0
 
 total = 0
+n_docs = 0
+macro_p1 = 0
 gotit = 0
 errors_when_no_resolved_candidates = 0
 errors_due_to_unresolved_gold_sense = 0
 errors_due_to_gold_sense_not_in_candidates = 0
 n_candidates = 0
-nn = 0
 mps_correct = 0
 
 correct_when_tried = 0
@@ -155,6 +156,11 @@ for doc in test_iter.documents():
                 f.write("- unexplained error\n")
                 f.write("-----\n")
                 f.write("\n")
+    # calculate macro p@1
+    n_docs += 1
+    macro_p1 += float(correct_per_doc) / len(doc.mentions)
+
+macro_p1 /= n_docs
 
 f.write("errors when no resolved candidates: " + str(errors_when_no_resolved_candidates) +
         "out of " + str(total) + "(" + str(float(errors_when_no_resolved_candidates) / total) + "%)\n")
@@ -168,6 +174,7 @@ f.write("\n")
 f.write("tried: " + str(float(tried) / total) + " (" + str(tried) + ")\n")
 f.write("mps when tried (micro: " + str(float(mps_when_tried) / tried) + "\n")
 f.write("correct when tried: micro p@1" + str(float(gotit) / tried) + "," + "%\n")
+f.write("correct when tried: macro p@1" + str(macro_p1) + "," + "%\n")
 f.write("\n")
 f.write("accuracy: " + str(gotit) + "out of " + str(total) + "(" + str(float(gotit) / total) + "%)\n")
 

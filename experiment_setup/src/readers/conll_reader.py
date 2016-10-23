@@ -12,7 +12,7 @@ def _CoNLLFileToDocIterator(fname, split='testb'):
     for line in lines:
         line = line.strip()
         if line.startswith('-DOCSTART-'):
-            if curdocName is not None and (split is None or curdocSplit == split):
+            if curdocName is not None and (split == 'all' or curdocSplit == split):
                 yield (curdoc, curdocName)
             sp = line.split(' ')
             curdocName = sp[2][:-1]

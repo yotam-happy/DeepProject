@@ -18,6 +18,11 @@ class CandidatesUsingPPRStats:
         for mention in document.mentions:
             self.add_candidates_to_mention(mention)
 
+    def getAllCandidateSet(self, it):
+        all_cands = set()
+        for mention in it.mentions():
+            all_cands += self.get_candidates_for_mention(mention)
+
 
 class CandidatesUsingStatisticsObject:
     def __init__(self, stats):
@@ -32,3 +37,6 @@ class CandidatesUsingStatisticsObject:
     def add_candidates_to_document(self, document):
         for mention in document.mentions:
             self.add_candidates_to_mention(mention)
+
+if __name__ == "__main__":
+    raise "nnn"

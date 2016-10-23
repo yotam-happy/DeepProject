@@ -73,22 +73,52 @@ class FinetuneModelBuilder:
         self.inputs = []
         self.to_join = []
 
-    def addCandidateInput(self, name):
+    def addCandidateInput(self, name, to_join=True):
         candidate_input = Input(shape=(1,), dtype='int32', name=name)
         candidate_embed = self.concept_embed_layer(candidate_input)
         candidate_flat = Flatten()(candidate_embed)
         self.inputs.append(candidate_input)
-        self.to_join.append(candidate_flat)
+        if to_join:
+            self.to_join.append(candidate_flat)
+        return candidate_flat
 
-    def addContextInput(self):
+    def _attention_network(self, controller, rnn):
+        attention = merge([controller, rnn], mode='concat', concat_axis=-1)
+        attention = TimeDistributed(Dense(self._w2v.conceptEmbeddingsSz, activation='relu'))(attention)
+        attention = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(attention)
+        return attention
+
+    def addContextInput(self, controller1=None, controller2=None):
         left_context_input = Input(shape=(self._config['context_window_size'],), dtype='int32', name='left_context_input')
         right_context_input = Input(shape=(self._config['context_window_size'],), dtype='int32', name='right_context_input')
+        self.inputs += [left_context_input, right_context_input]
         left_context_embed = self.word_embed_layer(left_context_input)
         right_context_embed = self.word_embed_layer(right_context_input)
-        left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(left_context_embed)
-        right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(right_context_embed)
-        self.inputs += [left_context_input, right_context_input]
-        self.to_join += [left_rnn, right_rnn]
+
+
+        if self._config['context_network'] == 'gru':
+            left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(left_context_embed)
+            right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(right_context_embed)
+            self.to_join += [left_rnn, right_rnn]
+        elif self._config['context_network'] == 'mean':
+            left_mean = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(left_context_embed)
+            right_mean = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(right_context_embed)
+            self.to_join += [left_mean, right_mean]
+        elif self._config['context_network'] == 'attention':
+            left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(left_context_embed)
+            right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(right_context_embed)
+
+            ctrl1 = RepeatVector(self._config['context_window_size'])(controller1)
+            attention_left1 = self._attention_network(ctrl1, left_rnn)
+            attention_right1 = self._attention_network(ctrl1, right_rnn)
+            if controller2 is not None:
+                ctrl2 = RepeatVector(self._config['context_window_size'])(controller2)
+                attention_left2 = self._attention_network(ctrl1, left_rnn)
+                attention_right2 = self._attention_network(ctrl2, right_rnn)
+
+            self.to_join += [attention_left1, attention_right1, attention_left2, attention_right2]
+        else:
+            raise "unknown"
 
     def addMentionInput(self):
         mention_input = Input(shape=(self._config['max_mention_words'],), dtype='int32', name='mention_input')
@@ -134,7 +164,7 @@ class DeepModel:
         self._batch_extra_features_X = []
         self._batchY = []
         self.train_loss = []
-        self._batch_size = 128
+        self._batch_size = 512
         self.inputs = {x for x in self._config['inputs']}
 
         if 'feature_generator' in self._config:
@@ -160,13 +190,18 @@ class DeepModel:
         model_builder = FinetuneModelBuilder(self._config, self._w2v) if self._config['finetune_embd'] \
             else NoFinetuneModelBuilder(self._config, self._w2v)
 
-        if 'candidates' in self.inputs:
-            model_builder.addCandidateInput('candidate1_input')
+        # use candidates input if they were specifically specified, or if we are using an attention network to process
+        # the context.
+        if 'candidates' in self.inputs or \
+                ('context' in self.inputs and self._config['context_network'] == 'attention'):
+            candidate1 = model_builder.addCandidateInput('candidate1_input', to_join='candidates' in self.inputs)
             if self._config['pairwise']:
-                model_builder.addCandidateInput('candidate2_input')
+                candidate2 = model_builder.addCandidateInput('candidate2_input', to_join='candidates' in self.inputs)
+            else:
+                candidate2 = None
 
         if 'context' in self.inputs:
-            model_builder.addContextInput()
+            model_builder.addContextInput(controller1=candidate1, controller2=candidate2)
 
         if 'mention' in self.inputs:
             model_builder.addMentionInput()
