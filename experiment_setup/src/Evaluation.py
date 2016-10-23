@@ -6,32 +6,25 @@ class Evaluation:
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model, w2v=None, stats = None, wordExcludeFilter = None, wordIncludeFilter = None, sampling=None):
+    def __init__(self, test_iter, model, candidator, wordExcludeFilter = None, wordIncludeFilter = None, sampling=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
         """
         self._iter = test_iter
         self._model = model
-        self._stats = stats
+        self._candidator = candidator
         self._wordExcludeFilter = wordExcludeFilter
         self._wordIncludeFilter = wordIncludeFilter
-        self._w2v = w2v
         self._sampling = sampling
 
         self.n_samples = 0
         self.correct = 0
-        self.no_prediction = 0
         self.possible = 0
-        self.didnt = dict()
-
-    def isInStats(self, wlink):
-        l = self._stats.getCandidatesForMention(wlink["word"],p=0)
-        if l is None:
-            return False
-        l = {int(x):y for x,y in l.iteritems() if self._w2v is None or int(x) in self._w2v.conceptDict}
-        return wlink["wikiId"] in l
-
+        self.n_docs = 0
+        self.macro_p = 0
+        self.candidates = 0
+        self.n_docs_for_macro = 0
 
     def evaluate(self):
         """
@@ -46,48 +39,58 @@ class Evaluation:
         :return:
         """
         self.n_samples = 0
+        self.n_docs = 0
+        self.n_docs_for_macro = 0
         self.correct = 0
-        self.no_prediction = 0
         self.possible = 0
+        self.macro_p = 0
+        self.candidates = 0
 
-        for wikilink in self._iter.wikilinks():
-            if self._sampling is not None and np.random.rand() > self._sampling:
-                continue
+        predictor = self._model.getPredictor()
 
-            if self._wordIncludeFilter is not None and wikilink["word"] not in self._wordIncludeFilter:
-                continue
-            if self._wordExcludeFilter is not None and wikilink["word"] in self._wordExcludeFilter:
-                continue
-            if 'wikiId' not in wikilink:
-                continue
-            actual = wikilink['wikiId']
-            if self._stats is not None and self.isInStats(wikilink):
-                self.possible += 1
+        for doc in self._iter.documents():
+            self._candidator.add_candidates_to_document(doc)
+            self.n_docs += 1
 
-            prediction = self._model.predict(wikilink)
-
-            self.n_samples += 1
-            if prediction is None:
-                self.no_prediction += 1
-            elif prediction == actual:
-                self.correct += 1
-
-            if(self.n_samples % 1000 == 0):
-                print 'sampels=', self.n_samples , \
-                    '; %correct=', float(self.correct) / self.n_samples, \
-                    "; %where_tried=", float(self.correct) / (self.n_samples - self.no_prediction), \
-                    "; %no_pred=", float(self.no_prediction) / self.n_samples, \
-                    "; %possible=", float(self.possible) / self.n_samples
-
+            correct_per_doc = 0
+            possible_per_doc = 0
+            for mention in doc.mentions:
+                if self._sampling is not None and np.random.rand() > self._sampling:
+                    continue
+                if self._wordIncludeFilter is not None and mention.mention_text() not in self._wordIncludeFilter:
+                    continue
+                if self._wordExcludeFilter is not None and mention.mention_text() in self._wordExcludeFilter:
+                    continue
+                self.n_samples += 1
+                actual = mention.gold_sense_id()
+                if actual in mention.candidates:
+                    self.candidates += len(mention.candidates)
+                    possible_per_doc += 1
+                    prediction = predictor.predict(mention)
+                    if prediction == actual:
+                        correct_per_doc += 1
+                if self.n_samples % 100 == 0:
+                    self.printEvaluation()
+            self.possible += possible_per_doc
+            self.correct += correct_per_doc
+            if possible_per_doc > 0:
+                self.n_docs_for_macro += 1
+                self.macro_p += float(correct_per_doc) / possible_per_doc
+        print 'done!'
         self.printEvaluation()
 
-    def precision(self):
-        return float(self.correct) / self.n_samples
-
+    def mircoP(self):
+        return float(self.correct) / self.possible if self.possible > 0 else 'n/a'
+    def macroP(self):
+        return self.macro_p / self.n_docs_for_macro if self.n_docs_for_macro > 0 else 'n/a'
     def printEvaluation(self):
         """
         Pretty print results of evaluation
         """
-        print "samples: ", self.n_samples, "; correct: ", self.correct, " no-train: ", self.no_prediction, " possible: ", float(self.possible) / self.n_samples
-        print "%correct from total: ", float(self.correct) / self.n_samples
-        print "%correct where prediction was attempted: ", float(self.correct) / (self.n_samples - self.no_prediction)
+        tried = float(self.possible) / self.n_samples if self.n_samples > 0 else 'n/a'
+        avg_cands = float(self.candidates) / self.possible if self.possible > 0 else 'n/a'
+        micro_p = self.mircoP()
+        macro_p = self.macroP()
+        print self.n_samples, 'samples in ', self.n_docs, 'docs.', tried, \
+            '% mentions tried, avg. candidates per mention:",', avg_cands, \
+            '". micro p@1:', micro_p, '% macro p@1:', macro_p, "%"

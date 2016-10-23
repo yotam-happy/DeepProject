@@ -155,26 +155,26 @@ class WikilinksStatistics:
 
         return {x for x, y in out.iteritems()}
 
-    def getGoodMentionsToDisambiguate(self):
+    def getGoodMentionsToDisambiguate(self, p=0, t=0):
         """
         Returns a set of mentions that are deemed "good"
         :param f:
         :return:
         """
 
-        # take those mentions where the second most common term appears more then f times
+        # take those mentions where the second +
+        # most common term appears more then f times
         s = set()
         for mention in self.mentionLinks:
-            l = self.getCandidatesForMention(mention)
+            l = self.getCandidatesForMention(mention, p=p, t=t)
             if l is not None and len(l) > 1:
                 s.add(mention)
-        print len(s)
         return s
 
     def prettyPrintMentionStats(self, m, db):
         try:
             s = "["
-            for x,y in m.iteritems():
+            for x, y in m.iteritems():
                 t = db.getPageInfoById(x)[2]
                 s += str(t) + ": " + str(y) + "; "
             s += ']'
@@ -185,7 +185,7 @@ class WikilinksStatistics:
 
     def _sortedList(self, l):
         l = [(k,v) for k,v in l.items()]
-        l.sort(key=lambda (k,v):-v)
+        l.sort(key=lambda (k, v): -v)
         return l
 
     def printSomeStats(self):
@@ -200,7 +200,6 @@ class WikilinksStatistics:
         k, v = self.mentionLinks.items()[0]
         wordsSorted = [(k, self._sortedList(v), sum(v.values())) for k,v in self.mentionLinks.items()]
         wordsSorted.sort(key=lambda (k, v, d): v[1][1] if len(v) > 1 else 0)
-
         print("some ambiguous terms:")
         for w in wordsSorted[-10:]:
             print w
@@ -209,5 +208,5 @@ class WikilinksStatistics:
 #_path = "/home/yotam/pythonWorkspace/deepProject"
 #stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all"))
 #stats.calcStatistics()
-#stats.saveToFile(_path + "/data/intralinks/all-stats")
+#stats.saveToFile(_path + "/data/intralinks/train-stats")
 #print "done"

@@ -16,25 +16,27 @@ I also recommend on Pycharm cell mode plugin for easier execution of code fragme
 from Evaluation import *
 from PairwisePredict import *
 from ModelTrainer import *
-from models.RNNPairwiseModel import *
-from models.RNNFineTunePairwiseModel import *
+from models.DeepModel import *
 from FeatureGenerator import *
 from PointwisePredict import *
-from models.RNNPointwiseModel import *
 from models.BaselinePairwiseModel import *
 from PairwisePredict import *
+from DbWrapper import WikipediaDbWrapper
+from Candidates import *
 ##
 
-def eval(experiment_name, path, train_session_nr, predictor, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
+def eval(experiment_name, path, train_session_nr, model, candidator, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
     # evaluate
     print "Evaluating " + experiment_name + "...", train_session_nr
-    evaluation = Evaluation(iter_eval, predictor, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude, stats=stats, sampling=sampling)
+    evaluation = Evaluation(iter_eval, model, candidator, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude,
+                            sampling=sampling)
     evaluation.evaluate()
 
     # save
     print "Saving...", train_session_nr
     precision_f = open(path + "/models/" + experiment_name + ".precision.txt", "a")
-    precision_f.write(str(train_session_nr) + " train: " + str(evaluation.precision()) + "\n")
+    precision_f.write(str(train_session_nr) + " train micro p@1: " + str(evaluation.mircoP()) +
+                      ", macro p@1" + str(evaluation.marcoP()) + "\n")
     precision_f.close()
 
 
@@ -59,29 +61,25 @@ def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval,
         else None
     senseFilter = train_stats.getSensesFor(wordFilter) if filterSenses else None
 
-    if pointwise:
-        predictor = PointwisePredict(model, train_stats)
-        trainer = ModelTrainer(iter_train, train_stats, model, epochs=1, wordInclude=wordsForBroblem,
-                               wordExclude=wordFilter, senseFilter=senseFilter, pointwise=True, neg_sample=4)
-    else:
-        predictor = PairwisePredict(model, train_stats)
-        trainer = ModelTrainer(iter_train, train_stats, model, epochs=1, wordInclude=wordsForBroblem,
-                               wordExclude=wordFilter, senseFilter=senseFilter)
+    candidator = CandidatesUsingStatisticsObject(train_stats)
+    trainer = ModelTrainer(iter_train, candidator, train_stats, model, epochs=1, neg_sample=1,
+                           mention_include=wordsForBroblem, mention_exclude=wordFilter, sense_filter=senseFilter)
 
-    for train_session in xrange(200):
+    for train_session in xrange(500):
         # train
         print "Training... ", train_session
         trainer.train()
 
-        model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) +  ".out")
+        model.saveModel(path + "/models/" + experiment_name + "." + str(train_session) + ".out")
 
         if doEvaluation:
-            eval(experiment_name + ".eval", path, train_session, predictor, iter_eval, wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
+            eval(experiment_name + ".eval", path, train_session, model, candidator, iter_eval,
+                 wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
             if filterWords or filterSenses:
-                eval(experiment_name + ".unseen.eval", path, train_session, predictor, iter_eval, wordInclude=wordFilter,stats=train_stats, sampling=0.05)
+                eval(experiment_name + ".unseen.eval", path, train_session, model, candidator, iter_eval,
+                     wordInclude=wordFilter, stats=train_stats, sampling=0.05)
 
-
-    ## Plot train loss to file
+    # Plot train loss to file
     model.plotTrainLoss(path + "/models/" + experiment_name + ".train_loss.png", st=10)
 
 ##
@@ -92,13 +90,13 @@ if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
 # train on wikipedia intra-links corpus
-_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
-_iter_train = WikilinksNewIterator(_path+"/data/intralinks/filtered")
-_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/filtered")
+#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intralinks/train-stats")
+#_iter_train = WikilinksNewIterator(_path+"/data/intralinks/filtered")
+#_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/filtered")
 
-#_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
-#_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/ambiguos_1/train")
-#_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/ambiguos_1/evaluation")
+_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+_iter_train = WikilinksNewIterator(_path+"/data/wikilinks/filtered/train")
+_iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/filtered/validation")
 print "Done!"
 
 print 'Loading embeddings...'
@@ -112,27 +110,17 @@ print 'wordEmbedding dict size: ', len(_w2v.wordEmbeddings), " wanted: ", len(wD
 print 'conceptEmbeddings dict size: ', len(_w2v.conceptEmbeddings), " wanted", len(cD)
 print 'Done!'
 
-"""
-Training double gru model
-"""
+print 'Connecting to db'
+wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002',
+                            concept_filter=_w2v.conceptDict)
+print 'Done!'
 
 # TRAIN PAIRWISE MODEL
 print 'Training...'
 
-_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-model = RNNFineTunePairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#model = RNNPairwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-#model = VanillaNNPairwiseModel(_w2v)
+model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_stats, db=wikiDB)
 experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-           doEvaluation=False, filterWords=True, p=1.0)
-
-## TRAIN POINTWISE MODEL
-print 'Training...'
-#_feature_generator = FeatureGenerator(entity_features={'log_prior', 'cond_prior'}, stats=_train_stats)
-#model = RNNPointwiseModel(_w2v, dropout=0.5, feature_generator=_feature_generator)
-
-#experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-#           doEvaluation=True, filterWords=True, pointwise=True)
+           doEvaluation=True, filterWords=True, p=1.0)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")

@@ -9,6 +9,7 @@ import cProfile
 import nltk
 import unicodedata
 from nltk.corpus import stopwords
+from utils.document import *
 
 class WikilinksOldIterator:
     """
@@ -100,9 +101,10 @@ class WikilinksNewIterator:
             print "opening ", file
             yield open(os.path.join(self._path, file), 'r')
 
-    def wikilinks(self):
+    def documents(self):
         r = 0
         t = 0
+        i = 0
         for c, f in enumerate(self._wikilink_files()):
             lines = f.readlines()
             for line in lines:
@@ -153,7 +155,10 @@ class WikilinksNewIterator:
                         wlink['left_context'] = [w for w in wlink['left_context']]
 
                     # return
-                    yield wlink
+                    doc = Document(str(i), i)
+                    doc.mentions.append(MentionFromDict(wlink))
+                    yield doc
+                    i += 1
 
             f.close()
             if self._limit_files > 0 and c >= self._limit_files:
