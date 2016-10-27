@@ -25,6 +25,21 @@ def nonzero_mean(x):
 
     return x_mean
 
+def sum_seq(x):
+    return K.sum(x, axis=1, keepdims=False)
+
+def to_prob(input):
+    sum = K.sum(input, 1, keepdims=True)
+    return input / sum
+
+def get_activations1(model, layer, X_batch):
+    if layer == -1:
+        return [X_batch]
+    else:
+        get_activations = K.function([model.layers[0].input, K.learning_phase()], [model.layers[layer].output])
+        activations = get_activations([X_batch, 0])
+        return activations
+
 class NoFinetuneModelBuilder:
     def __init__(self, json, w2v):
         self._config = json
@@ -63,13 +78,10 @@ class FinetuneModelBuilder:
                                           self._w2v.wordEmbeddingsSz,
                                           input_length=self._config['context_window_size'],
                                           weights=[self._w2v.wordEmbeddings])
-#                                          init=lambda shape, name=None: K.variable(self._w2v.wordEmbeddings, name=name))
         self.concept_embed_layer = Embedding(self._w2v.conceptEmbeddings.shape[0],
                                              self._w2v.conceptEmbeddingsSz,
                                              input_length=1,
                                              weights=[self._w2v.conceptEmbeddings])
-#                                             init=lambda shape, name=None: K.variable(self._w2v.conceptEmbeddings,
-#                                                                                      name=name))
         self.inputs = []
         self.to_join = []
 
@@ -82,11 +94,19 @@ class FinetuneModelBuilder:
             self.to_join.append(candidate_flat)
         return candidate_flat
 
-    def _attention_network(self, controller, rnn):
-        attention = merge([controller, rnn], mode='concat', concat_axis=-1)
-        attention = TimeDistributed(Dense(self._w2v.conceptEmbeddingsSz, activation='relu'))(attention)
-        attention = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(attention)
-        return attention
+    def buildAttention(self, seq, controller):
+        controller_repeated = RepeatVector(self._config['context_window_size'])(controller)
+        attention = merge([controller_repeated, seq], mode='concat', concat_axis=-1)
+        attention = TimeDistributed(Dense(1, activation='sigmoid'))(attention)
+        attention = Flatten()(attention)
+        attention = Lambda(to_prob, output_shape=(self._config['context_window_size'],))(attention)
+
+        attention_repeated = RepeatVector(self._w2v.conceptEmbeddingsSz)(attention)
+        attention_repeated = Permute((2, 1))(attention_repeated)
+
+        weighted = merge([attention_repeated, seq], mode='mul')
+        summed = Lambda(sum_seq, output_shape=(self._w2v.conceptEmbeddingsSz,))(weighted)
+        return summed
 
     def addContextInput(self, controller1=None, controller2=None):
         left_context_input = Input(shape=(self._config['context_window_size'],), dtype='int32', name='left_context_input')
@@ -108,16 +128,14 @@ class FinetuneModelBuilder:
             left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(left_context_embed)
             right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(right_context_embed)
 
-            ctrl1 = RepeatVector(self._config['context_window_size'])(controller1)
-            attention_left1 = self._attention_network(ctrl1, left_rnn)
-            attention_right1 = self._attention_network(ctrl1, right_rnn)
+            attention_left1 = self.buildAttention(left_rnn, controller1)
+            attention_right1 = self.buildAttention(right_rnn, controller1)
             self.to_join += [attention_left1, attention_right1]
-            if controller2 is not None:
-                ctrl2 = RepeatVector(self._config['context_window_size'])(controller2)
-                attention_left2 = self._attention_network(ctrl1, left_rnn)
-                attention_right2 = self._attention_network(ctrl2, right_rnn)
-                self.to_join += [attention_left2, attention_right2]
 
+            if controller2 is not None:
+                attention_left2 = self.buildAttention(left_rnn, controller2)
+                attention_right2 = self.buildAttention(right_rnn, controller2)
+                self.to_join += [attention_left2, attention_right2]
         else:
             raise "unknown"
 
