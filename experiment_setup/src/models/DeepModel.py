@@ -40,48 +40,22 @@ def get_activations1(model, layer, X_batch):
         activations = get_activations([X_batch, 0])
         return activations
 
-class NoFinetuneModelBuilder:
-    def __init__(self, json, w2v):
-        self._config = json
-        self._w2v = w2v
 
-        self.inputs = []
-        self.to_join = []
-
-    def addCandidateInput(self, name):
-        candidate_input = Input(shape=(self._w2v.conceptEmbeddingsSz,), name=name)
-        self.inputs.append(candidate_input)
-        self.to_join.append(candidate_input)
-
-    def addContextInput(self):
-        left_context_input = Input(shape=(self._config['context_window_size'], self._w2v.wordEmbeddingsSz),
-                                   name='left_context_input')
-        right_context_input = Input(shape=(self._config['context_window_size'], self._w2v.wordEmbeddingsSz),
-                                    name='right_context_input')
-        left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(left_context_input)
-        right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(right_context_input)
-        self.inputs += [left_context_input, right_context_input]
-        self.to_join += [left_rnn, right_rnn]
-
-    def addMentionInput(self):
-        mention_input = Input(shape=(self._w2v.conceptEmbeddingsSz,), name='mention_input')
-        self.inputs.append(mention_input)
-        self.to_join.append(mention_input)
-
-
-class FinetuneModelBuilder:
-    def __init__(self, json, w2v):
-        self._config = json
+class ModelBuilder:
+    def __init__(self, config_json, w2v):
+        self._config = config_json
         self._w2v = w2v
 
         self.word_embed_layer = Embedding(self._w2v.wordEmbeddings.shape[0],
                                           self._w2v.wordEmbeddingsSz,
                                           input_length=self._config['context_window_size'],
-                                          weights=[self._w2v.wordEmbeddings])
+                                          weights=[self._w2v.wordEmbeddings],
+                                          trainable=self._config['finetune_embd'])
         self.concept_embed_layer = Embedding(self._w2v.conceptEmbeddings.shape[0],
                                              self._w2v.conceptEmbeddingsSz,
                                              input_length=1,
-                                             weights=[self._w2v.conceptEmbeddings])
+                                             weights=[self._w2v.conceptEmbeddings],
+                                             trainable=self._config['finetune_embd'])
         self.inputs = []
         self.to_join = []
 
@@ -206,8 +180,7 @@ class DeepModel:
             return PointwisePredict(self)
 
     def compileModel(self, dropout=0.0):
-        model_builder = FinetuneModelBuilder(self._config, self._w2v) if self._config['finetune_embd'] \
-            else NoFinetuneModelBuilder(self._config, self._w2v)
+        model_builder = ModelBuilder(self._config, self._w2v)
 
         # use candidates input if they were specifically specified, or if we are using an attention network to process
         # the context.
@@ -275,38 +248,20 @@ class DeepModel:
 
         # get candidate inputs
         if 'candidates' in self.inputs:
-            if self._config['finetune_embd']:
-                candidate1_X = np.array([self._w2v.conceptDict[candidate1]]) if candidate1 is not None else None
-                candidate2_X = np.array([self._w2v.conceptDict[candidate2]]) if candidate2 is not None else None
-            else:
-                candidate1_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate1]] \
-                    if candidate1 is not None else None
-                candidate2_X = self._w2v.conceptEmbeddings[self._w2v.conceptDict[candidate2]] \
-                    if candidate2 is not None else None
+            candidate1_X = np.array([self._w2v.conceptDict[candidate1]]) if candidate1 is not None else None
+            candidate2_X = np.array([self._w2v.conceptDict[candidate2]]) if candidate2 is not None else None
 
         # get context input
         if 'context' in self.inputs:
-            if self._config['finetune_embd']:
-                left_context_X = self.wordIteratorToIndices(mention.left_context_iter(),
-                                                            self._config['context_window_size'])
-                right_context_X = self.wordIteratorToIndices(mention.right_context_iter(),
-                                                             self._config['context_window_size'])
-            else:
-                left_context_X = self.wordIteratorToVectors(mention.left_context_iter(),
-                                                            self._config['context_window_size'])
-                right_context_X = self.wordIteratorToVectors(mention.right_context_iter(),
-                                                             self._config['context_window_size'])
+            left_context_X = self.wordIteratorToIndices(mention.left_context_iter(),
+                                                        self._config['context_window_size'])
+            right_context_X = self.wordIteratorToIndices(mention.right_context_iter(),
+                                                         self._config['context_window_size'])
 
         # get mention input
         if 'mention' in self.inputs:
-            if self._config['finetune_embd']:
-                mention_X = self.wordIteratorToIndices(mention.mention_text_tokenized(),
-                                                       self._config['max_mention_words'])
-            else:
-                mention_ar = self.wordIteratorToVectors(mention.mention_text_tokenized(),
-                                                        self._config['max_mention_words'])
-                mention_X = np.mean(mention_ar, axis=0) if mention_ar.shape[0] > 0 \
-                    else np.zeros(self._w2v.wordEmbeddingsSz)
+            mention_X = self.wordIteratorToIndices(mention.mention_text_tokenized(),
+                                                   self._config['max_mention_words'])
 
         if 'extra_features' in self.inputs:
             if self._config['pairwise']:
@@ -332,23 +287,6 @@ class DeepModel:
         n = len(o) if len(o) <= output_len else output_len
         arr[:n] = np.array(o)[:n]
         return arr
-
-    def wordIteratorToVectors(self, it, output_len):
-        o = []
-        for i, w in enumerate(it):
-            if i >= output_len:
-                break
-            if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
-                o.append(self._w2v.wordEmbeddings[self._w2v.wordDict[w]])
-        o = np.asarray(o)
-        o = o[:: -1]
-        if len(o) >= output_len:
-            context = np.array(o[-self._config['context_window_size']:, :])
-        else:
-            context = np.zeros((self._config['context_window_size'], self._w2v.wordEmbeddingsSz))
-            if len(o) != 0:
-                context[-len(o):, ] = np.array(o)
-        return context
 
     def train(self, mention, candidate1, candidate2, correct):
         """
@@ -430,12 +368,8 @@ class DeepModel:
             if self._config['pairwise']:
                 X['candidate2_input'] = candidate2_X.reshape((1, candidate2_X.shape[0],))
         if 'context' in self.inputs:
-            if self._config['finetune_embd']:
-                X['left_context_input'] = left_X.reshape((1, left_X.shape[0],))
-                X['right_context_input'] = right_X.reshape((1, right_X.shape[0],))
-            else:
-                X['left_context_input'] = left_X.reshape(1, left_X.shape[0], left_X.shape[1])
-                X['right_context_input'] = right_X.reshape(1, right_X.shape[0], right_X.shape[1])
+            X['left_context_input'] = left_X.reshape((1, left_X.shape[0],))
+            X['right_context_input'] = right_X.reshape((1, right_X.shape[0],))
         if 'mention' in self.inputs:
             X['mention_input'] = mention_X.reshape((1, mention_X.shape[0],))
         if 'extra_features' in self.inputs:
