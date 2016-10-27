@@ -47,9 +47,12 @@ class Word2vecLoader:
             i = 2
             for line in iter(f):
                 s = line.split()
-                if filterSet is None or s[0] in filterSet:
+                if s[0] == '</s>':
+                    continue
+                key = int(s[0]) if int_key else s[0].lower()
+                if filterSet is None or key in filterSet:
                     embedding[i, :-1] = np.array([float(x) for x in s[1:]])
-                    embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
+                    embd_dict[key] = i
                     i += 1
                     if self._debug and i > 10000:
                         break

@@ -82,6 +82,12 @@ class WikilinksStatistics:
             baseSubset = self.mentionCounts
         return {x for x in baseSubset if random.random() <= p}
 
+    def getMostProbableSense(self, mention):
+        if len(mention.candidates) == 0:
+            return None
+        counts = {cand: self.getCandidatePrior(cand, mention) for cand in mention.candidates}
+        return max(counts.iterkeys(), key=(lambda key: counts[key]))
+
     def getSensesFor(self, l):
         return {s for w in l for s in self.getCandidatesForMention(w)}
 
@@ -134,7 +140,7 @@ class WikilinksStatistics:
             for entity in entities.keys():
                 self.conceptCounts2[entity] = self.conceptCounts2.get(entity, 0) + 1
 
-    def getCandidatesForMention(self, mention, p=0.001, t=3):
+    def getCandidatesForMention(self, mention, p=0, t=0):
         """
         Returns the most probable sense + all other candidates where p(candidate|mention)>=p
         and with at least t appearances
@@ -146,14 +152,18 @@ class WikilinksStatistics:
             mention.mention_text() if hasattr(mention, 'mention_text') else mention)
         if mention_text not in self.mentionLinks:
             return {}
-        l = self._sortedList(self.mentionLinks[mention_text])
-        tot = sum([x[1] for x in l])
+        candidates = self.mentionLinks[mention_text]
+        tot = sum([y for x, y in candidates.iteritems()])
         out = dict()
-        for x in l:
-            if len(out) == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[int(x[0])] = x[1]
 
-        return {x for x, y in out.iteritems()}
+        max_x, max_y = None, 0
+        for x, y in candidates.iteritems():
+            if y > max_y:
+                max_x, max_y = x, y
+            if float(y) / tot >= p and y > t:
+                out[x] = y
+
+        return {int(x) for x, y in out.iteritems()}
 
     def getGoodMentionsToDisambiguate(self, p=0, t=0):
         """
@@ -165,9 +175,13 @@ class WikilinksStatistics:
         # take those mentions where the second +
         # most common term appears more then f times
         s = set()
-        for mention in self.mentionLinks:
-            l = self.getCandidatesForMention(mention, p=p, t=t)
-            if l is not None and len(l) > 1:
+        for mention, candidates in self.mentionLinks.iteritems():
+            tot = sum([y for x, y in candidates.iteritems()])
+            max_y = 0
+            for x, y in candidates.iteritems():
+                if y > max_y:
+                    max_y = y
+            if max_y >= t and float(max_y) / tot <= p:
                 s.add(mention)
         return s
 

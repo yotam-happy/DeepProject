@@ -101,10 +101,9 @@ class WikilinksNewIterator:
             print "opening ", file
             yield open(os.path.join(self._path, file), 'r')
 
-    def documents(self):
+    def jsons(self):
         r = 0
         t = 0
-        i = 0
         for c, f in enumerate(self._wikilink_files()):
             lines = f.readlines()
             for line in lines:
@@ -155,11 +154,20 @@ class WikilinksNewIterator:
                         wlink['left_context'] = [w for w in wlink['left_context']]
 
                     # return
-                    doc = Document(str(i), i)
-                    doc.mentions.append(MentionFromDict(wlink))
-                    yield doc
-                    i += 1
+                    yield wlink
 
             f.close()
             if self._limit_files > 0 and c >= self._limit_files:
                 break
+
+    def mentions(self):
+        for doc in self.documents():
+            for mention in doc.mentions:
+                yield mention
+
+    def documents(self):
+        for i, json in enumerate(self.jsons()):
+            doc = Document(str(i), i)
+            doc.mentions.append(MentionFromDict(json))
+            yield doc
+

@@ -27,7 +27,7 @@ def _get_split(iter, validation_frac=0.2, test_frac=0.2):
     test_hash = set()
     validation_hash = set()
     train_hash = set()
-    for i, wlink in enumerate(iter.wikilinks()):
+    for i, wlink in enumerate(iter.jsons()):
         if _urlHash(wlink['url']) not in test_hash and \
                 _urlHash(wlink['url']) not in validation_hash and \
                 _urlHash(wlink['url']) not in train_hash:
@@ -81,7 +81,7 @@ def splitWikis(iter, dest_dir, json_per_file=400000, validation_frac=0.1, test_f
     validation_writer = wlink_writer(os.path.join(dest_dir, "validation"))
     test_writer = wlink_writer(os.path.join(dest_dir, "test"))
 
-    for i, wlink in enumerate(iter.wikilinks()):
+    for i, wlink in enumerate(iter.jsons()):
         h = _urlHash(wlink['url'])
         if h in train_hash:
             train_writer.save(wlink)
@@ -151,7 +151,7 @@ class ShuffleFiles:
 def copyWithFilter(src_path, dest_path, word_filter):
     train_iter = WikilinksNewIterator(path=src_path)
     writer = wlink_writer(dest_path)
-    for wlink in train_iter.wikilinks():
+    for wlink in train_iter.jsons():
         if utils.text.strip_wiki_title(wlink['word']) in word_filter:
             writer.save(wlink)
     writer.finalize()

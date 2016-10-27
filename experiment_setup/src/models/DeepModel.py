@@ -111,12 +111,13 @@ class FinetuneModelBuilder:
             ctrl1 = RepeatVector(self._config['context_window_size'])(controller1)
             attention_left1 = self._attention_network(ctrl1, left_rnn)
             attention_right1 = self._attention_network(ctrl1, right_rnn)
+            self.to_join += [attention_left1, attention_right1]
             if controller2 is not None:
                 ctrl2 = RepeatVector(self._config['context_window_size'])(controller2)
                 attention_left2 = self._attention_network(ctrl1, left_rnn)
                 attention_right2 = self._attention_network(ctrl2, right_rnn)
+                self.to_join += [attention_left2, attention_right2]
 
-            self.to_join += [attention_left1, attention_right1, attention_left2, attention_right2]
         else:
             raise "unknown"
 

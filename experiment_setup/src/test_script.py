@@ -25,23 +25,24 @@ from DbWrapper import WikipediaDbWrapper
 from Candidates import *
 ##
 
-def eval(experiment_name, path, train_session_nr, model, candidator, iter_eval, wordExclude=None, wordInclude=None, stats=None, sampling=None):
+def eval(experiment_name, path, train_session_nr, model, candidator, iter_eval, wordExclude=None, wordInclude=None,
+         stats=None, sampling=None):
     # evaluate
     print "Evaluating " + experiment_name + "...", train_session_nr
     evaluation = Evaluation(iter_eval, model, candidator, wordExcludeFilter=wordExclude, wordIncludeFilter=wordInclude,
-                            sampling=sampling)
+                            sampling=sampling, stats=stats)
     evaluation.evaluate()
 
     # save
     print "Saving...", train_session_nr
     precision_f = open(path + "/models/" + experiment_name + ".precision.txt", "a")
     precision_f.write(str(train_session_nr) + " train micro p@1: " + str(evaluation.mircoP()) +
-                      ", macro p@1" + str(evaluation.marcoP()) + "\n")
+                      ", macro p@1: " + str(evaluation.macroP()) + "\n")
     precision_f.close()
 
 
 def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval, filterWords = False,
-               filterSenses = False, doEvaluation=True, p=1.0, pointwise=False):
+               filterSenses = False, doEvaluation=True, p=1.0):
     '''
     :param experiment_name: all saved files start with this name
     :param path:            path to save files
@@ -74,10 +75,10 @@ def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval,
 
         if doEvaluation:
             eval(experiment_name + ".eval", path, train_session, model, candidator, iter_eval,
-                 wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.005)
+                 wordInclude=wordsForBroblem, wordExclude=wordFilter, stats=train_stats, sampling=0.1)
             if filterWords or filterSenses:
                 eval(experiment_name + ".unseen.eval", path, train_session, model, candidator, iter_eval,
-                     wordInclude=wordFilter, stats=train_stats, sampling=0.05)
+                     wordInclude=wordFilter, stats=train_stats)
 
     # Plot train loss to file
     model.plotTrainLoss(path + "/models/" + experiment_name + ".train_loss.png", st=10)
@@ -86,7 +87,7 @@ def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval,
 
 _path = "/home/yotam/pythonWorkspace/deepProject"
 print "Loading iterators+stats..."
-if(not os.path.isdir(_path)):
+if not os.path.isdir(_path):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
 
 # train on wikipedia intra-links corpus
@@ -101,9 +102,9 @@ print "Done!"
 
 print 'Loading embeddings...'
 _w2v = Word2vecLoader(wordsFilePath=_path+"/data/word2vec/dim300vecs",
-                     conceptsFilePath=_path+"/data/word2vec/dim300context_vecs")
+                      conceptsFilePath=_path+"/data/word2vec/dim300context_vecs")
 wD = _train_stats.contextDictionary
-cD = _train_stats.conceptCounts
+cD = {int(x) for x in _train_stats.conceptCounts}
 _w2v.loadEmbeddings(wordDict=wD, conceptDict=cD)
 #_w2v.randomEmbeddings(wordDict=wD, conceptDict=cD)
 print 'wordEmbedding dict size: ', len(_w2v.wordEmbeddings), " wanted: ", len(wD)
@@ -120,7 +121,7 @@ print 'Training...'
 
 model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_stats, db=wikiDB)
 experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-           doEvaluation=True, filterWords=True, p=1.0)
+           doEvaluation=True, filterWords=True, p=0.1)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")

@@ -11,6 +11,13 @@ def getValue(t):
 
 
 _path = "/home/yotam/pythonWorkspace/deepProject"
+
+
+print 'Connecting to db'
+wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+print 'Done!'
+
+
 print "Loading iterators+stats..."
 if(not os.path.isdir(_path)):
     _path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
@@ -20,13 +27,18 @@ _train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/intral
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
 
 ppr_stats = PPRStatistics(None, _path+"/data/PPRforNED/ppr_stats", fill_in=_train_stats)
-cD = ppr_stats.conceptCounts
 
+candidator = CandidatesUsingYago2(_train_stats)
+candidator.load(_path + "/data/yago2/yago.candidates")
+#candidator = CandidatesUsingPPRStats(ppr_stats, wikiDB)
+#candidator = CandidatesUsingStatisticsObject(_train_stats)
+
+cD = candidator.getAllCandidateSet(CoNLLIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='all'))
 print "Done!"
 
 print 'Loading embeddings...'
-_w2v = Word2vecLoader(wordsFilePath=_path+"/data/word2vec/new/dim300vecs",
-                     conceptsFilePath=_path+"/data/word2vec/new/dim300context_vecs")
+_w2v = Word2vecLoader(wordsFilePath=_path+"/data/word2vec/dim300vecs",
+                     conceptsFilePath=_path+"/data/word2vec/dim300context_vecs")
 
 _w2v.loadEmbeddings(conceptDict=cD)
 #_w2v.randomEmbeddings(conceptDict=cD)
@@ -44,19 +56,17 @@ model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_s
 predictor = model.getPredictor()
 print 'Done!'
 
-#candidator = CandidatesUsingPPRStats(ppr_stats, wikiDB)
-candidator = CandidatesUsingStatisticsObject(_train_stats)
-
 # Pre training (fine tuning model using training set)
 print 'pretraining'
 model.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 train_iter = CoNLLIterator(_path+'/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', split='train')
-trainer = ModelTrainer(train_iter, candidator, ppr_stats, model, epochs=2, neg_sample=5)
+trainer = ModelTrainer(train_iter, candidator, ppr_stats, model, epochs=5, neg_sample=5)
 trainer.train()
 model.saveModel(_path + '/models/basic_model')
 print 'Done!'
 
 tried = 0
+tried_per_doc = 0
 
 total = 0
 n_docs = 0
@@ -79,6 +89,7 @@ for doc in test_iter.documents():
     candidator.add_candidates_to_document(doc)
 
     correct_per_doc = 0
+    tried_per_doc = 0
     for mention in doc.mentions:
         #TODO: this is invalid?? Better not touch the gold sense.. Rather map candidates, choos the correct one, and
         #TODO: backtrack the mapping
@@ -134,6 +145,7 @@ for doc in test_iter.documents():
             f.write("\n")
         else:
             tried += 1
+            tried_per_doc += 1
             # 4. We have some candidates, and the gold sense is resolved and in the candidate list so lets test our method!
             if mps == gold_sense_id:
                 mps_when_tried += 1
@@ -158,7 +170,7 @@ for doc in test_iter.documents():
                 f.write("\n")
     # calculate macro p@1
     n_docs += 1
-    macro_p1 += float(correct_per_doc) / len(doc.mentions)
+    macro_p1 += float(correct_per_doc) / tried_per_doc
 
 macro_p1 /= n_docs
 
@@ -173,8 +185,8 @@ f.write("avg. candidates per case: " + str(float(n_candidates) / total) + "\n")
 f.write("\n")
 f.write("tried: " + str(float(tried) / total) + " (" + str(tried) + ")\n")
 f.write("mps when tried (micro: " + str(float(mps_when_tried) / tried) + "\n")
-f.write("correct when tried: micro p@1" + str(float(gotit) / tried) + "," + "%\n")
-f.write("correct when tried: macro p@1" + str(macro_p1) + "," + "%\n")
+f.write("correct when tried: micro p@1 " + str(float(gotit) / tried) + "%\n")
+f.write("correct when tried: macro p@1 " + str(macro_p1) + "%\n")
 f.write("\n")
 f.write("accuracy: " + str(gotit) + "out of " + str(total) + "(" + str(float(gotit) / total) + "%)\n")
 

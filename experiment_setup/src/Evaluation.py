@@ -6,7 +6,8 @@ class Evaluation:
     This class evaluates a given model on the dataset given by test_iter.
     """
 
-    def __init__(self, test_iter, model, candidator, wordExcludeFilter = None, wordIncludeFilter = None, sampling=None):
+    def __init__(self, test_iter, model, candidator, stats=None,
+                 wordExcludeFilter=None, wordIncludeFilter=None, sampling=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -17,6 +18,7 @@ class Evaluation:
         self._wordExcludeFilter = wordExcludeFilter
         self._wordIncludeFilter = wordIncludeFilter
         self._sampling = sampling
+        self._stats = stats
 
         self.n_samples = 0
         self.correct = 0
@@ -24,6 +26,7 @@ class Evaluation:
         self.n_docs = 0
         self.macro_p = 0
         self.candidates = 0
+        self.mps_correct = 0
         self.n_docs_for_macro = 0
 
     def evaluate(self):
@@ -42,6 +45,7 @@ class Evaluation:
         self.n_docs = 0
         self.n_docs_for_macro = 0
         self.correct = 0
+        self.mps_correct = 0
         self.possible = 0
         self.macro_p = 0
         self.candidates = 0
@@ -61,6 +65,7 @@ class Evaluation:
                     continue
                 if self._wordExcludeFilter is not None and mention.mention_text() in self._wordExcludeFilter:
                     continue
+
                 self.n_samples += 1
                 actual = mention.gold_sense_id()
                 if actual in mention.candidates:
@@ -69,6 +74,10 @@ class Evaluation:
                     prediction = predictor.predict(mention)
                     if prediction == actual:
                         correct_per_doc += 1
+
+                    mps = self._stats.getMostProbableSense(mention)
+                    if mps == actual:
+                        self.mps_correct += 1
                 if self.n_samples % 100 == 0:
                     self.printEvaluation()
             self.possible += possible_per_doc
@@ -91,6 +100,7 @@ class Evaluation:
         avg_cands = float(self.candidates) / self.possible if self.possible > 0 else 'n/a'
         micro_p = self.mircoP()
         macro_p = self.macroP()
+        mps_correct = float(self.mps_correct) / self.possible if self.possible > 0 else 'n/a'
         print self.n_samples, 'samples in ', self.n_docs, 'docs.', tried, \
             '% mentions tried, avg. candidates per mention:",', avg_cands, \
-            '". micro p@1:', micro_p, '% macro p@1:', macro_p, "%"
+            '". micro p@1:', micro_p, '% macro p@1:', macro_p, "% mps p@1: ", mps_correct, '%'

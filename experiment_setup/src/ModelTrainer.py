@@ -67,7 +67,6 @@ class ModelTrainer:
 
         # get id vector
         ids = [candidate for candidate in candidates if int(candidate) != actual]
-
         # get list of negative samples
         neg = []
         for k in xrange(self._neg_sample):
@@ -88,10 +87,10 @@ class ModelTrainer:
         # train
         if len(neg) > 0:
             if not self._model._config['pairwise']:
-                self._model.train(mention, actual, actual)
+                self._model.train(mention, actual, None, actual)
             for wrong in neg:
                 if not self._model._config['pairwise']:
-                    self._model.train(mention, wrong, actual)
+                    self._model.train(mention, wrong, None, actual)
                 else:
                     # train on both sides so we get a symmetric model
                     if random.randrange(2) == 0:
