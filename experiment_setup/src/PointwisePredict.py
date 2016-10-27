@@ -15,10 +15,11 @@ class PointwisePredict:
         """
         self._pointwise_model = pointwise_model
 
-    def predict(self, mention, candidates=None):
-        if len(candidates) < 1:
+    def predict(self, mention):
+
+        if len(mention.candidates) < 1:
             return None
-        d = {candidate: self._predict(mention, candidate) for candidate in candidates.keys()}
+        d = {candidate: self._predict(mention, candidate) for candidate in mention.candidates.keys()}
         return max(d.iteritems(), key=operator.itemgetter(1))[0]
 
     def _predict(self, mention, candidate):
