@@ -1,32 +1,54 @@
+import numpy as np
+from keras.models import Model
+from keras.models import model_from_json
+from keras.layers import *
+import matplotlib.pyplot as plt
+from nltk.corpus import stopwords
+import theano as T
+import keras.backend as K
+from keras.engine.topology import Layer
+from FeatureGenerator import *
+import json
+from PointwisePredict import *
+from PairwisePredict import *
 from sklearn import metrics
 from sklearn.ensemble import GradientBoostingRegressor
+import numpy as np
 
 
-class GBTRmodel:
+class GBRTModel:
+    def __init__(self, model, train_df = None, test_df = None):
+        self._model = model
+        self._train_df = train_df
+        pass
 
-    def __init__(self, itr = None, stats = None, db = None, feature_generator = None, n_epoch = None, model = None):
-        self._stats = stats
-        self._iter =itr
-        self._db = db
-        self._n_epoch = n_epoch
-        if model:
-            self._clf = model
-        else:
-            # initialize GBTR (it is the classification model and not the regresion because the
-            # logistic regression loss)
-            self._clf = GradientBoostingRegressor(loss = 'huber', learning_rate= 0.02, n_estimators=10000, max_depth=3, max_features=None) # TODO: Check deviance loss with GBTC
+    def getPredictor(self):
+        return PointwisePredict(self)
 
-    def fit(self,  data, label):
-        # train individually on every mention appearing in that doc using the _model
-        self._clf.fit(X = data, y = label)
-        return
+    def predict(self, mention, candidate1, candidate2):
+        # create feature_vec from mention and candidate
+        Y = self._model.predict_prob(feature_vec)
+        return Y
 
-    def predict(self,data):
-        self._clf.predict(data)
+    def train(self, mention, candidate1, candidate2, correct):
+        '''
+        gathers mention and candidate features and trains the whole
+        data structere with finalize in the end
+        :param mention:
+        :param candidate1:
+        :param candidate2: None
+        :param correct:
+        :return:
+        '''
 
-    def evaluate(self, data, label):
-        metrics.accuracy_score(y_pred= self.predict(data), y_true=label)
+        feature_vec
+        pass
 
-    def train_batch(self):
-        # TOD
-        return
+    def finalize(self):
+        pass
+
+    def saveModel(self, fname):
+        pass
+
+    def loadModel(self, fname):
+        pass
