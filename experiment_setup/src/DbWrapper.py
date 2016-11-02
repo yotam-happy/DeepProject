@@ -24,6 +24,9 @@ class WikipediaDbWrapper:
 
         self.concept_filter = concept_filter
 
+        self._cache_resolve = dict()
+        self._cache_title = dict()
+
     def resetConnection(self):
         try:
             self._cursor.close()
@@ -60,19 +63,30 @@ class WikipediaDbWrapper:
                 self._cnx.commit()
 
     def getPageTitle(self, page_id):
+        if page_id in self._cache_title:
+            return self._cache_title[page_id]
+
         query = "SELECT page_title FROM page " \
                 "WHERE page_id = %s and page_namespace = 0"
         self._cursor.execute(query, (page_id,))
         row = self._cursor.fetchone()
-        return row[0] if row is not None else None
+        ret = row[0] if row is not None else None
+        self._cache_title[page_id] = ret
+        return ret
 
     def resolvePage(self, title, verbose=False, print_errors=False, use_pagelink_table=False):
+        if title in self._cache_resolve:
+            return self._cache_resolve[title]
+
         for i in xrange(3):
             try:
-                return self._resolvePage(title,
+                ret = self._resolvePage(title,
                                          verbose=verbose,
                                          print_errors=print_errors,
                                          use_pagelink_table=use_pagelink_table)
+                self._cache_resolve[title] = ret
+                return ret
+
             except:
                 print "reseting connection..."
                 self.resetConnection()
