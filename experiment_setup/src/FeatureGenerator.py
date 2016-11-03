@@ -20,6 +20,9 @@ class FeatureGenerator:
         self.pointwise_model = pointwise_model
         self.yamada_txt_to_embd = yamada_txt_to_embd
 
+    def getFeatureNames(self):
+        return self.entity_features + self.mention_features
+
     def getCandidateListFeatures(self, mention, candi_list, trunc_param=5):
         winner, cond_prob, cond_votes = \
                 self.knockout_model.predict2(mention, candidates=candi_list, returnProbMode=True)

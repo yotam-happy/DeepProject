@@ -109,6 +109,10 @@ class ModelTrainer:
                 for mention in doc.mentions:
                     self.train_on_mention(mention)
 
+            # if model cannot be trained online
+            if "finalize" in dir(self._model):
+                self._model.finalize()
+
             loss = sum(self._model.train_loss) / float(len(self._model.train_loss))
             self._model.train_loss = []
             print "avg. loss for epoch:", loss

@@ -148,6 +148,7 @@ class CandidatesUsingYago2:
 if __name__ == "__main__":
     from DbWrapper import *
     wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+    # wikiDB = WikipediaDbWrapper(user='noambox', password='ncTech#1', database='wiki20151002')
     yago2 = CandidatesUsingYago2()
     yago2.import_yago("../data/yago2", wikiDB)
     yago2.save("../data/yago2/yago.candidates")

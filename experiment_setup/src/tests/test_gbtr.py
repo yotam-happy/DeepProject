@@ -1,4 +1,4 @@
-from GBTRmodel import GBTRmodel
+from GBRTmodel import GBTRmodel
 import pandas as pd
 from ProjectSettings import *
 from sklearn.ensemble import GradientBoostingClassifier

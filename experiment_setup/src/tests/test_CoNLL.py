@@ -11,10 +11,11 @@ def getValue(t):
 
 
 _path = "/home/yotam/pythonWorkspace/deepProject"
-
+# _path = "/home/noambox/DeepProject"
 
 print 'Connecting to db'
 wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+# wikiDB = WikipediaDbWrapper(user='noambox', password='ncTech#1', database='wiki20151002')
 print 'Done!'
 
 
