@@ -1,16 +1,14 @@
-import numpy as np
 from keras.models import Model
 from keras.models import model_from_json
 from keras.layers import *
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
-import theano as T
 import keras.backend as K
-from keras.engine.topology import Layer
-from FeatureGenerator import *
+from FeatureGenerator import FeatureGenerator
 import json
-from PointwisePredict import *
-from PairwisePredict import *
+from PointwisePredict import PointwisePredict
+from PairwisePredict import PairwisePredict
+from Word2vecLoader import DUMMY_KEY
 
 # nonzero_mean is mask_aware_mean taken from: https://github.com/fchollet/keras/issues/1579
 def nonzero_mean(x):
@@ -58,6 +56,7 @@ class ModelBuilder:
                                              trainable=self._config['finetune_embd'])
         self.inputs = []
         self.to_join = []
+        self.attn = []
 
     def addCandidateInput(self, name, to_join=True):
         candidate_input = Input(shape=(1,), dtype='int32', name=name)
@@ -68,9 +67,14 @@ class ModelBuilder:
             self.to_join.append(candidate_flat)
         return candidate_flat
 
-    def buildAttention(self, seq, controller):
-        controller_repeated = RepeatVector(self._config['context_window_size'])(controller)
-        attention = merge([controller_repeated, seq], mode='concat', concat_axis=-1)
+    def buildAttention(self, seq, controller1, controller2):
+        if controller2 is None:
+            controller1_repeated = RepeatVector(self._config['context_window_size'])(controller1)
+            attention = merge([controller1_repeated, seq], mode='concat', concat_axis=-1)
+        else:
+            controller1_repeated = RepeatVector(self._config['context_window_size'])(controller1)
+            controller2_repeated = RepeatVector(self._config['context_window_size'])(controller2)
+            attention = merge([controller1_repeated, controller2_repeated, seq], mode='concat', concat_axis=-1)
         attention = TimeDistributed(Dense(1, activation='sigmoid'))(attention)
         attention = Flatten()(attention)
         attention = Lambda(to_prob, output_shape=(self._config['context_window_size'],))(attention)
@@ -80,7 +84,7 @@ class ModelBuilder:
 
         weighted = merge([attention_repeated, seq], mode='mul')
         summed = Lambda(sum_seq, output_shape=(self._w2v.conceptEmbeddingsSz,))(weighted)
-        return summed
+        return summed, attention
 
     def addContextInput(self, controller1=None, controller2=None):
         left_context_input = Input(shape=(self._config['context_window_size'],), dtype='int32', name='left_context_input')
@@ -102,14 +106,12 @@ class ModelBuilder:
             left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(left_context_embed)
             right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(right_context_embed)
 
-            attention_left1 = self.buildAttention(left_rnn, controller1)
-            attention_right1 = self.buildAttention(right_rnn, controller1)
-            self.to_join += [attention_left1, attention_right1]
-
-            if controller2 is not None:
-                attention_left2 = self.buildAttention(left_rnn, controller2)
-                attention_right2 = self.buildAttention(right_rnn, controller2)
-                self.to_join += [attention_left2, attention_right2]
+            after_attention_left, attn_values_left = \
+                self.buildAttention(left_rnn, controller1, controller2 if controller2 is not None else None)
+            after_attention_right, attn_values_right = \
+                self.buildAttention(right_rnn, controller1, controller2 if controller2 is not None else None)
+            self.to_join += [after_attention_left, after_attention_right]
+            self.attn += [attn_values_left, attn_values_right]
         else:
             raise "unknown"
 
@@ -148,7 +150,11 @@ class DeepModel:
         else:
             self._config = config
         self._stopwords = stopwords.words('english') if self._config['strip_stop_words'] else None
-        self._w2v = w2v
+
+        self._word_dict = None
+        self._concept_dict = None
+
+        self._db = db
         self._batch_left_X = []
         self._batch_right_X = []
         self._batch_candidate1_X = []
@@ -157,7 +163,7 @@ class DeepModel:
         self._batch_extra_features_X = []
         self._batchY = []
         self.train_loss = []
-        self._batch_size = 512
+        self._batch_size = 128
         self.inputs = {x for x in self._config['inputs']}
 
         if 'feature_generator' in self._config:
@@ -167,9 +173,10 @@ class DeepModel:
                                                        self._config['feature_generator']['entity_features'],
                                                        stats=stats, db=db)
         self.model = None
+        self.get_attn_model = None
 
         if load_path is None:
-            self.compileModel(dropout=self._config['dropout'])
+            self.compileModel(w2v)
         else:
             self.loadModel(load_path)
 
@@ -179,8 +186,11 @@ class DeepModel:
         else:
             return PointwisePredict(self)
 
-    def compileModel(self, dropout=0.0):
-        model_builder = ModelBuilder(self._config, self._w2v)
+    def compileModel(self, w2v):
+        self._word_dict = w2v.wordDict
+        self._concept_dict = w2v.conceptDict
+
+        model_builder = ModelBuilder(self._config, w2v)
 
         # use candidates input if they were specifically specified, or if we are using an attention network to process
         # the context.
@@ -200,6 +210,7 @@ class DeepModel:
 
         inputs = model_builder.inputs
         to_join = model_builder.to_join
+        attn = model_builder.attn
 
         if 'extra_features' in self.inputs:
             n_extra_features = self._feature_generator.numPairwiseFeatures() if self._config['pairwise'] \
@@ -213,13 +224,14 @@ class DeepModel:
 
         # build classifier model
         x = Dense(300, activation='relu')(x)
-        if dropout > 0.0:
-            x = Dropout(dropout)(x)
+        if 'dropout' in self._config:
+            x = Dropout(float(self._config['dropout']))(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
 
         model = Model(input=inputs, output=[out])
         model.compile(optimizer='adagrad', loss='binary_crossentropy')
         self.model = model
+        self.get_attn_model = Model(input=inputs, output=attn)
         print "model compiled!"
 
     def _2vec(self, mention, candidate1, candidate2):
@@ -230,13 +242,13 @@ class DeepModel:
         if cannot produce wikilink vec or vectors for both candidates then returns None
         if cannot produce vector to only one of the candidates then returns the id of the other
         """
-        if (candidate1 is None or candidate1 not in self._w2v.conceptDict) and \
-                (candidate2 is None or candidate2 not in self._w2v.conceptDict):
+        if (candidate1 is None or candidate1 not in self._concept_dict) and \
+                (candidate2 is None or candidate2 not in self._concept_dict):
             return None
         if self._config['pairwise']:
-            if candidate1 is None or candidate1 not in self._w2v.conceptDict:
+            if candidate1 is None or candidate1 not in self._concept_dict:
                 return candidate2
-            if candidate2 is None or candidate2 not in self._w2v.conceptDict:
+            if candidate2 is None or candidate2 not in self._concept_dict:
                 return candidate1
 
         candidate1_X = None
@@ -248,8 +260,8 @@ class DeepModel:
 
         # get candidate inputs
         if 'candidates' in self.inputs:
-            candidate1_X = np.array([self._w2v.conceptDict[candidate1]]) if candidate1 is not None else None
-            candidate2_X = np.array([self._w2v.conceptDict[candidate2]]) if candidate2 is not None else None
+            candidate1_X = np.array([self._concept_dict[candidate1]]) if candidate1 is not None else None
+            candidate2_X = np.array([self._concept_dict[candidate2]]) if candidate2 is not None else None
 
         # get context input
         if 'context' in self.inputs:
@@ -275,18 +287,31 @@ class DeepModel:
 
     def wordIteratorToIndices(self, it, output_len):
         o = []
-        for i, w in enumerate(it):
-            if i >= output_len:
+        for w in it:
+            w = w.lower()
+            if len(o) >= output_len:
                 break
-            if w in self._w2v.wordDict and (self._stopwords is None or w not in self._stopwords):
-                o.append(self._w2v.wordDict[w])
+            if w in self._word_dict and (self._stopwords is None or w not in self._stopwords):
+                o.append(self._word_dict[w])
         if len(o) == 0:
-            o.append(self._w2v.wordDict[self._w2v.DUMMY_KEY])
+            o.append(self._word_dict[DUMMY_KEY])
         o = o[:: -1]
         arr = np.zeros((output_len,))
         n = len(o) if len(o) <= output_len else output_len
         arr[:n] = np.array(o)[:n]
         return arr
+
+    def get_context_indices(self, it, output_len):
+        words = []
+        indices = []
+        for i, w in enumerate(it):
+            w = w.lower()
+            words.append(w)
+            if len(indices) >= output_len:
+                break
+            if w in self._word_dict and (self._stopwords is None or w not in self._stopwords):
+                indices.append(i)
+        return words, indices
 
     def train(self, mention, candidate1, candidate2, correct):
         """
@@ -347,17 +372,28 @@ class DeepModel:
         plt.savefig(fname)
 
     def saveModel(self, fname):
-        open(fname+".model", 'w').write(self.model.to_json())
+        with open(fname+".model", 'w') as model_file:
+            model_file.write(self.model.to_json())
         self.model.save_weights(fname + ".weights", overwrite=True)
+
+        with open(fname+".w2v.def", 'w') as f:
+            f.write(json.dumps(self._word_dict)+'\n')
+            f.write(json.dumps(self._concept_dict)+'\n')
         return
 
     def loadModel(self, fname):
-        self.model = model_from_json(open(fname+".model", 'r').read())
+        with open(fname+".model", 'r') as model_file:
+            self.model = model_from_json(model_file).read()
         self.model.load_weights(fname + ".weights")
+
+        with open(fname+".w2v.def", 'r') as f:
+            l = f.readlines()
+            self._word_dict = json.loads(l[0])
+            self._concept_dict = json.loads(l[1])
         return
 
-    def predict(self, wikilink, candidate1, candidate2):
-        vecs = self._2vec(wikilink, candidate1, candidate2)
+    def predict(self, mention, candidate1, candidate2):
+        vecs = self._2vec(mention, candidate1, candidate2)
         if not isinstance(vecs, tuple):
             return vecs
         (left_X, right_X, mention_X, candidate1_X, candidate2_X, extraFeatures_X) = vecs
@@ -377,3 +413,37 @@ class DeepModel:
 
         Y = self.model.predict(X, batch_size=1)
         return Y[0][0]
+
+    def get_attn(self, mention, candidate1, candidate2):
+        vecs = self._2vec(mention, candidate1, candidate2)
+        if not isinstance(vecs, tuple):
+            return None
+        (left_X, right_X, mention_X, candidate1_X, candidate2_X, extraFeatures_X) = vecs
+
+        X = {}
+        if 'candidates' in self.inputs:
+            X['candidate1_input'] = candidate1_X.reshape((1, candidate1_X.shape[0],))
+            if self._config['pairwise']:
+                X['candidate2_input'] = candidate2_X.reshape((1, candidate2_X.shape[0],))
+        if 'context' in self.inputs:
+            X['left_context_input'] = left_X.reshape((1, left_X.shape[0],))
+            X['right_context_input'] = right_X.reshape((1, right_X.shape[0],))
+        if 'mention' in self.inputs:
+            X['mention_input'] = mention_X.reshape((1, mention_X.shape[0],))
+        if 'extra_features' in self.inputs:
+            X['extra_features_input'] = np.array(extraFeatures_X.reshape(1,extraFeatures_X.shape[0]))
+
+        attn_out = self.get_attn_model.predict(X, batch_size=1)
+
+        left_context, left_indices = self.get_context_indices(mention.left_context_iter(),
+                                                              self._config['context_window_size'])
+        right_context, right_indices = self.get_context_indices(mention.right_context_iter(),
+                                                                self._config['context_window_size'])
+        left_attn = [0 for i in xrange(len(left_context))]
+        right_attn = [0 for i in xrange(len(right_context))]
+        for i in xrange(self._config['context_window_size']):
+            if i < len(left_indices):
+                left_attn[left_indices[i]] = attn_out[0][0, i]
+            if i < len(right_indices):
+                right_attn[right_indices[i]] = attn_out[1][0, i]
+        return left_context, left_attn, right_context, right_attn
