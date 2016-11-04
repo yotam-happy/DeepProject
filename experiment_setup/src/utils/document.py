@@ -14,12 +14,12 @@ class MentionFromDict:
     This supports loading wikilinks directly from json. It provides backward compatibility for our code and allows
     to load preprocessed datasets from disk when there's no need to access the entire document
     '''
-    def __init__(self, d):
+    def __init__(self, d, document):
         self._d = d
+        self._document = document
 
-    @staticmethod
     def document(self):
-        raise "unsupported"
+        return self._document
 
     def gold_sense_url(self):
         return self._d['wikiurl']

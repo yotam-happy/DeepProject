@@ -95,11 +95,11 @@ class WikilinksNewIterator:
             yield wlink
 
     def _wikilink_files(self):
-        for file in os.listdir(self._path):
-            if os.path.isdir(os.path.join(self._path, file)):
+        for i, f in enumerate(os.listdir(self._path)):
+            if os.path.isdir(os.path.join(self._path, f)):
                 continue
-            print "opening ", file
-            yield open(os.path.join(self._path, file), 'r')
+            print "opening", f, "(", i, "opened so far in this epoch)"
+            yield open(os.path.join(self._path, f), 'r')
 
     def jsons(self):
         r = 0
@@ -168,6 +168,6 @@ class WikilinksNewIterator:
     def documents(self):
         for i, json in enumerate(self.jsons()):
             doc = Document(str(i), i)
-            doc.mentions.append(MentionFromDict(json))
+            doc.mentions.append(MentionFromDict(json, doc))
             yield doc
 
