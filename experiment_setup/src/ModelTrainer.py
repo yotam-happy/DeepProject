@@ -11,7 +11,8 @@ class ModelTrainer:
     """
 
     def __init__(self, iter, candidator, stats, model, epochs=10, neg_sample=1,
-                 mention_include=None, mention_exclude=None, sense_filter=None):
+                 mention_include=None, mention_exclude=None, sense_filter=None,
+                 neg_sample_uniform=True, neg_sample_all_senses_prob=0.0):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -36,8 +37,8 @@ class ModelTrainer:
             self._all_senses_cpf_total += self._all_senses_cpf[i]
             self._all_senses_cpf[i] = self._all_senses_cpf_total
 
-        self._neg_sample_uniform = True
-        self._neg_sample_all_senses_prob = 0.0
+        self._neg_sample_uniform = neg_sample_uniform
+        self._neg_sample_all_senses_prob = neg_sample_all_senses_prob
 
     def getSenseNegSample(self):
         if self._neg_sample_uniform:
@@ -67,22 +68,26 @@ class ModelTrainer:
 
         # get id vector
         ids = [candidate for candidate in candidates if int(candidate) != actual]
-        # get list of negative samples
-        neg = []
-        for k in xrange(self._neg_sample):
 
-            # do negative sampling (get a negative sample)
-            r = np.random.rand()
-            if r < self._neg_sample_all_senses_prob:
-                # get negative sample from all possible senses
-                wrong = self.getSenseNegSample()
-            else:
-                # get negative sample from senses seen for the current mention
-                neg_candidates = ids
-                if len(neg_candidates) < 1:
-                    continue
-                wrong = neg_candidates[np.random.randint(len(neg_candidates))]
-            neg.append(wrong)
+        neg = []
+        if type(self._neg_sample) is str and self._neg_sample == 'all':
+            neg = [x for x in ids if np.random.rand() <0.4] # TODO: add this as a param
+        else:
+            # get list of negative samples
+            for k in xrange(self._neg_sample):
+
+                # do negative sampling (get a negative sample)
+                r = np.random.rand()
+                if r < self._neg_sample_all_senses_prob:
+                    # get negative sample from all possible senses
+                    wrong = self.getSenseNegSample()
+                else:
+                    # get negative sample from senses seen for the current mention
+                    neg_candidates = ids
+                    if len(neg_candidates) < 1:
+                        continue
+                    wrong = neg_candidates[np.random.randint(len(neg_candidates))]
+                neg.append(wrong)
 
         # train
         if len(neg) > 0:

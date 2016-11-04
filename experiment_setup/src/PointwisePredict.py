@@ -19,7 +19,7 @@ class PointwisePredict:
 
         if len(mention.candidates) < 1:
             return None
-        d = {candidate: self._predict(mention, candidate) for candidate in mention.candidates.keys()}
+        d = {candidate: self._predict(mention, candidate) for candidate in mention.candidates}
         return max(d.iteritems(), key=operator.itemgetter(1))[0]
 
     def _predict(self, mention, candidate):

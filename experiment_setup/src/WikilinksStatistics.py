@@ -119,7 +119,7 @@ class WikilinksStatistics:
         the results to a file if the dataset is not expected to change
         """
         print "getting statistics"
-        for wlink in self._wikilinks_iter.wikilinks():
+        for wlink in self._wikilinks_iter.jsons():
             mention_text = utils.text.strip_wiki_title(wlink['word'])
 
             if mention_text not in self.mentionLinks:
@@ -220,7 +220,7 @@ class WikilinksStatistics:
 
 #from WikilinksIterator import *
 #_path = "/home/yotam/pythonWorkspace/deepProject"
-#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all"))
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/wikilinks/filtered/train"))
 #stats.calcStatistics()
-#stats.saveToFile(_path + "/data/intralinks/train-stats")
+#stats.saveToFile(_path + "/data/intralinks/filtered-train-stats")
 #print "done"

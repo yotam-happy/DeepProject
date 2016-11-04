@@ -156,7 +156,7 @@ def copyWithFilter(src_path, dest_path, word_filter):
             writer.save(wlink)
     writer.finalize()
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
     # Resolving ids
 #    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
 #    iter = WikilinksNewIterator(path="../../data/wikilinks/unprocessed", resolveIds=True, db=wikiDB)
@@ -185,11 +185,12 @@ def copyWithFilter(src_path, dest_path, word_filter):
     #stats.printSomeStats()
 
     # filter sets
-#    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
-#    stats = WikilinksStatistics(None, load_from_file_path='../../data/intralinks/train-stats')
-#    good = stats.getGoodMentionsToDisambiguate()
-#    print "n of good mentions: ", len(good)
-#    copyWithFilter("../../data/intralinks/all", '../../data/intralinks/filtered', good)
+    stats = WikilinksStatistics(None, load_from_file_path='../data/wikilinks/all-stats')
+    good = stats.getGoodMentionsToDisambiguate(p=0.9, t=10)
+    good = {x for x in good if random.random() <= 0.1}
+    copyWithFilter("../data/wikilinks/all-split/train", '../data/wikilinks/filtered_small/train', good)
+    copyWithFilter("../data/wikilinks/all-split/test", '../data/wikilinks/filtered_small/test', good)
+    copyWithFilter("../data/wikilinks/all-split/validation", '../data/wikilinks/filtered_small/validation', good)
 
     #fix
 #    iter = WikilinksNewIterator(path="../data/intralinks/all")

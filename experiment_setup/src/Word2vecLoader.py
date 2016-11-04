@@ -8,6 +8,10 @@ from WikilinksIterator import WikilinksNewIterator
 from WikilinksStatistics import WikilinksStatistics
 import keras as K
 
+
+DUMMY_KEY = '~@@dummy@@~'
+
+
 class Word2vecLoader:
     """
     Words a word2vec model. Loads both word vectors and concept (context) vectors. These must
@@ -21,7 +25,6 @@ class Word2vecLoader:
         self._conceptsFilePath = conceptsFilePath
         self._debug = debug
 
-        self.DUMMY_KEY = '~@@dummy@@~'
         self.wordEmbeddings = None
         self.wordDict = dict()
         self.wordEmbeddingsSz = 0
@@ -41,7 +44,7 @@ class Word2vecLoader:
             embedding = np.zeros((dict_sz + 2, embd_sz))
 
             # Adds a dummy key. The dummy is a (0,...,0,1) vector where all real vectors are (?,...,?,0)
-            embd_dict[self.DUMMY_KEY] = 1
+            embd_dict[DUMMY_KEY] = 1
             embedding[1, embd_sz-1] = 1.0
 
             i = 2
@@ -67,7 +70,7 @@ class Word2vecLoader:
                 dict_sz = 10000 if dict_sz > 10000 else dict_sz
 
             embd_dict = dict()
-            embd_dict[self.DUMMY_KEY] = 1
+            embd_dict[DUMMY_KEY] = 1
 
             embedding = np.random.uniform(-1 / np.sqrt(embd_sz * 4), 1 / np.sqrt(embd_sz * 4), (dict_sz+1,embd_sz))
             embedding[0, :] = np.zeros((1,embd_sz))
@@ -83,18 +86,6 @@ class Word2vecLoader:
                     embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
                     i += 1
             return embedding, embd_dict, embd_sz
-
-    def meanOfWordList(self, l):
-        sum = np.zeros(self.embeddingSize)
-        k = 0
-        for w in l:
-            if w in self.wordDict:
-                sum += self.wordEmbeddings[self.wordDict[w],:]
-                k += 1
-        return sum / k
-
-    def distance(self, v1, v2):
-        return spatial.distance.cosine(v1,v2)
 
     def randomEmbeddings(self, wordDict=None, conceptDict=None):
         self.wordEmbeddings, self.wordDict, self.wordEmbeddingsSz = \

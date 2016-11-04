@@ -64,7 +64,24 @@ def experiment(experiment_name, path, model, train_stats, iter_train, iter_eval,
 
     candidator = CandidatesUsingStatisticsObject(train_stats)
     trainer = ModelTrainer(iter_train, candidator, train_stats, model, epochs=1, neg_sample=1,
-                           mention_include=wordsForBroblem, mention_exclude=wordFilter, sense_filter=senseFilter)
+                           mention_include=wordsForBroblem, mention_exclude=wordFilter, sense_filter=senseFilter,
+                           neg_sample_uniform=True, neg_sample_all_senses_prob=0.0)
+
+    mps = 0
+    t = 0
+    kk = 0
+    kkk = 0
+    for w in wordsForBroblem:
+        mm = 0
+        for x, y in train_stats.mentionLinks[w].iteritems():
+            if y > mm:
+                mm = y
+            t += y
+        mps += mm
+        kkk += len(train_stats.mentionLinks[w])
+        kk += 1
+    print "expected mps: ", float(mps) / t
+    print "avg candidates per mention: ", float(kkk) / kk
 
     for train_session in xrange(500):
         # train
@@ -95,7 +112,7 @@ if not os.path.isdir(_path):
 #_iter_train = WikilinksNewIterator(_path+"/data/intralinks/filtered")
 #_iter_eval = WikilinksNewIterator(_path+"/data/intralinks/filtered")
 
-_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")
+_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/filtered-train-stats")
 _iter_train = WikilinksNewIterator(_path+"/data/wikilinks/filtered/train")
 _iter_eval = WikilinksNewIterator(_path+"/data/wikilinks/filtered/validation")
 print "Done!"
@@ -121,7 +138,7 @@ print 'Training...'
 
 model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_stats, db=wikiDB)
 experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-           doEvaluation=True, filterWords=True, p=0.1)
+           doEvaluation=True, filterWords=True)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")

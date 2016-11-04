@@ -140,7 +140,7 @@ class PPRStatistics:
     def getMostProbableSense(self, mention):
         if len(mention.candidates) == 0:
             return None
-        counts = {cand: self.getCandidatePrior(cand, mention) for cand in mention.candidates}
+        counts = {cand: self.getCandidatePrior(cand) for cand in mention.candidates}
         return max(counts.iterkeys(), key=(lambda key: counts[key]))
 
     def getCandidatePriorYamadaStyle(self, entity):
