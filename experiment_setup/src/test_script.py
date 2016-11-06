@@ -19,7 +19,6 @@ from ModelTrainer import *
 from models.DeepModel import *
 from FeatureGenerator import *
 from PointwisePredict import *
-from models.BaselinePairwiseModel import *
 from PairwisePredict import *
 from DbWrapper import WikipediaDbWrapper
 from Candidates import *
@@ -138,7 +137,7 @@ print 'Training...'
 
 model = DeepModel(_path + '/models/basic_model.config', w2v=_w2v, stats=_train_stats, db=wikiDB)
 experiment("small", _path, model, _train_stats, _iter_train, _iter_eval,
-           doEvaluation=True, filterWords=True)
+           doEvaluation=True, filterWords=False)
 
 ## baseline
 #_train_stats = WikilinksStatistics(None, load_from_file_path=_path+"/data/wikilinks/train-stats")

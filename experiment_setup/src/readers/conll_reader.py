@@ -12,7 +12,10 @@ def _CoNLLFileToDocIterator(fname, split='testb'):
     for line in lines:
         line = line.strip()
         if line.startswith('-DOCSTART-'):
-            if curdocName is not None and (split == 'all' or curdocSplit == split):
+            if curdocName is not None and \
+                    (split == 'all'
+                     or curdocSplit == split
+                     or split.startswith('not_') and split.endswith(curdocSplit)):
                 yield (curdoc, curdocName)
             sp = line.split(' ')
             curdocName = sp[2][:-1]
@@ -47,9 +50,10 @@ def _CoNLLRawToTuplesIterator(lines):
 
 class CoNLLIterator:
     # the new iterator does not support using a zip file.
-    def __init__(self, fname, split='testa', include_unresolved=False):
+    def __init__(self, fname, db, split='testa', include_unresolved=False):
         self._fname = fname
         self._split = split
+        self._db = db
         self._include_unresolved = include_unresolved
 
     def documents(self):
@@ -75,8 +79,10 @@ class CoNLLIterator:
 
                 if t[1] == 'B' and (t[3] != '--NME--' or self._include_unresolved):
                     if t[3] != '--NME--':
+                        gold_sense_url = t[4]
+                        gold_sense_id = self._db.resolvePage(gold_sense_url[gold_sense_url.rfind('/')+1:])
                         mention = Mention(doc, len(doc.tokens) - 1, len(doc.tokens),
-                                          gold_sense_id=int(t[5]), gold_sense_url=t[4])
+                                          gold_sense_id=gold_sense_id, gold_sense_url=gold_sense_url)
                     else:
                         mention = Mention(doc, len(doc.tokens) - 1, len(doc.tokens))
                     doc.mentions.append(mention)

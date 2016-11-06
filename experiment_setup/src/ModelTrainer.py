@@ -70,8 +70,8 @@ class ModelTrainer:
         ids = [candidate for candidate in candidates if int(candidate) != actual]
 
         neg = []
-        if type(self._neg_sample) is str and self._neg_sample == 'all':
-            neg = [x for x in ids if np.random.rand() <0.4] # TODO: add this as a param
+        if type(self._neg_sample) is not int and self._neg_sample == 'all':
+            neg = ids
         else:
             # get list of negative samples
             for k in xrange(self._neg_sample):
@@ -109,16 +109,17 @@ class ModelTrainer:
         for epoch in xrange(self._epochs):
             print "training epoch ", epoch
 
+            k = 0
             for doc in self._iter.documents():
                 self._candidator.add_candidates_to_document(doc)
                 for mention in doc.mentions:
                     self.train_on_mention(mention)
+                    k += 1
+            print "epoch had", k, "mentions"
 
-            # if model cannot be trained online
-            if "finalize" in dir(self._model):
-                self._model.finalize()
-
-            loss = sum(self._model.train_loss) / float(len(self._model.train_loss))
-            self._model.train_loss = []
-            print "avg. loss for epoch:", loss
+            if hasattr(self._model, "train_loss"):
+                loss = sum(self._model.train_loss) / float(len(self._model.train_loss))
+                self._model.train_loss = []
+                print "avg. loss for epoch:", loss
+        self._model.finalize()
         print "done training."

@@ -371,6 +371,9 @@ class DeepModel:
         plt.xlabel('Batch')
         plt.savefig(fname)
 
+    def finalize(self):
+        pass
+
     def saveModel(self, fname):
         with open(fname+".model", 'w') as model_file:
             model_file.write(self.model.to_json())
