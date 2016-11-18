@@ -48,12 +48,16 @@ class ModelBuilder:
                                           self._w2v.wordEmbeddingsSz,
                                           input_length=self._config['context_window_size'],
                                           weights=[self._w2v.wordEmbeddings],
-                                          trainable=self._config['finetune_embd'])
+                                          trainable=self._config['finetune_embd'],
+                                          dropout=self._config['w2v_dropout']
+                                          if 'w2v_dropout' in self._config else 0)
         self.concept_embed_layer = Embedding(self._w2v.conceptEmbeddings.shape[0],
                                              self._w2v.conceptEmbeddingsSz,
                                              input_length=1,
                                              weights=[self._w2v.conceptEmbeddings],
-                                             trainable=self._config['finetune_embd'])
+                                             trainable=self._config['finetune_embd'],
+                                             dropout = self._config['w2v_dropout']
+                                             if 'w2v_dropout' in self._config else 0)
         self.inputs = []
         self.to_join = []
         self.attn = []
@@ -124,7 +128,7 @@ class ModelBuilder:
 
 
 class DeepModel:
-    def __init__(self, config, load_path=None, w2v=None, db=None, stats=None):
+    def __init__(self, config, load_path=None, w2v=None, db=None, stats=None, dmodel=None):
         '''
         Creates a new NN model configured by a json.
 
@@ -144,7 +148,7 @@ class DeepModel:
         }
         '''
 
-        if type(config) == str:
+        if type(config) in {unicode, str}:
             with open(config) as data_file:
                 self._config = json.load(data_file)
         else:
@@ -171,7 +175,7 @@ class DeepModel:
                                                        self._config['feature_generator']['mention_features'],
                                                        entity_features=
                                                        self._config['feature_generator']['entity_features'],
-                                                       stats=stats, db=db)
+                                                       stats=stats, db=db, dmodel=dmodel)
         self.model = None
         self.get_attn_model = None
 
@@ -223,7 +227,8 @@ class DeepModel:
         x = merge(to_join, mode='concat') if len(to_join) > 1 else to_join[0]
 
         # build classifier model
-        x = Dense(300, activation='relu')(x)
+        for c in self._config['classifier_layers']:
+            x = Dense(c, activation='relu')(x)
         if 'dropout' in self._config:
             x = Dropout(float(self._config['dropout']))(x)
         out = Dense(2, activation='softmax', name='main_output')(x)
@@ -247,8 +252,10 @@ class DeepModel:
             return None
         if self._config['pairwise']:
             if candidate1 is None or candidate1 not in self._concept_dict:
+                print "h2"
                 return candidate2
             if candidate2 is None or candidate2 not in self._concept_dict:
+                print "h3"
                 return candidate1
 
         candidate1_X = None
@@ -386,14 +393,15 @@ class DeepModel:
 
     def loadModel(self, fname):
         with open(fname+".model", 'r') as model_file:
-            self.model = model_from_json(model_file).read()
+            self.model = model_from_json(model_file.read())
         self.model.load_weights(fname + ".weights")
 
         with open(fname+".w2v.def", 'r') as f:
             l = f.readlines()
-            self._word_dict = json.loads(l[0])
-            self._concept_dict = json.loads(l[1])
-        return
+            self._word_dict = {str(x): int(y) for x,y in json.loads(l[0]).iteritems()}
+            self._concept_dict = {int(x) if str(x) != DUMMY_KEY else DUMMY_KEY: int(y) for x, y in json.loads(l[1]).iteritems()}
+
+        self.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 
     def predict(self, mention, candidate1, candidate2):
         vecs = self._2vec(mention, candidate1, candidate2)

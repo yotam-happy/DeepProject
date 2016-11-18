@@ -63,8 +63,15 @@ class PPRIterator:
                 pec['sensesDetails'] = []
                 for ii,cand in enumerate(candidate_details):
                     # the key of each link is the nomarlized Wikititle
-                    (pec['sensesDetails']).append({'normWikiTitle':cand[7][11:],'id':int(cand[1][3:]),'inCount':int(cand[2][8:]),'outCount':int(cand[3][9:]),
-                                                          'relatedSenses':cand[4][6:].split(';'),'url':cand[5][4:],'normalName':cand[7][11:]})
+                    (pec['sensesDetails']).append({'normWikiTitle': cand[7][11:],
+                                                   'id': int(cand[1][3:]),
+                                                   'inCount': int(cand[2][8:]),
+                                                   'outCount': int(cand[3][9:]),
+                                                   'relatedSenses': cand[4][6:].split(';'),
+                                                   'url': cand[5][4:],
+                                                   'name': cand[6][5:],
+                                                   'normalName': cand[7][11:]
+                                                   })
                 # return
                 yield pec
 
@@ -82,6 +89,7 @@ class PPRStatistics:
         self.mentionLinksUrl = dict()
         self.conceptCounts = dict()
         self.conceptCounts2 = dict()
+        self.conceptNames = dict()
         if load_file is not None:
             self.loadFromFile(load_file)
         self.conceptCountsSum = sum(self.conceptCounts.values())
@@ -168,7 +176,7 @@ class PPRStatistics:
 
         return {x for x, y in out.iteritems()}
 
-    def calcStatistics(self):
+    def calcStatistics(self, wikiDB):
         self.mentionCounts = dict()
         self.mentionLinks = dict()
         self.mentionLinksUrl = dict()
@@ -184,9 +192,14 @@ class PPRStatistics:
                 self.mentionLinksUrl[mention_name] = dict()
 
             for sense in entity_chunck['sensesDetails']:
-                self.mentionLinks[mention_name][sense['id']] = sense['inCount']
+                page_id = wikiDB.resolvePage(sense['url'][sense['url'].rfind('/') + 1:])
+                if page_id is None:
+                    continue
+
+                self.mentionLinks[mention_name][page_id] = sense['inCount']
                 self.mentionLinksUrl[mention_name][sense['url']] = sense['inCount']
-                self.conceptCounts[sense['id']] = sense['inCount']
+                self.conceptCounts[page_id] = sense['inCount']
+                self.conceptNames[page_id] = sense['name']
 
         # counts mentions per concept
         for mention, entities in self.mentionLinks.iteritems():
@@ -203,6 +216,7 @@ class PPRStatistics:
         f.write(json.dumps(self.mentionLinksUrl)+'\n')
         f.write(json.dumps(self.conceptCounts)+'\n')
         f.write(json.dumps(self.conceptCounts2)+'\n')
+        f.write(json.dumps(self.conceptNames)+'\n')
         f.close()
 
     def loadFromFile(self, path):
@@ -214,6 +228,8 @@ class PPRStatistics:
         self.mentionLinksUrl = json.loads(l[2])
         self.conceptCounts = json.loads(l[3])
         self.conceptCounts2 = json.loads(l[4])
+        self.conceptNames = json.loads(l[5])
+        self.conceptNames = {int(x): y for x, y in self.conceptNames.iteritems()}
         f.close()
 
     def prettyPrintStats(self, limit=5):
@@ -224,16 +240,19 @@ class PPRStatistics:
         except:
             print "Unexpected error:", sys.exc_info()[0]
 
-#if __name__ == "__main__":
-#
-#    path = "/home/yotam/pythonWorkspace/deepProject"
-#    print "Loading iterators+stats..."
-#    if not os.path.isdir(path):
-#        path = "/home/noambox/DeepProject"
-#    elif not os.path.isdir(path):
-#        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
-#
-#    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
-#    ppr_stats = PPRStatistics(ppr_itr)
-#    ppr_stats.calcStatistics()
-#    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')
+if __name__ == "__main__":
+
+    from DbWrapper import *
+    path = "/home/yotam/pythonWorkspace/deepProject"
+    print "Loading iterators+stats..."
+    if not os.path.isdir(path):
+        path = "/home/noambox/DeepProject"
+    elif not os.path.isdir(path):
+        path = "C:\\Users\\Noam\\Documents\\GitHub\\DeepProject"
+
+    ppr_itr = PPRIterator(path=path + '/data/PPRforNED/AIDA_candidates')
+    ppr_stats = PPRStatistics(ppr_itr)
+    wikiDB = WikipediaDbWrapper(user='yotam', password='rockon123', database='wiki20151002')
+    ppr_stats.calcStatistics(wikiDB)
+    print len(ppr_stats.conceptNames)
+    ppr_stats.saveToFile(path + '/data/PPRforNED/ppr_stats')

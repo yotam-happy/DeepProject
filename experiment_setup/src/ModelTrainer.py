@@ -12,7 +12,7 @@ class ModelTrainer:
 
     def __init__(self, iter, candidator, stats, model, epochs=10, neg_sample=1,
                  mention_include=None, mention_exclude=None, sense_filter=None,
-                 neg_sample_uniform=True, neg_sample_all_senses_prob=0.0):
+                 neg_sample_uniform=True, neg_sample_all_senses_prob=0.0, sampling=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -26,10 +26,13 @@ class ModelTrainer:
         self.mention_include = mention_include
         self.mention_exclude = mention_exclude
         self.sense_filter = {int(x) for x in sense_filter} if sense_filter is not None else None
+        self._sampling = sampling
 
         # setup all-sense negative-sampling (define cumulative probability function)
         # -- some ppl say that for long lists it is better to have small probs first due to precision issues
         senses = [(int(x), int(y)) for x, y in self._stats.conceptCounts.items()]
+
+        print "hsdfgh", len(senses)
         senses = sorted(senses, key=lambda tup: tup[1])
         self._all_senses, self._all_senses_cpf = [e[0] for e in senses], [e[1] for e in senses]
         self._all_senses_cpf_total = 0
@@ -66,6 +69,9 @@ class ModelTrainer:
         if len(candidates) == 0:
             return
 
+        if actual not in candidates:
+            return
+
         # get id vector
         ids = [candidate for candidate in candidates if int(candidate) != actual]
 
@@ -77,8 +83,7 @@ class ModelTrainer:
             for k in xrange(self._neg_sample):
 
                 # do negative sampling (get a negative sample)
-                r = np.random.rand()
-                if r < self._neg_sample_all_senses_prob:
+                if np.random.rand() < self._neg_sample_all_senses_prob:
                     # get negative sample from all possible senses
                     wrong = self.getSenseNegSample()
                 else:
@@ -113,8 +118,12 @@ class ModelTrainer:
             for doc in self._iter.documents():
                 self._candidator.add_candidates_to_document(doc)
                 for mention in doc.mentions:
+                    if self._sampling is not None and np.random.rand() > self._sampling:
+                        continue
                     self.train_on_mention(mention)
                     k += 1
+                    if k % 100 == 0:
+                        print "trained on", k, "examples"
             print "epoch had", k, "mentions"
 
             if hasattr(self._model, "train_loss"):

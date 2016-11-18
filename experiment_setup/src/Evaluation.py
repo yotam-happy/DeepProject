@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 
 class Evaluation:
     """
@@ -7,7 +7,7 @@ class Evaluation:
     """
 
     def __init__(self, test_iter, model, candidator, stats=None,
-                 wordExcludeFilter=None, wordIncludeFilter=None, sampling=None):
+                 wordExcludeFilter=None, wordIncludeFilter=None, sampling=None, log_path=None):
         """
         :param test_iter:   an iterator to the test or evaluation set
         :param model:       a model to evaluate
@@ -19,6 +19,7 @@ class Evaluation:
         self._wordIncludeFilter = wordIncludeFilter
         self._sampling = sampling
         self._stats = stats
+        self._log_path = log_path
 
         self.n_samples = 0
         self.correct = 0
@@ -74,7 +75,6 @@ class Evaluation:
                     prediction = predictor.predict(mention)
                     if prediction == actual:
                         correct_per_doc += 1
-
                     mps = self._stats.getMostProbableSense(mention)
                     if mps == actual:
                         self.mps_correct += 1
@@ -87,12 +87,22 @@ class Evaluation:
                 self.macro_p += float(correct_per_doc) / possible_per_doc
         print 'done!'
         self.printEvaluation()
+        if self._log_path is not None:
+            self.saveEvaluation()
 
     def mircoP(self):
         return float(self.correct) / self.possible if self.possible > 0 else 'n/a'
     def macroP(self):
         return self.macro_p / self.n_docs_for_macro if self.n_docs_for_macro > 0 else 'n/a'
     def printEvaluation(self):
+        print self.evaluation()
+
+    def saveEvaluation(self):
+        with open(self._log_path, "a") as f:
+            f.write(self.evaluation())
+        print self.evaluation()
+
+    def evaluation(self):
         """
         Pretty print results of evaluation
         """
@@ -101,6 +111,8 @@ class Evaluation:
         micro_p = self.mircoP()
         macro_p = self.macroP()
         mps_correct = float(self.mps_correct) / self.possible if self.possible > 0 else 'n/a'
-        print self.n_samples, 'samples in ', self.n_docs, 'docs.', tried, \
-            '% mentions tried, avg. candidates per mention:",', avg_cands, \
-            '". micro p@1:', micro_p, '% macro p@1:', macro_p, "% mps p@1: ", mps_correct, '%'
+        s = time.strftime("%d/%m/%Y") + " " + time.strftime("%H:%M:%S") + ": " + \
+            str(self.n_samples) + ' samples in ' + str(self.n_docs) + ' docs. ' + str(tried) + \
+            '% mentions tried, avg. candidates per mention:", ' + str(avg_cands) + \
+            ' ". micro p@1: ' + str(micro_p) + '% macro p@1: ' + str(macro_p) + "% mps p@1: " + str(mps_correct) + '%\n'
+        return s

@@ -1,5 +1,6 @@
 import utils.text
 import json
+from utils.document import *
 
 class CandidatesUsingPPRStats:
     def __init__(self, pprstats, db):
@@ -8,10 +9,22 @@ class CandidatesUsingPPRStats:
 
     def get_candidates_for_mention(self, mention):
         candidates = set()
-        for x in self._pprstats.getCandidateUrlsForMention(mention):
-            z = self._db.resolvePage(x[x.rfind('/') + 1:])
-            if z is not None:
-                candidates.add(z)
+
+        if hasattr(self, '_filter'):
+            embd = self._filter.into_the_cache(mention.gold_sense_id(),
+                                               mention.gold_sense_url(),
+                                               self._pprstats.conceptNames[mention.gold_sense_id()]
+                                               if mention.gold_sense_id() in self._pprstats.conceptNames else None,
+                                               verbose=True)
+
+        for url in self._pprstats.getCandidateUrlsForMention(mention):
+            page_id = self._db.resolvePage(url[url.rfind('/') + 1:])
+
+            if page_id is not None:
+                candidates.add(page_id)
+                if hasattr(self, '_filter'):
+                    embd = self._filter.into_the_cache(page_id, url, self._pprstats.conceptNames[page_id])
+
         return candidates
 
     def add_candidates_to_mention(self, mention):

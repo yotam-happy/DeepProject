@@ -8,6 +8,7 @@ import nltk
 import numpy as np
 from nltk.corpus import stopwords
 import utils.text
+import math
 
 class WikilinksStatistics:
     """
@@ -42,8 +43,18 @@ class WikilinksStatistics:
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
 
-        self.conceptLogCountsVariance = np.var([math.log(float(x)) for x in self.conceptCounts.values()])
-        self.conceptCountsVariance = np.var([float(x) for x in self.conceptCounts.values()])
+
+        self.probMean = sum([float(x) * x for x in self.conceptCounts.values()]) / \
+            sum([float(x) for x in self.conceptCounts.values()])
+        self.probVar = sum([math.pow(float(x) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
+            sum([float(x) for x in self.conceptCounts.values()])
+
+        self.logProbMean = sum([math.log(float(x)) * x for x in self.conceptCounts.values()]) / \
+            sum([float(x) for x in self.conceptCounts.values()])
+        self.logProbVar = sum([math.pow(math.log(float(x)) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
+            sum([float(x) for x in self.conceptCounts.values()])
+
+
         self.conceptCountsSum = sum(self.conceptCounts.values())
 
         self._stopwords = stopwords.words('english')
@@ -62,10 +73,10 @@ class WikilinksStatistics:
 
         # if normalized, normalize by variance
         if log:
-            return math.log(float(self.conceptCounts[concept])) / self.conceptLogCountsVariance \
+            return (math.log(float(self.conceptCounts[concept])) - self.logProbMean) / self.logProbVar \
                 if concept in self.conceptCounts else 0
         else:
-            return float(self.conceptCounts[concept]) / self.conceptCountsVariance \
+            return (float(self.conceptCounts[concept]) - self.probMean) / self.probVar \
                 if concept in self.conceptCounts else 0
 
     def getCandidatePriorYamadaStyle(self, entity):
@@ -182,6 +193,22 @@ class WikilinksStatistics:
                 if y > max_y:
                     max_y = y
             if max_y >= t and float(max_y) / tot <= p:
+                s.add(mention)
+        return s
+
+    def getGoodMentionsToDisambiguate2(self, p=0, t=0):
+        """
+        Returns a set of mentions that are deemed "good"
+        :param f:
+        :return:
+        """
+
+        # take those mentions where the second +
+        # most common term appears more then f times
+        s = set()
+        for mention, candidates in self.mentionLinks.iteritems():
+            l = self.getCandidatesForMention(mention, p=p, t=t)
+            if len(l) >= 2:
                 s.add(mention)
         return s
 

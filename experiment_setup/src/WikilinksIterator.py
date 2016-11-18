@@ -168,6 +168,10 @@ class WikilinksNewIterator:
     def documents(self):
         for i, json in enumerate(self.jsons()):
             doc = Document(str(i), i)
-            doc.mentions.append(MentionFromDict(json, doc))
+            m = MentionFromDict(json, doc)
+            doc.mentions.append(m)
+            doc.tokens = [x for x in m.left_context_iter()] + \
+                         [x for x in m.mention_text_tokenized()] + \
+                         [x for x in m.right_context_iter()]
             yield doc
 

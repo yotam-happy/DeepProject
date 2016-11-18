@@ -15,7 +15,7 @@ def _CoNLLFileToDocIterator(fname, split='testb'):
             if curdocName is not None and \
                     (split == 'all'
                      or curdocSplit == split
-                     or split.startswith('not_') and split.endswith(curdocSplit)):
+                     or split.startswith('not_') and not split.endswith(curdocSplit)):
                 yield (curdoc, curdocName)
             sp = line.split(' ')
             curdocName = sp[2][:-1]

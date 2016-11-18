@@ -11,6 +11,7 @@ from GBRTmodel import GBRTModel
 from WikilinksIterator import *
 from Evaluation import *
 from models.DeepModel import *
+import cProfile
 
 class Experiment:
     def __init__(self, config):
@@ -36,17 +37,29 @@ class Experiment:
         self.w2v = self.load_w2v(self._config['w2v']) if 'w2v' in self._config else None
         self.model = self.switch_model(self._config['model'])
 
+        # TODO: somehow fix this serious hack??
+        if hasattr(self.model._feature_generator, 'yamada_txt_to_embd') \
+                and self.model._feature_generator.yamada_txt_to_embd is not None:
+            self.candidator._filter = self.model._feature_generator.yamada_txt_to_embd
+
     def switch_model(self, config):
+        dmodel = None
+        if 'distance_model' in config:
+            dmodel = self.switch_model(config['distance_model'])
+
         print "loading model..."
         if config["type"] == 'deep_model':
             return DeepModel(self.path + config['config_path'],
                              w2v=self.w2v,
                              stats=self.stats[config['stats']],
-                             db=self.db)
+                             db=self.db,
+                             load_path=self.path + str(config['load_path']) if 'load_path' in config else None,
+                             dmodel=dmodel)
         elif config["type"] == 'gbrt':
             return GBRTModel(self.path + config['config_path'],
                              db=self.db,
-                             stats=self.stats[config['stats']])
+                             stats=self.stats[config['stats']],
+                             dmodel=dmodel)
         else:
             raise "Config error"
 
@@ -89,7 +102,7 @@ class Experiment:
     def switch_iterator(self, config):
         if config['dataset'] == 'conll':
             return CoNLLIterator(self.path + '/data/CoNLL/CoNLL_AIDA-YAGO2-dataset.tsv', self.db, split=config['split'])
-        elif config['dataset'] == 'from_json_dif':
+        elif config['dataset'] == 'from_json':
             return WikilinksNewIterator(self.path + config['path'])
         else:
             raise "Config error"
@@ -104,7 +117,7 @@ class Experiment:
         else:
             raise "Config error"
 
-    def train(self, config=None):
+    def train(self, config=None, model_name=None):
         if config is None:
             config = self._config["training"]
 
@@ -116,9 +129,11 @@ class Experiment:
                                epochs=config['epochs'],
                                neg_sample=config['neg_samples'],
                                neg_sample_uniform=config['neg_sample_uniform'],
-                               neg_sample_all_senses_prob=config['neg_sample_all_senses_prob'])
+                               neg_sample_all_senses_prob=config['neg_sample_all_senses_prob'],
+                               sampling=config['sampling'] if 'sampling' in config else None)
         trainer.train()
-        #self.model.saveModel(self.path + self._config['model']['config_path'])
+        path = self.path + self._config['model']['config_path'] + (model_name if model_name is not None else "")
+        self.model.saveModel(path)
         print 'Done!'
 
     def evaluate(self, config=None):
@@ -127,10 +142,13 @@ class Experiment:
         evaluation = Evaluation(self.iterators[config['iterator']],
                                 self.model,
                                 self.candidator,
-                                self.stats[config['stats']])
+                                self.stats[config['stats']],
+                                sampling=config['sampling'] if 'sampling' in config else None,
+                                log_path=self.path + "/evaluation.txt")
         evaluation.evaluate()
 
 if __name__ == "__main__":
-    experiment = Experiment("/experiments/yamada_conll/experiment.conf")
-    experiment.train()
-    experiment.evaluate()
+    experiment = Experiment("/experiments/train_lstm_on_conll/experiment.conf")
+    for x in xrange(100):
+        experiment.train(model_name='.'+str(x))
+        experiment.evaluate()

@@ -19,9 +19,9 @@ class PointwisePredict:
 
         if len(mention.candidates) < 1:
             return None
-        d = {candidate: self._predict(mention, candidate) for candidate in mention.candidates}
+        d = {candidate: self.predict_prob(mention, candidate) for candidate in mention.candidates}
         return max(d.iteritems(), key=operator.itemgetter(1))[0]
 
-    def _predict(self, mention, candidate):
+    def predict_prob(self, mention, candidate):
         a = self._pointwise_model.predict(mention, candidate, None)
         return a if a is not None else 0

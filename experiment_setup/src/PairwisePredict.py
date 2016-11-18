@@ -19,6 +19,9 @@ class PairwisePredict:
         """
         self._pairwise_model = pairwise_model
 
+    def predict_prob(self, mention, candidate):
+        raise "not supported"
+
     def predict(self, mention):
         # do a knockout
         l = [candidate for candidate in mention.candidates]
