@@ -98,7 +98,7 @@ class FeatureGenerator:
                 if not hasattr(mention.document(), 'yamada_context_embd'):
                     mention.document().yamada_context_embd = dict()
                 if mention_text not in mention.document().yamada_context_embd:
-                    context_embd = self.yamada_txt_to_embd.text_to_embedding(mention.document().tokens, mention_text)
+                    context_embd = self.yamada_txt_to_embd.text_to_embedding(mention.document().sentences, mention_text)
                     mention.document().yamada_context_embd[mention_text] = context_embd
                 context_embd = mention.document().yamada_context_embd[mention_text]
                 entity_embd = self.yamada_txt_to_embd.from_the_cache(entity)

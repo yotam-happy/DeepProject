@@ -62,12 +62,16 @@ class CoNLLIterator:
             doc = Document(doc_name, i)
             i += 1
             mention = None
+            sent = []
             for line in doc_lines:
                 if len(line) == 0:
                     # sentence boundary.
+                    doc.sentences.append(' '.join(sent))
+                    sent = []
                     continue
                 t = line.split('\t')
 
+                sent.append(t[0])
                 doc.tokens.append(t[0])
                 if len(t) == 1:
                     continue

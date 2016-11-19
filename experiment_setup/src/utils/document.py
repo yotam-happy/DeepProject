@@ -8,6 +8,7 @@ class Document:
         self.id = doc_id
         self.tokens = []
         self.mentions = []
+        self.sentences = []
 
 class MentionFromDict:
     '''
