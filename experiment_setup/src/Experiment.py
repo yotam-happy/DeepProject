@@ -2,6 +2,7 @@ from boto.file.key import Key
 import ProjectSettings
 from Candidates import *
 from DbWrapper import WikipediaDbWrapper
+from DbWrapperCached import *
 from ModelTrainer import ModelTrainer
 from PPRforNED import PPRStatistics
 from WikilinksStatistics import WikilinksStatistics
@@ -37,6 +38,8 @@ class Experiment:
         self.w2v = self.load_w2v(self._config['w2v']) if 'w2v' in self._config else None
         self.model = self.switch_model(self._config['model'])
 
+        self.trained_mentions = None
+
         # TODO: somehow fix this serious hack??
         if hasattr(self.model._feature_generator, 'yamada_txt_to_embd') \
                 and self.model._feature_generator.yamada_txt_to_embd is not None:
@@ -59,7 +62,8 @@ class Experiment:
             return GBRTModel(self.path + config['config_path'],
                              db=self.db,
                              stats=self.stats[config['stats']],
-                             dmodel=dmodel)
+                             dmodel=dmodel,
+                             load_path=self.path + str(config['load_path']) if 'load_path' in config else None)
         else:
             raise "Config error"
 
@@ -92,12 +96,17 @@ class Experiment:
         else:
             raise "Config error"
 
-    @staticmethod
-    def connect_db(config):
+    def connect_db(self, config):
         print "connecting to db..."
-        return WikipediaDbWrapper(user=config['user'],
-                                  password=config['password'],
-                                  database=config['database'])
+        if 'cached' in config and config['cached']:
+            print "load cache"
+            db = WikipediaDbWrapperCached()
+            db.load(self.path + config['path'])
+            return db
+        else:
+            return WikipediaDbWrapper(user=config['user'],
+                                      password=config['password'],
+                                      database=config['database'])
 
     def switch_iterator(self, config):
         if config['dataset'] == 'conll':
@@ -120,6 +129,8 @@ class Experiment:
     def train(self, config=None, model_name=None):
         if config is None:
             config = self._config["training"]
+        if 'train' in config and not config['train']:
+            return
 
         print 'beging training...'
         trainer = ModelTrainer(self.iterators[config['iterator']],
@@ -131,7 +142,7 @@ class Experiment:
                                neg_sample_uniform=config['neg_sample_uniform'],
                                neg_sample_all_senses_prob=config['neg_sample_all_senses_prob'],
                                sampling=config['sampling'] if 'sampling' in config else None)
-        trainer.train()
+        self.trained_mentions = trainer.train()
         path = self.path + self._config['model']['config_path'] + (model_name if model_name is not None else "")
         self.model.saveModel(path)
         print 'Done!'
@@ -144,11 +155,13 @@ class Experiment:
                                 self.candidator,
                                 self.stats[config['stats']],
                                 sampling=config['sampling'] if 'sampling' in config else None,
-                                log_path=self.path + "/evaluation.txt")
+                                log_path=self.path + "/evaluation.txt",
+                                db=self.db,
+                                trained_mentions=self.trained_mentions)
         evaluation.evaluate()
 
 if __name__ == "__main__":
-    experiment = Experiment("/experiments/train_lstm_on_conll/experiment.conf")
-    for x in xrange(100):
-        experiment.train(model_name='.'+str(x))
+    experiment = Experiment("/experiments/wikilinks_deep_pointwise2/experiment.conf")
+    for x in xrange(1):
+        trained_mentions = experiment.train(model_name='.'+str(x))
         experiment.evaluate()

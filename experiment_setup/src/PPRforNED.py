@@ -148,7 +148,7 @@ class PPRStatistics:
     def getMostProbableSense(self, mention):
         if len(mention.candidates) == 0:
             return None
-        counts = {cand: self.getCandidatePrior(cand) for cand in mention.candidates}
+        counts = {cand: self.getCandidateConditionalPrior(cand, mention) for cand in mention.candidates}
         return max(counts.iterkeys(), key=(lambda key: counts[key]))
 
     def getCandidatePriorYamadaStyle(self, entity):
@@ -166,15 +166,7 @@ class PPRStatistics:
         mention = (mention.mention_text() if hasattr(mention, 'mention_text') else mention).lower()
         if mention not in self.mentionLinksUrl:
             return {}
-
-        l = self._sortedList(self.mentionLinksUrl[mention])
-        tot = sum([x[1] for x in l])
-        out = dict()
-        for x in l:
-            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
-                out[x[0]] = x[1] if tot != 0 else 1
-
-        return {x for x, y in out.iteritems()}
+        return {x for x in self.mentionLinksUrl[mention]}
 
     def calcStatistics(self, wikiDB):
         self.mentionCounts = dict()

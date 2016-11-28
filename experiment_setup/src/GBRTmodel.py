@@ -3,12 +3,12 @@ from FeatureGenerator import *
 from PointwisePredict import *
 from PairwisePredict import *
 import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingClassifier
 import ProjectSettings
 import pickle
 
 class GBRTModel:
-    def __init__(self, config, db=None, stats=None, dmodel=None):
+    def __init__(self, config, db=None, stats=None, dmodel=None, load_path=None):
         if type(config) == str or type(config) == unicode:
             with open(config) as data_file:
                 self._config = json.load(data_file)
@@ -18,11 +18,14 @@ class GBRTModel:
         self._dmodel = dmodel
 
         print "GBRT params:", self._config['hyper_patameters']
-        self._model = GradientBoostingRegressor(loss=self._config['hyper_patameters']['loss'],
-                                                 learning_rate=self._config['hyper_patameters']['learning_rate'],
-                                                 n_estimators=self._config['hyper_patameters']['n_estimators'],
-                                                 max_depth=self._config['hyper_patameters']['max_depth'],
-                                                 max_features=None)
+        if load_path is None:
+            self._model = GradientBoostingClassifier(loss=self._config['hyper_patameters']['loss'],
+                                                     learning_rate=self._config['hyper_patameters']['learning_rate'],
+                                                     n_estimators=self._config['hyper_patameters']['n_estimators'],
+                                                     max_depth=self._config['hyper_patameters']['max_depth'],
+                                                     max_features=None)
+        else:
+            self.loadModel(load_path)
 
         self._feature_generator = \
             FeatureGenerator(mention_features=self._config['features']['mention_features'],
@@ -44,8 +47,10 @@ class GBRTModel:
             raise "Unsupported operation"
         # create feature_vec from mention and candidate and predic prob for pointwise predictor
         feature_vec = self._feature_generator.getPointwiseFeatures(mention, candidate1)
-        Y = self._model.predict(np.asarray(feature_vec).reshape(1, -1))
-        return Y[0]
+        Y = self._model.predict_proba(np.asarray(feature_vec).reshape(1, -1))
+        with open('feature_set.txt', 'a') as f:
+            f.write('     -> ' + str(Y[0][1]) + '\n')
+        return Y[0][1]
 
     def train(self, mention, candidate1, candidate2, correct):
         '''

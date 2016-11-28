@@ -20,7 +20,9 @@ class FeatureGenerator:
         self.distance_model = dmodel
         if dmodel is not None:
             self.distance_model_predictor = dmodel.getPredictor()
-        self.yamada_txt_to_embd = YamadaEmbedder(yamada_embedding_path, db=db) if yamada_embedding_path is not None else None
+
+        if 'yamada_context_similarity' in self.entity_features:
+            self.yamada_txt_to_embd = YamadaEmbedder(yamada_embedding_path, db=db) if yamada_embedding_path is not None else None
 
     def getPointwiseFeatureList(self):
         return self.entity_features + self.mention_features
@@ -34,6 +36,8 @@ class FeatureGenerator:
     def getPointwiseFeatures(self, mention, entity):
         features_cand1 = self.getEntityFeatures(mention, entity)
         features_mention = self.getMentionFeatures(mention)
+        with open('feature_set.txt', 'a') as f:
+            f.write(str(entity) + ' ' + str(features_cand1 + features_mention))
         return features_cand1 + features_mention
 
     def numPairwiseFeatures(self):
@@ -94,11 +98,15 @@ class FeatureGenerator:
 
             # context similarity features
             elif feature == 'yamada_context_similarity':
+                if not hasattr(mention.document(), 'yamada_context_nouns'):
+                    mention.document().yamada_context_nouns = \
+                        self.yamada_txt_to_embd.get_nouns(mention.document().sentences)
 
                 if not hasattr(mention.document(), 'yamada_context_embd'):
                     mention.document().yamada_context_embd = dict()
                 if mention_text not in mention.document().yamada_context_embd:
-                    context_embd = self.yamada_txt_to_embd.text_to_embedding(mention.document().sentences, mention_text)
+                    context_embd = self.yamada_txt_to_embd.text_to_embedding(
+                        mention.document().yamada_context_nouns, mention_text)
                     mention.document().yamada_context_embd[mention_text] = context_embd
                 context_embd = mention.document().yamada_context_embd[mention_text]
                 entity_embd = self.yamada_txt_to_embd.from_the_cache(entity)

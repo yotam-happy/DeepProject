@@ -111,6 +111,7 @@ class ModelTrainer:
     def train(self):
         print "start training..."
 
+        trained_mentions = set()
         for epoch in xrange(self._epochs):
             print "training epoch ", epoch
 
@@ -121,6 +122,7 @@ class ModelTrainer:
                     if self._sampling is not None and np.random.rand() > self._sampling:
                         continue
                     self.train_on_mention(mention)
+                    trained_mentions.add(mention.mention_text())
                     k += 1
                     if k % 100 == 0:
                         print "trained on", k, "examples"
@@ -132,3 +134,4 @@ class ModelTrainer:
                 print "avg. loss for epoch:", loss
         self._model.finalize()
         print "done training."
+        return trained_mentions
