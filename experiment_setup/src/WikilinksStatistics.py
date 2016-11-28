@@ -43,16 +43,15 @@ class WikilinksStatistics:
         if load_from_file_path is not None:
             self.loadFromFile(load_from_file_path)
 
+            self.probMean = sum([float(x) * x for x in self.conceptCounts.values()]) / \
+                sum([float(x) for x in self.conceptCounts.values()])
+            self.probVar = sum([math.pow(float(x) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
+                sum([float(x) for x in self.conceptCounts.values()])
 
-        self.probMean = sum([float(x) * x for x in self.conceptCounts.values()]) / \
-            sum([float(x) for x in self.conceptCounts.values()])
-        self.probVar = sum([math.pow(float(x) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
-            sum([float(x) for x in self.conceptCounts.values()])
-
-        self.logProbMean = sum([math.log(float(x)) * x for x in self.conceptCounts.values()]) / \
-            sum([float(x) for x in self.conceptCounts.values()])
-        self.logProbVar = sum([math.pow(math.log(float(x)) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
-            sum([float(x) for x in self.conceptCounts.values()])
+            self.logProbMean = sum([math.log(float(x)) * x for x in self.conceptCounts.values()]) / \
+                sum([float(x) for x in self.conceptCounts.values()])
+            self.logProbVar = sum([math.pow(math.log(float(x)) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
+                sum([float(x) for x in self.conceptCounts.values()])
 
 
         self.conceptCountsSum = sum(self.conceptCounts.values())
@@ -76,7 +75,7 @@ class WikilinksStatistics:
             return (math.log(float(self.conceptCounts[concept])) - self.logProbMean) / self.logProbVar \
                 if concept in self.conceptCounts else 0
         else:
-            return (float(self.conceptCounts[concept]) - self.probMean) / self.probVar \
+            return float(self.conceptCounts[concept]) / self.probVar \
                 if concept in self.conceptCounts else 0
 
     def getCandidatePriorYamadaStyle(self, entity):
@@ -247,7 +246,7 @@ class WikilinksStatistics:
 
 #from WikilinksIterator import *
 #_path = "/home/yotam/pythonWorkspace/deepProject"
-#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/wikilinks/filtered/train"))
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all_20141106"))
 #stats.calcStatistics()
-#stats.saveToFile(_path + "/data/intralinks/filtered-train-stats")
+#stats.saveToFile(_path + "/data/intralinks/all_20141106-stats")
 #print "done"
