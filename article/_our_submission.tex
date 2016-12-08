@@ -1,0 +1,144 @@
+%
+% File acl2016.tex
+%
+%% Based on the style files for ACL-2015, with some improvements
+%%  taken from the NAACL-2016 style
+%% Based on the style files for ACL-2014, which were, in turn,
+%% Based on the style files for ACL-2013, which were, in turn,
+%% Based on the style files for ACL-2012, which were, in turn,
+%% based on the style files for ACL-2011, which were, in turn, 
+%% based on the style files for ACL-2010, which were, in turn, 
+%% based on the style files for ACL-IJCNLP-2009, which were, in turn,
+%% based on the style files for EACL-2009 and IJCNLP-2008...
+
+%% Based on the style files for EACL 2006 by 
+%%e.agirre@ehu.es or Sergi.Balari@uab.es
+%% and that of ACL 08 by Joakim Nivre and Noah Smith
+
+\documentclass[11pt]{article}
+\usepackage{acl2016}
+\usepackage{times}
+\usepackage{url}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{color,soul}
+
+%\aclfinalcopy % Uncomment this line for the final submission
+%\def\aclpaperid{***} %  Enter the acl Paper ID here
+
+%\setlength\titlebox{5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 5cm (the original size); we will check this
+% in the camera-ready version and ask you to change it back.
+
+\newcommand\BibTeX{B{\sc ib}\TeX}
+
+\title{Local Entity Disambiguation for Web Fragments using Attentional RNNs}
+
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  Affiliation / Address line 2 \\
+  Affiliation / Address line 3 \\
+  {\tt email@domain} \\}
+
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Hello, My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who?
+My name is. what? my name is. who? Lorem ipsum.
+\end{abstract}
+
+\section{Introduction}
+
+Named Entity Disambiguation (NED) is the task of disambiguating mentions within a fragment of text against a given knowledge base of entities, and linking each mention to its intended entity. It is an important downstream task for many NLP problems such as text categorization (ESA??), information retrieval (??) and machine translation (??). 
+
+NED algorithms can be broadly divided into local and global approaches where local algorithms disambiguate one mention at a time typically relying only on a short local context of the given mention within a document while global algorithms assume the underlying text is coherent and exploit this fact to simultaneously disambiguate multiple mentions within a single document using a coherency model. Much attention was given recently to global algorithms (??,??) which demonstrate very good performance in many cases, however these are inherently limited to long and coherent documents. In many important cases however, data is not presented as clean and coherent, but rather is given as short and noisy fragments. For example, short textual fragments taken from web pages can be too short for global approaches and are arguably very noisy and not necessarily very coherent. 
+
+We present a local disambiguation algorithm utilizing Deep Attentional Recurrent Neural Network (RNN) (?) that utilize large amounts of crowd-sourced annotated data collected from the web to effectively model entity disambiguation patterns <complete this>. 
+
+We present a large-scale dataset of short web fragments linked to Wikipedia by thousands of website editors. Our dataset is based on a subset of the Wikilinks dataset (?) collected at Google. To address this large and highly noisy dataset we present a local disambiguation algorithm utilizing Deep Attentional RNNs that can affectively model noisy context in order to disambiguate a mention given a short context and demonstrate our algorithm greatly outperforms existing state-of-the-art local algorithms on this dataset. We examine our algorithm on CoNLL \hl{(?)}, a standard NED dataset and show results comparable to other state-out-the-art method on this smaller and cleaner dataset.
+
+\section{Methodology}
+
+We describe our main component, a neural network used for modeling context and show how it can be integrated into a full disambiguation framework. Our main Attentional RNN component takes a context and a single candidate entity as input and computes a probability-like score (??some other wording then 'probability'??) for the candidate given the context. 
+
+\subsection{Attentional RNN model}
+
+Our Attentional RNN component architecture is given in Figure 1. In our implementation we used standard GRU units (?) as these are state-of-the-art RNN models but any other RNN unit, such as LSTMs can be used as a drop-in replacement. 
+
+\begin{equation}
+	\label{eq1}
+	\begin{aligned}
+		& h_t=f_{\Theta_1}(h_{t-1}, v_t) \\
+		& o_t=g_{\Theta_2}(h_t)
+	\end{aligned}
+\end{equation}
+
+Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed from the previous hidden state and the next input vector by a function $f$ parametrized by learnable parameters $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ that is optionally parametrized by learnable parameters $\Theta_2$. 
+
+A straight-forward use of an RNN in our model would be to train the RNN so that given a context as a sequence of word embedding vectors $\{v_t\}$, the last output $o_t$ will be used to predict the probability of the given candidate entity directly. However as shown by ??, ?? attentional models are beneficial for NED which motivated us to incorporate a simple neural attention model. The attention model takes the entire sequence of intermediate output vectors of the RNN $\{o_t\}$ and computes a weighted average of the vectors governed by the equations shown in equation \ref{eq2}
+
+\begin{equation}
+	\label{eq2}
+	\begin{aligned}
+	& a_t \in \mathbb{R}; a_t=r_{\Theta_3}(o_t, c) \\
+	& a'_t  = \frac{1}{\sum_{i=1}^{t} \exp\{a_i\}} \exp \{a_t\} \\
+	& o_{attn}=\sum_{i=1}^{t} a'_t o_t
+	\end{aligned}
+\end{equation}
+
+The main component in equation \ref{eq2} is the function $r_{\Theta_3}$ which is parametrized by $\Theta_3$ and computes an attention value for each word based on a controller $c$ and the output of the RNN at step $t$. We then use a softmax to squeeze the attention values such that $\sum_{i=1}^{t} a'_i = 1$ and compute $o_{attn}$, the output of the attention model. The attention controller in our case is an embedding vector of the candidate entity itself. This allows the attention mechanism to decide how much individual words are important for ranking a given candidate. Our attention controller $c$ is an embedding vector of the candidate entity and our attention function $r$ is parametrized as a trainable single layer NN as shown in equation \ref{eq3}
+
+\begin{equation}
+\label{eq3}
+r_{\Theta_3}(o_t, c) = Ao_t + Bc \\
+\end{equation}
+
+\subsection{Neural Network framework details and training regime \hl{AND MIXED NOTES}}
+Our attentional RNN is incorporated in the NN framework as depicted in figure ???. We incorporate two separate RNNs, one for the left context and one for the right context. Note we feed the right context in reverse into RNN. Each RNN outputs a vector and these two vectors are concatenated along with the candidate entity embedding and are fed into a classifier DNN with a single hidden layer of size 300 and a relu non-linearity function, followed by an output layer with 2 neurons and a softmax non linearity. We train the neural network to optimize a cross entropy loss function where the first output neuron is set to predict the probability of the candidate entity being the correct one, and the second output neuron predicts the probability of the candidate entity not being the correct one. We have examined using a more conventional setting with a single output neuron trained using least squares loss, however this setting was found harder to train. We have implemented the entire model using the excellent Keras over Theano framework.
+
+Due to framework limitations we have implemented our RNNs to take a fixed size left and right contexts. These where set a 20 word window to each side of the mention. When the context is shorter on either side, we pad it with a special $PAD$ symbol. We use a stop-word list to filter less informative stop-words.
+
+Since our NN requires a pair of context and candidate entity as input, careful consideration was given to the training procedure. Following Mikolov at el. (?) we used a Negative Sampling approach where for each positive example the network is trained on, it is also trained on $k$ negative samples, where the context remains the same but the candidate is randomly sampled from all possible entities. We deviate from Mikolov where he samples according to the distribution of words in the text and in our case we have found uniform sampling to produce the best results. With uniform sampling the ration of positive to negative samples for each entity is proportional to the prior probability of the entity within the corpus, which bias the network toward ranking common entities higher.
+
+During training our network is trained using error back propagation and SGD (No. Maybe ADAM?). We allow the error to propagate thou all part of the network and fine tune all trainable parameters, including fine-tuning the word embeddings.
+
+\subsection{Training word and entity embeddings}
+\hl{Make sure this part is indeed accurate and neccessary}
+
+In this section we describe our methodology for pre-training a useful word and entity embeddings for incorporating in our model. Training our model implicitly trains its dictionaries of both word and entities by SGD and error back-propagation, however we have found that pre-trained embeddings improve model performance. To this end we have devised a Skip Gram with Negative Sampling (SGNS) \hl{ref} based training procedure that simultaneously trains both word and entity vectors in the same embedded space. We note Yamada at el. \hl{add ref} have shown a somewhat similar and very successful method. However while Yamada optimizes directly for disambiguation performance, we optimize for a simple, fast and plausible starting point for our deep model.
+
+We use the word2vecf library by \hl{ref} that is derived from the original word2vec code \hl{ref} but allows to train directly on a dataset made of $(word,context)$ pairs rather then a textual corpus in a long string format. We exploit this and redefine the notion of $context$ from a context word to a context entity id. Specifically we take the corpus of Wikipedia pages as our knowledge base of entities and create a dataset where each page identified by the internal $pageid$ in Wikipedia database is scanned and split into a list of words ${word_i}$. We then add the pair $(word_i,pageid)$ for each word in each page in Wikipedia.
+
+As shown by \hl{? and Levi, cite} training using SGNS on this dataset is produces word and entity embeddings that implicitly factorize the PPMI matrix of word-entity co-occurrence matrix. We note that this well-known matrix is closely related to the TFIDF word-entity matrix used by \hl{Gabrielovich and Markovich} in Explicit Semantic Analysis and was found useful in a wide array of NLP tasks. 
+
+\hl{words are close to entities they are indicative of. Words appearing in similar entity pages are grouped together. Entities with similar pages are grouped together}
+
+\hl{show the old analogies experiment we did indicating semantic structure}
+
+\subsection{Using Deep Attentional RNN model with GBRT}
+
+\hl{GBRT were used successfuly by Yamada and ?. State-of-the-art learning-to-rank algorithms. Incorporate our model with well established statistical features - Yamada base. Boosts results }
+\end{document}
