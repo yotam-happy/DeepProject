@@ -85,8 +85,8 @@
 	
 	\section{Methodology}
 	
-	In this section we introduce our model design, which is founded on an Attentional RNN for context modeling ,and we demonstrate the integration of this component in a complete disambiguation framework. The core concept of this model is to transform the input, which is the mention's context and a single candidate entity, into a feature vector which is in turn used for computing a ranking score for the given entity. We begin by describing the Attentional RNN model. Then, we explain how to integrate this model into a larger DNN that is trained and then used for computing a ranking score. Eventually we detail how to use this model in an overall disambiguation framework.
-	
+	We present our Attentional RNN model which is trained to a mentions context and a candidate entity, and estimate the likelihood of the candidate being correct rather then corrupt. We begin by describing the main Attentional RNN component. Then, we show how this model is trained for discriminating correct and corrupt entity assignments. Lastly we describe our method for initializing word and entity embedding.
+
 	\subsection{Attentional RNN model}
 	
 	\hl{RNNs are state of the art..... }
