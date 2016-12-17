@@ -94,7 +94,7 @@
 	The challenge of modeling context is commonly addressed using word embeddings \cite{} \hl{add all refs from Malmud2014}. Yet, in practice many of these studies refer the entire sentence as a simple collection or weighted average of its individual word embeddings, as they completely ignore its sequential structure. RNN are powerful models for learning the representation of wider contextual environments, which enables intelligent embedding of a sentence by gradually passing through its content and predicting some output using the system's history. In practice, it has been shown that copies of the context, which are opposite in direction, can be independently fed into a bidirectional RNN in order to improve prediction performance \cite{Munich2004c,Melamud2014a}. 
 	\hl{attention mechanisms are state of the art ....}
 	
-	We first focus on the mechanics of our Attentional RNN component as depicted in Figure 1. The Attentional RNN takes a window of words context as input and transforms it into a fixed length vector of features. It requires an embedded vector representation for a candidate entity to control its attention as well. This component is plugged into a larger DNN model and is trained by SGD and back-propagation along with the larger model. During the training process it learns to extract a useful feature representation of the context (given the candidate entity under consideration) for optimizing the loss function defined by the larger model. In our case predicting a ranking score for the candidate entity given the context.
+	We first focus on the mechanics of our Attentional RNN (ARNN) component as depicted in Figure 1. The Attentional RNN takes a window of words context as input and transforms it into a fixed length vector of features. It requires an embedded vector representation for a candidate entity to control its attention as well. This component is plugged into a larger DNN model and is trained by SGD and back-propagation along with the larger model. During the training process it learns to extract a useful feature representation of the context (given the candidate entity under consideration) for optimizing the loss function defined by the larger model. In our case predicting a ranking score for the candidate entity given the context.
 	The basic component of our model is a standard RNN unit to process the context input. In our implementation we used standard GRU units \cite{cho2014learning} as these are state-of-the-art RNN models but any other RNN unit can be used as a drop-in replacement. 
 	
 	\begin{equation}
@@ -182,7 +182,7 @@
 	The CoNLL corpus is a public, free and annotated dataset, which is compromised out of a relatively large amount of news articles written in 1996 by the Reuters newswire. It shares $1393$ documents from two time periods of overall $12$ days, which are split into train, development and test set according to $68-15-17$\%. The performance on the corpus is usually measured using micro accuracy (p@1), which is a the average over the label of the mentions, having the golden-sense in their candidate set. While disregarding the performance of the candidate generation process, this measure can be delusive when the recall of the candidate generation is low. Therefore, it is common to use candidate generation resources, such as YAGO \cite{hoffart2011robust} or PPRforNED \cite{Pershina2015}, with over $99$\% candidate recall for better comparability of the results. Another broadly used measure is the macro accuracy, which averages the precision of all documents.Typical and recent p@1 results of local disambiguation approaches on the test-b dataset have ranged between $~80$\% to $~89$\% (see table \ref{}), when very recently the $90$\% barrier was broken by Yamada et al.\cite{Yamada2016}. Results on CoNLL appear sometimes in literature under the AIDA system, which is an online disambiguation system offered by Hoffart that contains the CoNLL 2003 NER task.
 	
 	\subsection{Learning to rank}
-	We had two kinds of models trained on the CoNLL corpus. Initially, we used the pure Attentional RNN architecture, trained over $20$\% \hl{is this right?} of the intralinks corpus with fine-tuning. 
+	We had two kinds of models trained on the CoNLL corpus. Initially, we used the pure Attentional RNN architecture, trained over $20$\% \hl{is this right?} of the intralinks corpus with fine-tuning. Because of the scale of the data we used only one epoch.
 	Inspired by Yamada's approach, we extended our model to be part of a parent Gradient Boosting Regression Tree (GBRT) classifier that is known for demonstrating neat performance in ranking applications \cite{friedman2001greedy}. For every data fragment, we took the preceding model's prediction, which is the probability that a candidate suits the input mention given the context, and fed it into a feature vector. In this manner we generated an input vector for every pair of mention-candidate from the CoNLL training set and let the model iterate over the entire data. Practically, we used sklearn's GradientBoostingClassifier implementation \cite{pedregosa2011scikit} with parameters similar to those reported by Yamada. We trained with the logistic-regression deviance and set the learning rate, number of estimator and maximum depth of a tree to $0.02$, $10000$ and $4$, respectively. For the CoNLL experiments we also added Yamada's base and string similarity features into the input vector. 
 	We find it important to note that in contrast to many other studies, we didn't focus on surpassing current state of the art results on the CoNLL task, as it is a precisely edited and specific newspaper corpus with stories covering merely two weeks of reports \cite{Sang2003}. 
 
@@ -190,20 +190,72 @@
 	Besides of embeddings of the context and entities' the model's input consisted several more features. We implemented the base features that were introduced by Yamada using statistics from Wikipedia that were computed prior to the training. In this manner we obtained the conditional and marginal entity prior, $P(e|m)$ and $P(e)$, which are normalized measures giving the number of times entity $e$ was linked to a specific or to any mention $m$ in the dataset. Information about the source document was captured by the max prior feature that is takes the maximum prior probability of 
 	
 	\subsection{Comparison with other methods}
+	We use our the suggested Wikilinks corpus from section \refname{Web-Fragment based NED Dataset} to compare the results of our model with two state of the art and well established algorithms.
 	
 	\begin{itemize} 
-		\item  Yamada et al. \cite{Yamada2016}
-		\item Cheng et al. \cite{Cheng2013}
+		\item  \textbf{Yamada et al.} \cite{Yamada2016} have published a recent paper that introduces the highest score of precision@1 on CoNLL test-b. For this reason we used this work as a principle guideline for the evaluation over the CoNLL corpus. The paper describes an embedding method that learns the relatedness of entities and jointly maps entities and context to the same vector space using the skip-gram model. The distance between these embeddings is then computed to form several features  of an input vector used for point-wise training an GBRT model. Full Yamada refers to the complete algorithm, including coherence and the two-step approach, while Yamada (no coherence) is the partial version, which excludes the former steps.
+		
+		\item \textbf{Cheng et al.} \cite{Cheng2013} addressed the Disambiguation to Wikipedia, or the "Wikificaiton" task, with a combination of local and global solutions. In this model, mentions are disambiguated locally by generating for each of them a ranked list of candidates using the GLOW Wikification system offered by Ratinov et al. \cite{Ratinov2011}. We compare our results to the ranking step of the algorithm, were a linear Ranking Support Vector Machine is trained over a set of local and global features to return the list of candidate sorted by their likelihood. We compared our results to the Ranker accuracy metric , which is relevant an evaluation metric equivalent to the p@1 score.
 	\end{itemize}
 	
+	As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all possible entities.
+	In addition to the former models we also present performance on CoNLL of the following papers - Lazic et al. \cite{Lazic2015}, Francis-Landau et al. \cite{Francis-Landau2016}, He et al. \cite{He2013}, Hoffart et al. \cite{hoffart2011robust} and Chisholm et al. \cite{Chisholm2015} ,as they are strong local approaches which demonstrate relative good results.
+	
 	\subsection{Results}
-	** metrics
-	\subsection{Feature study}
+	
+	The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{tab:a}. We used the \textit{PPRforNED} dataset \cite{Pershina2015} for extracting the candidates for each mention, as it yielded $99.7$\% candidate-generation recall and provided better results compared to YAGO. 
+	
+	
+	\begin{table}[h]
+		\begin{center}
+			\begin{tabular}{|p{4cm}| p{1.5cm} p{1.5cm}|}
+				\hline \multicolumn{3}{|c|}{CoNLL test-b} \\
+				\hline Model & Micro     accuracy & Macro     accuracy \\ \hline
+				\bf ARNN  & \bf 84.2 & \bf 85 \\
+				\bf GBRT: Base + ARNN features & \bf 85.6 & \bf 88 \\
+				Yamada et al. (no coherence) & 90.9 & 92.4 \\
+				Lazic et al. & 86.4 & - \\
+				Francis-Landau et al. & 85.5 & - \\
+				He et al. & 84.82 & 83.37 \\	
+				Hoffart et al. & 79.57 & 80.71 \\
+				Chisholm et al. & 88.7 & - \\			
+				Baseline (MPS) & 77 & 77 \\
+				\hline
+			\end{tabular}
+		\end{center}
+		\caption{\label{tab:a} Evaluation on CoNLL}
+	\end{table}
+
+	In the following table we see performance of models on the Wikilinks test set. With this corpus we report on $97.3$\% candidate generation recall, having in average 13.5 candidates per mention.
+	 
+	\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{|c| p{1.5cm}|}
+			\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
+			\hline \bf Model & \bf Micro     accuracy  \\ \hline
+			ARNN  & 84.2\\
+			GBRT: Base + ARNN features & 66.8 \\
+			Yamada (no coherence) & -  \\
+			Update results & ... \\
+			Baseline (MPS) & 55.9 \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{font-table} Evaluation on Web-Fragment data}
+	\end{table}
+
+	** add insights regarding the results and comparison
+	\subsection{Methods sensitivity/study}
+	
+	elaborate on: \newline
+	** ESA embedding initialization \newline
+	** intra vs. wikilinks training \newline
+	** cost function (max-margin vs. binary crossentropy) \newline
+	** downsampling
 	
 	\section{Conclusions}
 	
 	\bibliographystyle{acl2016}
-	\bibliography{_our_submission}
-	\bibliography{#Projects-@ DeepESA}
+	\bibliography{_our_submission,_noam_bib}
 	
 \end{document}

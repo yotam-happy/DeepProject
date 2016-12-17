@@ -1,20 +1,16 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: _our_submission.aux
 The style file: acl2016.bst
-Illegal, another \bibdata command---line 55 of file _our_submission.aux
- : \bibdata
- :         {##Projects-@ DeepESA}
-I'm skipping whatever remains of this command
 Database file #1: _our_submission.bib
+Database file #2: _noam_bib.bib
 Warning--I didn't find a database entry for ""
-Warning--I didn't find a database entry for "Munich2004c"
-Warning--I didn't find a database entry for "Melamud2014a"
-Warning--I didn't find a database entry for "Globerson2016"
-Warning--I didn't find a database entry for "Hachey2013"
-Warning--I didn't find a database entry for "Yamada2016"
-Warning--I didn't find a database entry for "Pershina2015"
 Warning--I didn't find a database entry for "friedman2001greedy"
 Warning--I didn't find a database entry for "pedregosa2011scikit"
-Warning--I didn't find a database entry for "Sang2003"
-Warning--I didn't find a database entry for "Cheng2013"
+Warning--there's a number but no volume in Cheng2013
+Warning--empty journal in Francis-Landau2016
+Warning--empty journal in Munich2004c
+Warning--empty journal in He2013
+Warning--empty journal in Melamud2014a
+Warning--empty journal in Pershina2015
+Warning--there's a number but no volume in Pershina2015
 Warning--empty institution in singh12:wiki-links
-(There was 1 error message)
+(There were 11 warnings)
