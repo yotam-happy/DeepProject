@@ -1,4 +1,3 @@
-from boto.file.key import Key
 import ProjectSettings
 from Candidates import *
 from DbWrapper import WikipediaDbWrapper
@@ -63,7 +62,8 @@ class Experiment:
                              db=self.db,
                              stats=self.stats[config['stats']],
                              dmodel=dmodel,
-                             load_path=self.path + str(config['load_path']) if 'load_path' in config else None)
+                             load_path=self.path + str(config['load_path']) if 'load_path' in config else None,
+                             w2v=self.w2v)
         else:
             raise "Config error"
 
@@ -141,7 +141,8 @@ class Experiment:
                                neg_sample=config['neg_samples'],
                                neg_sample_uniform=config['neg_sample_uniform'],
                                neg_sample_all_senses_prob=config['neg_sample_all_senses_prob'],
-                               sampling=config['sampling'] if 'sampling' in config else None)
+                               sampling=config['sampling'] if 'sampling' in config else None,
+                               subsampling=config['subsampling'] if 'subsampling' in config else None)
         self.trained_mentions = trainer.train()
         path = self.path + self._config['model']['config_path'] + (model_name if model_name is not None else "")
         self.model.saveModel(path)
@@ -161,7 +162,7 @@ class Experiment:
         evaluation.evaluate()
 
 if __name__ == "__main__":
-    experiment = Experiment("/experiments/wikilinks_deep_pointwise2/experiment.conf")
+    experiment = Experiment("/experiments/wikilinks_deep_pointwise_no_attn/experiment.conf")
     for x in xrange(1):
         trained_mentions = experiment.train(model_name='.'+str(x))
         experiment.evaluate()

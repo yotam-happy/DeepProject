@@ -38,6 +38,20 @@ def get_activations1(model, layer, X_batch):
         activations = get_activations([X_batch, 0])
         return activations
 
+def max_margin(y_true, y_pred):
+    return K.sum(K.maximum(0., 1. - y_pred * y_true + y_pred * (1.0 - y_true)))
+
+def max_margin2(y_true, y_pred):
+    # assumes the samples are interleaved positive and corrupt (p, c, p, c, ...)
+    v = - y_pred * y_true + y_pred * (1.0 - y_true) # (-p, c, -p, c,...)
+    v = K.reshape(v, (2, 64)) # ([-p, c], [-p, c],...)
+    v = 1. + K.sum(v, axis=0) # (1 - p + c, 1- p + c,...)
+    v = K.reshape(v, (64,))
+    v = K.maximum(0., v) # (max(0, 1 - p + c), max(0, 1 - p + c), ...)
+    return K.sum(v)
+
+def max_prob(y_true, y_pred):
+    return K.sum(1. - y_pred * y_true + y_pred * (1.0 - y_true))
 
 class ModelBuilder:
     def __init__(self, config_json, w2v):
@@ -99,16 +113,16 @@ class ModelBuilder:
 
 
         if self._config['context_network'] == 'gru':
-            left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(left_context_embed)
-            right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu')(right_context_embed)
+            left_rnn = GRU(self._w2v.wordEmbeddingsSz)(left_context_embed)
+            right_rnn = GRU(self._w2v.wordEmbeddingsSz)(right_context_embed)
             self.to_join += [left_rnn, right_rnn]
         elif self._config['context_network'] == 'mean':
             left_mean = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(left_context_embed)
             right_mean = Lambda(nonzero_mean, output_shape=(self._w2v.conceptEmbeddingsSz,))(right_context_embed)
             self.to_join += [left_mean, right_mean]
         elif self._config['context_network'] == 'attention':
-            left_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(left_context_embed)
-            right_rnn = GRU(self._w2v.wordEmbeddingsSz, activation='relu', return_sequences=True)(right_context_embed)
+            left_rnn = GRU(self._w2v.wordEmbeddingsSz, return_sequences=True)(left_context_embed)
+            right_rnn = GRU(self._w2v.wordEmbeddingsSz, return_sequences=True)(right_context_embed)
 
             after_attention_left, attn_values_left = \
                 self.buildAttention(left_rnn, controller1, controller2 if controller2 is not None else None)
@@ -249,6 +263,7 @@ class DeepModel:
         """
         if (candidate1 is None or candidate1 not in self._concept_dict) and \
                 (candidate2 is None or candidate2 not in self._concept_dict):
+
             return None
         if self._config['pairwise']:
             if candidate1 is None or candidate1 not in self._concept_dict:
@@ -400,6 +415,7 @@ class DeepModel:
             l = f.readlines()
             self._word_dict = {str(x): int(y) for x,y in json.loads(l[0]).iteritems()}
             self._concept_dict = {int(x) if str(x) != DUMMY_KEY else DUMMY_KEY: int(y) for x, y in json.loads(l[1]).iteritems()}
+
 
         self.model.compile(optimizer='adagrad', loss='binary_crossentropy')
 

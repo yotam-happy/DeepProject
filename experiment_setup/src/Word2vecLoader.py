@@ -1,5 +1,5 @@
 import pickle
-
+from sklearn.preprocessing import normalize
 from scipy import spatial
 import numpy as np
 import os
@@ -7,7 +7,7 @@ import os
 from WikilinksIterator import WikilinksNewIterator
 from WikilinksStatistics import WikilinksStatistics
 import keras as K
-
+from yamada.opennlp import *
 
 DUMMY_KEY = '~@@dummy@@~'
 
@@ -20,10 +20,10 @@ class Word2vecLoader:
     call loadEmbeddings() to do so
     """
 
-    def __init__(self, wordsFilePath="vecs", conceptsFilePath="context", debug=False):
+    def __init__(self, wordsFilePath="vecs", conceptsFilePath="context"):
         self._wordsFilePath = wordsFilePath
         self._conceptsFilePath = conceptsFilePath
-        self._debug = debug
+        self.parser = OpenNLP()
 
         self.wordEmbeddings = None
         self.wordDict = dict()
@@ -32,20 +32,38 @@ class Word2vecLoader:
         self.conceptDict = dict()
         self.conceptEmbeddingsSz = 0
 
+    def similarity(self, v1, v2):
+        return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+
+    def get_nouns(self, sentence_list):
+        nouns = []
+        for sent in sentence_list:
+            nouns += self.parser.list_nouns(sent)
+        return nouns
+
+    def get_entity_vec(self, entity):
+        return self.conceptEmbeddings[self.conceptDict[entity], :] if entity in self.conceptDict else None
+
+    def text_to_embedding(self, words, mention):
+        vecs = []
+        for word in words:
+            if not mention.lower().find(word.lower()) > -1 and \
+                    word.lower() in self.wordDict:
+                vecs.append(self.wordEmbeddings[self.wordDict[word.lower()], :])
+        vecs = np.array(vecs)
+        return vecs.mean(0)
+
     def _loadEmbedding(self, path, filterSet, int_key=False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
             dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
-            embd_sz = int(embd_sz) + 1
-            if self._debug:
-                dict_sz = 10000 if dict_sz > 10000 else dict_sz
+            embd_sz = int(embd_sz)
 
             embd_dict = dict()
             embedding = np.zeros((dict_sz + 2, embd_sz))
 
-            # Adds a dummy key. The dummy is a (0,...,0,1) vector where all real vectors are (?,...,?,0)
+            # Adds a dummy key. The dummy is a (0,...,0) vector
             embd_dict[DUMMY_KEY] = 1
-            embedding[1, embd_sz-1] = 1.0
 
             i = 2
             for line in iter(f):
@@ -54,36 +72,34 @@ class Word2vecLoader:
                     continue
                 key = int(s[0]) if int_key else s[0].lower()
                 if filterSet is None or key in filterSet:
-                    embedding[i, :-1] = np.array([float(x) for x in s[1:]])
+                    embedding[i, :] = np.array([float(x) for x in s[1:]])
                     embd_dict[key] = i
                     i += 1
-                    if self._debug and i > 10000:
-                        break
+            embedding = normalize(embedding)
         return embedding, embd_dict, embd_sz
 
     def _randomEmbedding(self, path, filterSet, int_key = False):
         with open(path) as f:
             dict_sz, embd_sz = f.readline().split()
             dict_sz = int(dict_sz) if filterSet is None or int(dict_sz) < len(filterSet) else len(filterSet)
-            embd_sz = int(embd_sz) + 1
-            if self._debug:
-                dict_sz = 10000 if dict_sz > 10000 else dict_sz
+            embd_sz = int(embd_sz)
 
             embd_dict = dict()
             embd_dict[DUMMY_KEY] = 1
 
             embedding = np.random.uniform(-1 / np.sqrt(embd_sz * 4), 1 / np.sqrt(embd_sz * 4), (dict_sz+1,embd_sz))
-            embedding[0, :] = np.zeros((1,embd_sz))
-            embedding[1, :] = np.zeros((1,embd_sz))
-            embedding[:, -1] = np.zeros((1, dict_sz+1))
-            embedding[1, -1] = 1.0
+            embedding[0, :] = np.zeros((1, embd_sz))
+            embedding[1, :] = np.zeros((1, embd_sz))
 
             print "rnd embd"
             i = 2
             for line in iter(f):
                 s = line.split()
-                if filterSet is None or s[0] in filterSet:
-                    embd_dict[int(s[0].lower()) if int_key else s[0].lower()] = i
+                if s[0] == '</s>':
+                    continue
+                key = int(s[0]) if int_key else s[0].lower()
+                if filterSet is None or key in filterSet:
+                    embd_dict[key] = i
                     i += 1
             return embedding, embd_dict, embd_sz
 

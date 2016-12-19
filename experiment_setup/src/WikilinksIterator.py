@@ -10,6 +10,7 @@ import nltk
 import unicodedata
 from nltk.corpus import stopwords
 from utils.document import *
+import time
 
 class WikilinksOldIterator:
     """
@@ -98,7 +99,7 @@ class WikilinksNewIterator:
         for i, f in enumerate(os.listdir(self._path)):
             if os.path.isdir(os.path.join(self._path, f)):
                 continue
-            print "opening", f, "(", i, "opened so far in this epoch)"
+            print time.strftime("%H:%M:%S"), "- opening", f, "(", i, "opened so far in this epoch)"
             yield open(os.path.join(self._path, f), 'r')
 
     def jsons(self):
@@ -119,7 +120,7 @@ class WikilinksNewIterator:
                         continue
 
                     if not self._resolveIds:
-                        wlink['wikiId'] = int(wlink['wikiId'])
+                        wlink['wikiId'] = int(wlink['wikiId']) if 'wikiId' in wlink else None
                     else:
                         t += 1
                         url = wlink['wikiurl']

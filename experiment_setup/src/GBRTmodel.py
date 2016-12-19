@@ -8,7 +8,7 @@ import ProjectSettings
 import pickle
 
 class GBRTModel:
-    def __init__(self, config, db=None, stats=None, dmodel=None, load_path=None):
+    def __init__(self, config, db=None, stats=None, dmodel=None, load_path=None, w2v=None):
         if type(config) == str or type(config) == unicode:
             with open(config) as data_file:
                 self._config = json.load(data_file)
@@ -34,7 +34,8 @@ class GBRTModel:
                                                    self._config['features']['yamada_embedding_path'],
                              stats=stats,
                              db=db,
-                             dmodel=dmodel)
+                             dmodel=dmodel,
+                             w2v=w2v)
         self._train_X = []
         self._train_Y = []
         self._db = db

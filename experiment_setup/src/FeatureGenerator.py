@@ -9,11 +9,12 @@ from nltk.metrics.distance import edit_distance
 from yamada.text_to_embedding import *
 
 class FeatureGenerator:
-    def __init__(self, mention_features={}, entity_features={}, stats=None, db=None,
+    def __init__(self, mention_features={}, entity_features={}, stats=None, db=None, w2v=None,
                  yamada_embedding_path=None,
                  dmodel=None):
         self._stats = stats
         self._db = db
+        self._w2v = w2v
         self.mention_features = [x for x in mention_features]
         self.entity_features = [x for x in entity_features]
         print self.entity_features
@@ -111,8 +112,29 @@ class FeatureGenerator:
                 context_embd = mention.document().yamada_context_embd[mention_text]
                 entity_embd = self.yamada_txt_to_embd.from_the_cache(entity)
                 if entity_embd is not None:
+#                    print self.yamada_txt_to_embd.similarity(context_embd, entity_embd)
                     features.append(self.yamada_txt_to_embd.similarity(context_embd, entity_embd))
                 else:
+                    #print 0
+                    features.append(0.0)
+            elif feature == 'our_context_similarity':
+                if not hasattr(mention.document(), 'our_context_nouns'):
+                    mention.document().our_context_nouns = \
+                        self._w2v.get_nouns(mention.document().sentences)
+
+                if not hasattr(mention.document(), 'our_context_embd'):
+                    mention.document().our_context_embd = dict()
+                if mention_text not in mention.document().our_context_embd:
+                    context_embd = self._w2v.text_to_embedding(
+                        mention.document().our_context_nouns, mention_text)
+                    mention.document().our_context_embd[mention_text] = context_embd
+                context_embd = mention.document().our_context_embd[mention_text]
+                entity_embd = self._w2v.get_entity_vec(entity)
+                if entity_embd is not None:
+                    print self._w2v.similarity(context_embd, entity_embd)
+                    features.append(self._w2v.similarity(context_embd, entity_embd))
+                else:
+                    print 0
                     features.append(0.0)
             elif feature == 'distance_model':
                 x = self.distance_model_predictor.predict_prob(mention, entity)

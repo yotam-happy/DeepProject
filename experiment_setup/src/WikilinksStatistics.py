@@ -53,9 +53,7 @@ class WikilinksStatistics:
             self.logProbVar = sum([math.pow(math.log(float(x)) - self.probMean, 2) * x for x in self.conceptCounts.values()]) / \
                 sum([float(x) for x in self.conceptCounts.values()])
 
-
         self.conceptCountsSum = sum(self.conceptCounts.values())
-
         self._stopwords = stopwords.words('english')
 
     def getCandidateConditionalPrior(self, concept, mention):
@@ -246,7 +244,7 @@ class WikilinksStatistics:
 
 #from WikilinksIterator import *
 #_path = "/home/yotam/pythonWorkspace/deepProject"
-#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/intralinks/all_20141106"))
+#stats = WikilinksStatistics(WikilinksNewIterator(_path+"/data/wikilinks/filtered/train"))
 #stats.calcStatistics()
-#stats.saveToFile(_path + "/data/intralinks/all_20141106-stats")
+#stats.saveToFile(_path + "/data/wikilinks/filtered-train-stats")
 #print "done"

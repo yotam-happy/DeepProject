@@ -166,7 +166,14 @@ class PPRStatistics:
         mention = (mention.mention_text() if hasattr(mention, 'mention_text') else mention).lower()
         if mention not in self.mentionLinksUrl:
             return {}
-        return {x for x in self.mentionLinksUrl[mention]}
+        l = self._sortedList(self.mentionLinksUrl[mention])
+        tot = sum([x[1] for x in l])
+        out = dict()
+        for x in l:
+            if len(out) == 0 or tot == 0 or (float(x[1]) / tot >= p and x[1] > t):
+                out[x[0]] = x[1] if tot != 0 else 1
+
+        return {x for x, y in out.iteritems()}
 
     def calcStatistics(self, wikiDB):
         self.mentionCounts = dict()

@@ -14,6 +14,8 @@ class PointwisePredict:
         :param stats:           A statistics object used to get list of candidates
         """
         self._pointwise_model = pointwise_model
+        self.n = 0
+        self.nn = 0
 
     def predict(self, mention):
 
@@ -24,4 +26,8 @@ class PointwisePredict:
 
     def predict_prob(self, mention, candidate):
         a = self._pointwise_model.predict(mention, candidate, None)
+        self.n += 1
+        if a is None and int(mention.gold_sense_id()) == candidate:
+            self.nn += 1
+            print "hellpppp!", float(self.nn) / self.n
         return a if a is not None else 0

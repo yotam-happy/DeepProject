@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import utils.text
 
 class Evaluation:
     """
@@ -88,9 +89,9 @@ class Evaluation:
                     self.candidates += len(mention.candidates)
                     possible_per_doc += 1
                     with open('feature_set.txt', 'a') as f:
-                        f.write('\n' + mention.mention_text() + ' (' + str(actual) + ')\n')
+                        f.write('\n' + utils.text.normalize_unicode(mention.mention_text()) + ' (' + str(actual) + ')\n')
                     prediction = predictor.predict(mention)
-                    self.collect_advanced_stats(mention, actual, prediction)
+#                    self.collect_advanced_stats(mention, actual, prediction)
                     if prediction == actual:
                         correct_per_doc += 1
                     else:
@@ -99,6 +100,7 @@ class Evaluation:
                     mps = self._stats.getMostProbableSense(mention)
                     if mps == actual:
                         self.mps_correct += 1
+
             if self.n_docs % 10 == 0:
                 self.printEvaluation()
             self.possible += possible_per_doc
@@ -108,7 +110,7 @@ class Evaluation:
                 self.macro_p += float(correct_per_doc) / possible_per_doc
         print 'done!'
         self.printEvaluation()
-        self.print_advanced_stats()
+#        self.print_advanced_stats()
         if self._log_path is not None:
             self.saveEvaluation()
 
@@ -132,8 +134,6 @@ class Evaluation:
 
     def print_advanced_stats(self, confusion=True):
 
-        micro_maybe = sum([float(y[0])/y[1] for x, y in self.acc_by_mention.iteritems()]) /len(self.acc_by_mention)
-        print "microrrrr??", micro_maybe
         if self._trained_mentions is not None:
             print "error from untrained mentions", float(self.error_from_untrained_mention) / (self.possible - self.correct)
         print "unique", self.unique / float(self.possible)
@@ -150,7 +150,8 @@ class Evaluation:
         acc_by_sense = [(x, float(y[0]) / y[1]) for x, y in self.acc_by_sense.iteritems()]
         acc_by_sense.sort(key=lambda (k, v): v)
         for x, y in acc_by_sense:
-            s += str(self._db.getPageTitle(x)) + '(' + str(x) + '): ' + str(y) + '; '
+            s += str(self._db.getPageTitle(x)) + '(' + utils.text.normalize_unicode(str(x)) + '): ' + \
+                 utils.text.normalize_unicode(str(y)) + '; '
         s += '\n'
 
         if confusion:
