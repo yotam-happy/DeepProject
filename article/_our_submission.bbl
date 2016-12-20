@@ -95,9 +95,15 @@ Ben Hachey, Will Radford, Joel Nothman, Matthew Honnibal, and James~R. Curran.
 \newblock {Evaluating entity linking with wikipedia}.
 \newblock {\em Artificial Intelligence}, 194:130--150.
 
-\bibitem[\protect\citename{He \bgroup et al.\egroup }2013]{He2013}
+\bibitem[\protect\citename{He \bgroup et al.\egroup }2013a]{he2013learning}
 Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
-\newblock 2013.
+\newblock 2013a.
+\newblock Learning entity representation for entity disambiguation.
+\newblock In {\em ACL (2)}, pages 30--34.
+
+\bibitem[\protect\citename{He \bgroup et al.\egroup }2013b]{He2013}
+Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
+\newblock 2013b.
 \newblock {Learning Entity Representation for Entity Disambiguation}.
 \newblock pages 30--34.
 
@@ -199,6 +205,14 @@ Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
   via links to {Wikipedia}.
 \newblock Technical Report UM-CS-2012-015.
 
+\bibitem[\protect\citename{Sun \bgroup et al.\egroup }2015]{sun2015modeling}
+Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang.
+\newblock 2015.
+\newblock Modeling mention, context and entity with neural networks for entity
+  disambiguation.
+\newblock In {\em Proceedings of the International Joint Conference on
+  Artificial Intelligence (IJCAI)}, pages 1333--1339.
+
 \bibitem[\protect\citename{Team \bgroup et al.\egroup }2016]{team2016theano}
 The Theano~Development Team, Rami Al-Rfou, Guillaume Alain, Amjad Almahairi,
   Christof Angermueller, Dzmitry Bahdanau, Nicolas Ballas, Fr{\'e}d{\'e}ric
@@ -207,6 +221,15 @@ The Theano~Development Team, Rami Al-Rfou, Guillaume Alain, Amjad Almahairi,
 \newblock Theano: A python framework for fast computation of mathematical
   expressions.
 \newblock {\em arXiv preprint arXiv:1605.02688}.
+
+\bibitem[\protect\citename{Vinyals \bgroup et al.\egroup
+  }2015]{vinyals2015grammar}
+Oriol Vinyals, {\L}ukasz Kaiser, Terry Koo, Slav Petrov, Ilya Sutskever, and
+  Geoffrey Hinton.
+\newblock 2015.
+\newblock Grammar as a foreign language.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  2773--2781.
 
 \bibitem[\protect\citename{Yamada \bgroup et al.\egroup
   }2016a]{yamada2016joint}
