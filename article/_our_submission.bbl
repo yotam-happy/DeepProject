@@ -1,5 +1,20 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citename{Abadi \bgroup et al.\egroup
+  }2015]{tensorflow2015-whitepaper}
+Mart\'{\i}n Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen,
+  Craig Citro, Greg~S. Corrado, Andy Davis, Jeffrey Dean, Matthieu Devin,
+  Sanjay Ghemawat, Ian Goodfellow, Andrew Harp, Geoffrey Irving, Michael Isard,
+  Yangqing Jia, Rafal Jozefowicz, Lukasz Kaiser, Manjunath Kudlur, Josh
+  Levenberg, Dan Man\'{e}, Rajat Monga, Sherry Moore, Derek Murray, Chris Olah,
+  Mike Schuster, Jonathon Shlens, Benoit Steiner, Ilya Sutskever, Kunal Talwar,
+  Paul Tucker, Vincent Vanhoucke, Vijay Vasudevan, Fernanda Vi\'{e}gas, Oriol
+  Vinyals, Pete Warden, Martin Wattenberg, Martin Wicke, Yuan Yu, and Xiaoqiang
+  Zheng.
+\newblock 2015.
+\newblock {TensorFlow}: Large-scale machine learning on heterogeneous systems.
+\newblock Software available from tensorflow.org.
+
 \bibitem[\protect\citename{Bahdanau \bgroup et al.\egroup
   }2014]{bahdanau2014neural}
 Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
@@ -15,9 +30,16 @@ Xiao Cheng and Dan Roth.
 \newblock {\em Empirical Methods in Natural Language Processing},
   (October):1787--1796.
 
-\bibitem[\protect\citename{Chisholm and Hachey}2015]{Chisholm2015}
+\bibitem[\protect\citename{Chisholm and Hachey}2015a]{chisholm2015entity}
 Andrew Chisholm and Ben Hachey.
-\newblock 2015.
+\newblock 2015a.
+\newblock Entity disambiguation with web links.
+\newblock {\em Transactions of the Association for Computational Linguistics},
+  3:145--156.
+
+\bibitem[\protect\citename{Chisholm and Hachey}2015b]{Chisholm2015}
+Andrew Chisholm and Ben Hachey.
+\newblock 2015b.
 \newblock {Entity Disambiguation with Web Links}.
 \newblock {\em Transactions of the Association for Computational Linguistics},
   3(0):145--156.
@@ -53,12 +75,26 @@ John Duchi, Elad Hazan, and Yoram Singer.
 \newblock {\em Journal of Machine Learning Research}, 12(Jul):2121--2159.
 
 \bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016]{Francis-Landau2016}
+  }2016a]{francis2016capturing}
 Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016.
+\newblock 2016a.
+\newblock Capturing semantic similarity for entity linking with convolutional
+  neural networks.
+\newblock {\em arXiv preprint arXiv:1604.00734}.
+
+\bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
+  }2016b]{Francis-Landau2016}
+Matthew Francis-Landau, Greg Durrett, and Dan Klein.
+\newblock 2016b.
 \newblock {Capturing Semantic Similarity for Entity Linking with Convolutional
   Neural Networks}.
 \newblock pages 1256--1261.
+
+\bibitem[\protect\citename{Friedman}2001]{friedman2001greedy}
+Jerome~H Friedman.
+\newblock 2001.
+\newblock Greedy function approximation: a gradient boosting machine.
+\newblock {\em Annals of statistics}, pages 1189--1232.
 
 \bibitem[\protect\citename{Gabrilovich and
   Markovitch}2007]{gabrilovich2007computing}
@@ -75,12 +111,6 @@ Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
 \newblock 2016.
 \newblock {Collective Entity Resolution with Multi-Focal Attention}.
 \newblock {\em Acl}, pages 621--631.
-
-\bibitem[\protect\citename{Graves and Schmidhuber}2004]{Munich2004c}
-Alex Graves and Jurgen Schmidhuber.
-\newblock 2004.
-\newblock {Framewise Phoneme Classification with Bidirectional LSTM and Other
-  Neural Network Architectures}.
 
 \bibitem[\protect\citename{Guo and Barbosa}2014]{guo2014entity}
 Zhaochen Guo and Denilson Barbosa.
@@ -146,11 +176,6 @@ Omer Levy and Yoav Goldberg.
 \newblock In {\em Advances in neural information processing systems}, pages
   2177--2185.
 
-\bibitem[\protect\citename{Melamud and Goldberger}2014]{Melamud2014a}
-Oren Melamud and Jacob Goldberger.
-\newblock 2014.
-\newblock {Learning Generic Context Embedding with Bidirectional LSTM}.
-
 \bibitem[\protect\citename{Mikolov \bgroup et al.\egroup
   }2013]{mikolov2013distributed}
 Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S Corrado, and Jeff Dean.
@@ -159,6 +184,15 @@ Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S Corrado, and Jeff Dean.
   compositionality.
 \newblock In {\em Advances in neural information processing systems}, pages
   3111--3119.
+
+\bibitem[\protect\citename{Pedregosa \bgroup et al.\egroup
+  }2011]{pedregosa2011scikit}
+Fabian Pedregosa, Ga{\"e}l Varoquaux, Alexandre Gramfort, Vincent Michel,
+  Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron
+  Weiss, Vincent Dubourg, et~al.
+\newblock 2011.
+\newblock Scikit-learn: Machine learning in python.
+\newblock {\em Journal of Machine Learning Research}, 12(Oct):2825--2830.
 
 \bibitem[\protect\citename{Pershina \bgroup et al.\egroup
   }2015]{pershina2015personalized}

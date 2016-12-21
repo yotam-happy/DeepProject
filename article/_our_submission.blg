@@ -1,20 +1,11 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: _our_submission.aux
-White space in argument---line 8 of file _our_submission.aux
- : \citation{sun2015modeling,
- :                            francis2016capturing}
-I'm skipping whatever remains of this command
 The style file: acl2016.bst
 Database file #1: _our_submission.bib
 Database file #2: _noam_bib.bib
-Warning--I didn't find a database entry for ""
-Warning--I didn't find a database entry for "friedman2001greedy"
-Warning--I didn't find a database entry for "pedregosa2011scikit"
 Warning--there's a number but no volume in Cheng2013
 Warning--empty journal in Francis-Landau2016
-Warning--empty journal in Munich2004c
 Warning--empty journal in He2013
-Warning--empty journal in Melamud2014a
 Warning--empty journal in Pershina2015
 Warning--there's a number but no volume in Pershina2015
 Warning--empty institution in singh12:wiki-links
-(There was 1 error message)
+(There were 6 warnings)
