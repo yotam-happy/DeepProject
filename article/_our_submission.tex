@@ -35,7 +35,7 @@
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
-\title{Using Attentional RNNs for Local Named Entity Disambiguation}
+\title{using Attentional RNNs for Local Named Entity Disambiguation}
 
 \author{First Author \\
 	Affiliation / Address line 1 \\
@@ -76,27 +76,27 @@
 	
 	NED algorithms can broadly be divided into local and global approaches, where local algorithms disambiguate mentions independently using local textual context while global approaches assume some coherence among mentions within a single document and therefore employ a coherency model to simultaneously disambiguate many mentions. Much attention was given recently to global algorithms \cite{ratinov2011local,guo2014entity,pershina2015personalized} \hl{(there's newer stuff)} which demonstrate very good performance on standard datasets. However while most standard datasets are based on text corpora such as news reports and Wikipedia paragraphs that are expected to be relatively long, well formed and coherent, other corpora such as fragments of web pages can be shorter, noisier and less coherent.
 	
-	Deep Neural Networks (DNN) have recently gained traction as state-of-the-art architectures that can model powerful data representations and complex feature interaction. DNNs achieve state-of-the-art results on a wide variety of tasks ranging from image classification \cite{krizhevsky2012imagenet} to machine translation \cite{bahdanau2014neural}. For the task of NED, He at el. \cite{he2013learning} used stacked auto-encoders to learn entity and context representations. More recently Sun at el. and Francis-Landau at el. \cite{sun2015modeling,francis2016capturing} have proposed models that use convolutional neural networks for modeling and combining representations of a range of input signals and granularities. 
+	Deep Neural Networks (DNN) have recently gained traction as state-of-the-art architectures that can model powerful data representations and complex feature interaction. DNNs achieve state-of-the-art results on a wide variety of tasks ranging from image classification \cite{krizhevsky2012imagenet} to machine translation \cite{bahdanau2014neural}. He at el. \cite{he2013learning} used stacked auto-encoders to learn entity and context representations for NED. More recently Sun at el. and Francis-Landau at el. \cite{sun2015modeling,francis2016capturing} have proposed models that incorporate convolutional neural networks for modeling and combining representations for a range of input signals and granularities. 
 	
-	We propose a novel Deep-Learning based disambiguation algorithm where NED is treated as separating correct entity assignments from corrupt ones given only a local context. Our model is based on Recurrent Neural Networks (RNNs) since they are state-of-the-art language modeling architectures. We use a neural attention mechanism to enable the model to decide which contextual signals are most important when considering a specific entity assignment. We as well describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance.
+	We propose a novel Deep-Learning based disambiguation algorithm where Recurrent Neural Networks (RNNs) with an attention mechanism are employed to model local context and discriminate correct entity assignments from corrupt ones. \hl{differentiate RNN from CNN. Why are their better?} Recurrent Neural Networks are state-of-the-art language modeling architectures that are designed to model sequential data such as text and have been demonstrated to give state-of-the-art results for NLP related tasks such as Neural Machine Translation \cite{bahdanau2014neural} and Language Modeling \hl{? cite:??}. Attention mechanisms are natural extensions for RNNs where the model is trained to focus on the most relevant parts of the input text. Attention mechanisms have been successfully employed for tasks such as Neural Machine Translation \cite{bahdanau2014neural} and Parsing \cite{vinyals2015grammar}. 
 	
-	To test our method we craft a large-scale dataset of short web fragments containing mentions disambiguated into Wikipedia by thousands of website editors. Our dataset is extracted from a subset of the Wikilinks dataset \cite{singh12:wiki-links} which is re-purposed for NED. It represents a large-scale and difficult task with \hl{count} unique mentions disambiguated into $100K$ unique entities and where context is limited and noisy. We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on this dataset and in addition examine our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-out-the-art methods on a smaller and cleaner dataset.
+	We present a novel word2vec \cite{mikolov2013distributed} based method for initializing word and entity embeddings employed by the model, and demonstrate its importance. While training our model we further fine-tune these embeddings via gradient descent and back-propagation.
+		
+	We craft a large-scale dataset of short web fragments containing mentions disambiguated into Wikipedia by thousands of website editors. Our dataset is based on a subset of the Wikilinks dataset \cite{singh12:wiki-links} which is re-purposed for NED. It represents a large-scale and difficult task with \hl{count} unique mentions disambiguated into $100K$ unique entities and where context is limited and noisy. We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on this dataset and in addition examine our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-out-the-art methods on a smaller and cleaner dataset.
 	
 	\section{Methodology}
-
-	Our DNN model is a discriminative model which takes a pair of local context and candidate entity, and outputs a likelihood for the candidate entity being correct. Both words and entities are represented using embedding dictionaries and we interpret local context as a window-of-words to the left and right of a mention. The left and right contexts are fed into a duo of Attentional RNNs (ARRN) components which process each side and produce a fixed length vector representation. The left context is fed in a forward manner while the right context is fed backwards into the model. Each Attentional RNN uses the candidate entity input to control its attention, allowing it to attend to the most discriminating parts of the context given the candidate at hand. 
 	
-	The output vectors generated by both Attentional RNNs and the embedding of the entity itself are then fed into a classifier network consisting of a hidden layer and an output layer with two output units and a softmax activation. The output units are trained to emit the likelihood of the candidate being a correct or corrupt assignment by optimizing a cross-entropy loss function. 
+	The architecture for our model is presented in \hl{Figure 1}. The model takes a window-of-words to the left and right of a mention as its textual context and some candidate entity. The left and right contexts are fed into a duo of Attentional RNNs which process each side and produce a fixed length vector representation. Notice the right side is fed backwards into the model. Each Attentional RNN also uses the candidate entity to control its attention which allows it to attend to the most discriminating parts of the context given the candidate at hand. 
 	
-	We assume our model is only given examples of correct entity assignments during training and therefore automatically generate examples of corrupt assignments. For each $(context,entity)$ pair where $entity$ is a correct assignment for a given $contex$ we produce $k$ corrupt examples with the same $context$ and a corrupt entity uniformly sampled from all entities in the dataset. Using the combined dataset of correct and corrupt examples our algorithm learns to separate correct assignments from the generated corrupt ones.
+	The output vectors generated by both Attentional RNNs and the embedding of the entity itself are then fed into a classifier network consisting of a hidden layer, and an output layer with two output units and softmax activation. The output units are trained to emit the likelihood of the candidate being a correct or corrupt assignment. We optimize our model end-to-end with a cross-entropy loss function. 
 	
-	In our implementation we have set the hidden layer size to be 300 and used a ReLU non-linearity for this layer. We have found the width and depth of the classifier to be of little impact on performance, but using a ReLU non-linearity was found to be important. We have also applied dropout with $p=0.5$ to the hidden layer.
+	We have set the hidden layer size to be 300 and used a ReLU activation for this layer. We have found the width and depth of the classifier to be of little impact on performance, but using a ReLU non-linearity was found to be important. We have also applied dropout with $p=0.5$ to the hidden layer.
 	
 	\subsection{Attentional RNN component}
-
-	Our Attentional RNN component is based on a general RNN unit fitted with an attention mechanism. The mechanics of the Attentional RNN component are depicted in \hl{Figure 2}. 
+	
+	The mechanics of our Attentional RNN component are depicted in \hl{Figure 2}. In our implementation we used a standard GRU unit \cite{cho2014learning} as it is a state-of-the-art RNN model but any other RNN unit can be used as a drop-in replacement. 
 		
-	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector by a function $f$ parametrized by $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ that may be parametrized by $\Theta_2$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
+	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed from the previous hidden state and the next input vector by a function $f$ parametrized by $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ that is sometimes parametrized by $\Theta_2$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
 	
 	\begin{equation}
 	\label{eq1}
@@ -106,7 +106,7 @@
 	\end{aligned}
 	\end{equation}
 
-	In out implementation we have used a standard GRU unit \cite{cho2014learning}, however any RNN can be a drop-in replacement. While an RNN unit can be used as-is in our model by feeding the last output vector $o_t$ directly into the classifier network, we have implemented an attention mechanism that allows the model to be aware of the candidate entity it is evaluating when computing an output. Equation \ref{eq2} details the equations governing the attention model.
+	While an RNN unit can be used as-is in our model by feeding the last output vector $o_t$ directly into the classifier network, we have implemented an attention mechanism that allows the model to be aware of the candidate entity it is evaluating when computing an output vector. Equation \ref{eq2} details the equations governing the attention model.
 	
 	\begin{equation}
 	\label{eq2}
@@ -117,16 +117,18 @@
 	\end{aligned}
 	\end{equation}
 	
-	The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. We then use a softmax to squeeze the attention values such that $\sum_{i=1}^{t} a'_i = 1$ and compute the final output $o_{attn}$ as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate. We parametrize our attention function $r$ as a single layer NN as shown in equation \ref{eq3}
+	The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. We then use a softmax to squeeze the attention values such that $\sum_{i=1}^{t} a'_i = 1$ and compute the final output $o_{attn}$ as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate.\hl{Noam: the following equation is not clear. explain A,B and b. connect to the storyline...}
 	
 	\begin{equation}
 	\label{eq3}
 	r_{\Theta_3}(o_t, v_{candidate}) = Ao_t + Bv_{candidate} + b \\
 	\end{equation}
 	
+	We parametrize our attention function $r$ as a single layer NN as shown in equation \ref{eq3}
+	
 	\subsection{Training initial word and entity embeddings}
 	
-	Training our model implicitly trains its dictionaries of both word and entity embedding by error back-propagation. However, as will be shown in section \ref{experiments}, we have found using pre-trained embeddings to \hl{significantly improve model performance/greatly reduce training time(??)}. To this end we have devised a Skip Gram with Negative Sampling (SGNS) \cite{mikolov2013distributed} based training procedure that simultaneously trains both word and entity vectors in the same embedded space.
+	Training our model implicitly trains its dictionaries of both word and entity embedding by error back-propagation. However, as will be shown in section \ref{experiments}, we have found using pre-trained embeddings to significantly improve model performance. To this end we have devised a Skip Gram with Negative Sampling (SGNS) \cite{mikolov2013distributed} based training procedure that simultaneously trains both word and entity vectors in the same embedded space. We note Yamada at el. \cite{yamada2016joint} have devised a somewhat similar method however our method trains much faster and requires only the textual content of Wikipedia pages while they require Wikipedia cross-references and category structure as well.
 	
 	We use the word2vecf library\footnote{Available at https://bitbucket.org/yoavgo/word2vecf} by Levy and Goldberg \cite{levy2014dependency} that is adapted from word2vec code and allows to train on a dataset made of $(word,context)$ pairs rather then a textual corpus in string format, as is done in the original word2vec. We exploit this to redefine $context$ as a context entity rather then a contextual word. 
 	
@@ -140,56 +142,69 @@
 	
 	\hl{-show results of the analogies experiment we did indicating semantic structure for the WORD vectors-}
 	
-	\section{\label{sec:w}Creating a Web-Fragment based NED Dataset}
+	\section{\label{sec:w}Web-Fragment based NED Dataset}
 	We introduce a new large-scale NED dataset of web-fragments crawled from the web. Our dataset is derived from the Wikilinks dataset originally collected by Singh at el. \cite{singh12:wiki-links} for a cross-document co-reference task. cross-document co-reference entails clustering mentions referring to the same entity across a set of documents without consulting a predefined knowledge base of entities, and is many-a-time regarded as a downstream task for knowledge base population (KBP). Wikilinks was constructed by crawling the web and collecting hyperlinks linking to Wikipedia and the web context they appear in. The anchor texts act as mentions and the link targets in Wikipedia act as ground-truths. Wikilinks contains 40 million mentions covering 3 million entities and collected from over 10 million web pages.
+	
+	Despite the difference between a NED and a co-reference task, we believe the nature of Wikilinks makes it valuable to NED as well. This was recognized by Chisholm and Hachey \cite{chisholm2015entity} who examined collecting statistics from Wikilinks for a NED system. However we are interested in Wikilinks as a test case. 
 	
 	Wikilinks can be seen as a large-scale, naturally-occurring and crowd-sourced dataset where thousands of human annotators provide ground-truths for mentions of interest. Its web sourcing entails every kind of noise expected from automatically gathered web content, including many faulty, misleading and peculiar ground truth labels on the one hand, and on the other hand noisy, malformed and incoherent textual context for mentions. While noise in crowd-sourced data is arguably a necessary trade-off for quantity, we believe the contextual noise in particular represents an interesting test-case that supplements existing standard datasets such as CoNLL \cite{hoffart2011robust}, ACE and Wiki \cite{ratinov2011local} as these are all sourced from mostly coherent and well formed text such as news articles and Wikipedia pages. Wikilinks emphasizes utilizing strong and adaptive local disambiguation techniques, and marginalizes the utility of coherency based global approaches.
 	
-	The original dataset exists in a number of formats, and we have chosen a version with only short local contexts\footnote{Available at http://www.iesl.cs.umass.edu/data/wiki-links} since it renders the size of the dataset a manageable 5Gb of compressed data (compared to 180Gb for the full texts). Following are the filtering and preprocessing steps used to create a NED evaluation dataset from Wikilinks:
+	\subsection{Preprocessing the Wikilinks dataset}
+	
+	We detail a number of filtering and processing steps used to adapt Wikilinks as a test dataset for NED. The original dataset exists in a number of formats, and we have chosen a version with only short local contexts\footnote{Available at http://www.iesl.cs.umass.edu/data/wiki-links} since it renders the size of the dataset a manageable 5Gb of compressed data (compared to 180Gb for the full texts).
+	
+	The first preprocessing step we took was resolving ground-truth links using a $7/4/2016$ dump of the Wikipedia database \footnote{Recent Wikipedia dumps are found at https://dumps.wikimedia.org/}. The same dump was consistently used throughout this research. We used the $page$ and $redirect$ tables for resolution and kept the database $pageid$ column as a unique identifier for Wikipedia pages (entities). We discarded mentions where the ground-truth could not be resolved, resulting in retention of over $97\%$ of the mentions. We then randomly permuted the order of mentions within the data and split it into train, evaluation and test set. We split the data $90\% / 10\% / 10\%$ respectively. Since websites might include duplicate or closely related content we did not assign mentions into splits on an individual basis but rather collected all origin domains and assigned each domain along with all mentions collected from it into a split collectively.
+	
+	The last and most important task was filtering the data. We collected all pairs of mention $m$ and entity $e$ appearing in the dataset and computed the following two statistics: how many times $m$ refers to $e$: $\#\{e|m\}$ and the conditional probability of $e$ given $m$: $p(e|m)=\#\{e|m\}/\sum_{e'}\#\{e'|m\}$. Examining these distributions revealed many mentions belong to two extremes: either they had very little ambiguity or had a number of candidate entities each appearing very few times. We have deemed the former to be unambiguous and not-interesting, and the latter to be suspected as noise with high probability. We therefore designed a procedure to filter both this cases: We retained only mentions for whom at least two ground-truth entities have $\#\{e|m\}\ge 10$ and $p(e|m)\ge0.1$. 
+	
+	This procedure aggressively filtered the dataset and we were left with $2.6M$ training, $300K$ test and $300K$ evaluation samples. We believe that doing so filters uninteresting cases while emitting a dataset that is large-scale yet manageable in size for research purposes. 
+	
+	We note that we have considered filtering $(m,e)$ pairs where $\#\{e|m\}\le 3$ since these are suspected as additional noise however decided against this procedure as it might filter out long tail entities, a case which was deemed interesting by the community.
+	
+	\section{Experiments} \label{experiments}
+	
+	\subsection{Training details}
+	In this section the performance of our model is being evaluated for the task of NED. We detail the training techniques of different ARNN based models for several disambiguation corpora. 	All models were implemented in Python using the excellent Keras \cite{chollet2015} over Theano \cite{team2016theano} and Tensorflow \cite{tensorflow2015-whitepaper} frameworks.
+	
+	\subsubsection{Training on Wikilinks}
+	Following the motivations that were described in section \ref{sec:w}, we wanted to test the efficiency of our ARNN solution when trained over the Wikilinks corpus.
+	We started by generating a basic file with statistics of mentions and entities that appeared in our corpus. This file was used later for creating additional features and filtering irrelevant mentions \hl{Noam: is it used for something else?}. Specifically, it held the mentions and entities count; a mention-link structure with a histogram of candidates; and the number of times each context word appeared in the corpus.
+
+	We have trained our GRUs with fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered out stop words according to NLTK's stop-word list.
+	
+	The input to the model was streamed as pairs of entity and candidate. The issue of having only true-matching pairs of mentions and entities in our corpus, was addressed by extending our training set to include also false-matching, or corrupted, examples. This was accomplished by randomly sampling $k$ entities for each mention ,hence obtaining $k$ corrupted training pairs. This framework is somewhat similar to the negative sampling approach introduced by Mikilov et al.    \cite{mikolov2013distributed}, however instead of sampling the false examples according to the entity distribution, we used uniform sampling. With uniform sampling the ratio of true-to-corrupted samples becomes higher for entities with strong prior. This property biases the network toward preferring entities that are more frequent in the corpus.
+	
+	The optimization of the model was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and to fine tune all trainable parameters, including the word and entity embeddings themselves. A single epoch with $2.6M$ mentions was used for training the model during 2 \hl{Noam: edit runtime} days using a 20-core CPU machine.
+
+    \subsubsection{Training on CoNLL}
+    CoNLL 2003 NER corpus is a an evaluation that is commonly used in research for benchmarking NED solutions \cite{Globerson2016,Hachey2013,Yamada2016,Pershina2015}. This has motivated us to hold additional ARNN based models for comparing our method with state of the art results.
+    The CoNLL corpus is a public, free and annotated dataset, which is compromised out of a relatively large amount of news articles written  by the Reuters newswire in 1996. It shares $1393$ documents from overall $12$ days of news reports that are split into train, development and test sets according to a ratio of $68$\%-$15$\%-$17$\%. 
+	
+	The performance on CoNLL is usually measured using micro accuracy ($p@1$), which denotes the accuracy of the task, over all the mentions that have their golden-sense in their candidate set. In practice, $p@1$ disregards the performance of the candidate generation process from the results. Thus, it may be seen as a delusive metric when the recall of the candidate generation is low. Therefore, it is common to use resources, such as YAGO \cite{hoffart2011robust} or PPRforNED \cite{Pershina2015}, which can be exploited as candidate list generators with over $99$\% candidate generation recall. 
+	Macro accuracy is another broadly used evaluation measure, which averages the precision over all the documents of the corpus. In some papers, the performance on CoNLL appears as results on AIDA, which is an online disambiguation system offered by Hoffart et al. \cite{hoffart2011robust} that contains the CoNLL 2003 NER task.
+	
+	CoNLL's training set has in total $18505$ non-NIL mentions, which is an insufficient amount of data for training our suggested ARNN model given that it has over $700$K parameters. For this reason we have  produced an additional intralinks corpus, which is fabricated out of Wikipedia's conferences and covers the entire entity space of CoNLL. We sampled $20$\% of this enormous corpus for initial training of the ARNN model. Then, we fine-tuned the network using 1 epoch of the CoNLL's training set.
+	
+	Inspired by Yamada's approach, we have also experimented with injecting the predictions of the preceding model into a well established classification model. Specifically, we employed the Gradient Boosting Regression Tree (GBRT) classifier, a state of the art ensemble model  that is based upon boosting results by stacking weak regression trees together \cite{friedman2001greedy}. For every data fragment we took the ARNN's output probability, that a candidate matches the input mention given its context, and added it into a feature vector. This vector also featured the base and string similarity features that are detailed in Yamada et al. \cite{yamada2016joint}. We used sklearn's GradientBoostingClassifier implementation \cite{pedregosa2011scikit} with the logistic-regression deviance and set the learning rate, number of estimator and maximum depth of a tree to $0.02$, $10000$ and $4$, respectively. 
+	The models were evaluated with CoNLL's test-b set which shares $4485$ non-NIL disambiguation cases.
+	
+	\subsection{Comparison with other methods}
+	We emphasize that contrary to other studies, we didn't focus on surpassing current state of the art results on the CoNLL task, as it is a precisely edited and specific newspaper corpus with stories covering merely two weeks of reports \cite{Sang2003}. Instead we were more interested in comparing strong NED models over a more naturally-occurring corpus such as Wikilinks. 
+	Therefore, we compare the former models over both CoNLL and Wikilinks with two state of the art and well established algorithms.
 	
 	\begin{itemize} 
-		\item we resolved ground-truth links using a $7/4/2016$ dump of the Wikipedia database\footnote{Recent Wikipedia dumps are found at https://dumps.wikimedia.org/}. The same dump was consistently used throughout this research. We used the $page$ and $redirect$ tables for resolution and kept the database $pageid$ column as a unique identifier for Wikipedia pages (entities). To reduce loss of unresolved mentions due to malformed URLs we compared page names using a case-insensitive and normalized\footnote{Normalization was done using the unidecode python library} title matching. We discarded mentions where the ground-truth could not be resolved, resulting in retention of $97\%$ of the mentions.
-		\item We collected all pairs of mention $m$ and entity $e$ appearing in the dataset and computed the following two statistics: how many times $m$ refers to $e$: $\#\{e|m\}$ and the conditional probability of $e$ given $m$: $p(e|m)=\#\{e|m\}/\sum_{e'}\#\{e'|m\}$. Examining these distributions revealed many mentions belong to two extremes: either they had very little ambiguity or had a number of candidate entities each appearing very few times. We have deemed the former to be unambiguous and not-interesting, and the latter to be suspected as noise with high probability. We therefore designed a procedure to filter both this cases: We retained only mentions for whom at least two ground-truth entities have $\#\{e|m\}\ge 10$ and $p(e|m)\ge0.1$. 
-		\item Finally, We randomly permuted the order of mentions within the data and split it into train, evaluation and test set. We split the data $90\% / 10\% / 10\%$ respectively. Since websites might include duplicate or closely related content we did not assign mentions into splits on an individual basis but rather collected all origin domains and assigned each domain along with all mentions collected from it into a split collectively.
+		\item  \textbf{Yamada et al.} \cite{Yamada2016} have published a recent paper that introduces the highest score of precision@1 on CoNLL test-b set. For this reason we used Yamada's study as a guideline for training and evaluating over CoNLL. The paper describes an embedding method that learns relatedness between entities and jointly maps entities and context to the same vector space using the skip-gram model. The distance between those embeddings is then computed to generate features, which are utilized for point-wise training a GBRT model. The full algorithm consists various levels and features, including features for coherence and a two-step global training scheme. As this work focuses on local disambiguation, we compare it to a partial version of Yamada's algorithms, which excludes the former steps.
+		
+		\item \textbf{Cheng et al.} \cite{Cheng2013} addressed the Disambiguation to Wikipedia, or the "Wikificaiton" task, with a combination of local and global solutions. In this model, mentions are disambiguated locally by generating a ranked list of candidates for each mention using the GLOW Wikification system offered by Ratinov et al. \cite{Ratinov2011}. We compare our results to the ranking step of the algorithm, were a linear Ranking Support Vector Machine is trained over a set of local and global features to return the list of candidates sorted by their likelihood. Specifically, we examine the Ranker accuracy metric , which is equivalent to the p@1 score.
+		
 	\end{itemize}
 	
-	This procedure aggressively filtered the dataset and we were left with $2.6M$ training, $300K$ test and $300K$ evaluation samples. We believe that doing so filters uninteresting cases while emitting a dataset that is large-scale yet manageable in size for research purposes. We note that we have considered filtering $(m,e)$ pairs where $\#\{e|m\}\le 3$ since these are suspected as additional noise however decided against this procedure as it might filter out long-tail entities, a case which was deemed interesting by the community.
-	
-	\section{Evaluation} \label{experiments}
-	
-	In this section we describe the setup used when evaluating our model and present evaluation results for two datasets. We evaluate the effect of initializing word and entity embeddings on our model as well.
-
-	\subsection{Wikilinks}
-	
-	Prior to evaluating our method on the Wikilinks dataset we have collected the following statistics from the Wikilinks training set: $P(e)$ is the prior probability of seeing entity $e$ in the training set and $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$. 
-	
-	When evaluating a NED system it is required to use some method for generating candidate entities first. We use a simple method where given mention $m$, we considered all candidates for whom $P(e|m)>0$ as candidates. This simple method gives $97\%$ ground-truth recall on the test set. 
-	We used GRUs as our RNN unit and used fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered out stop words according to NLTK's stop-word list.
-	The optimization of the model was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. A single epoch with $2.6M$ mentions and $k=5$ for corrupt example generation was used for training the model taking half a day using a 20-core CPU machine.
-	
-	We have used the following methods as base line on the Wikilink dataset:
-
-	\begin{itemize} 
-		\item  \textbf{Yamada et al.} \cite{Yamada2016} have created a state-of-the-art NED system for jointly mapping entities and words onto the same vector space via the skip-gram model and using these for disambiguation. As Wikilinks has only one mention per fragment we use only the local features described by Yamada at el.
-		
-		\item \textbf{Cheng et al.} \cite{Cheng2013} addressed the Disambiguation to Wikipedia, or the "Wikificaiton" task, with a combination of local and global approaches. Mentions are disambiguated locally by generating a ranked list of candidates for each mention using the GLOW Wikification system proposed by Ratinov et al. \cite{Ratinov2011}. We compare our results to the ranking step of the algorithm, were a linear Ranking SVM is trained over a set of local and global features to return the list of candidates sorted by their likelihood.
-		
-		\item We include Most Probable Sense (MPS) as a baseline. This baseline picks the entity with the highest $P(e|m)$ as the correct mention. This simple baseline is notoriously known to give competitive results in many NED datasets 
-	\end{itemize}
-
-    \subsection{CoNLL}
-    CoNLL is an evaluation corpus created by Hoffart et al. \cite{hoffart2011robust} commonly used for benchmarking NED solutions \cite{Globerson2016,Hachey2013,Yamada2016,Pershina2015}. CoNLL was composed by manually annotating Reuters newswire articles from 1996. It contains $1393$ documents from a period of $12$ days split into train, development and test sets. Following previous works we have only evaluated our method on non-NIL mentions. For candidate generation we used the publicly available candidate dataset by Pershina at el. \cite{Pershina2015} with over $99\%$ gold sense recall.
-	
-	CoNLL has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to a more complex training method where we first trained our model on a large corpus of mentions derived from Wikipedia cross references and then fine tuned the resulting model on CoNLL training set. To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. Due to constrained resources we set $k=1$ for corrupt example generation and trained $1$ epoch, which took around $4$ days to train. The resulting model was then fine-tuned on CoNLL training set, where corrupt examples were produced by considering all possible candidates for each mention.
-
-	We have also found that using traditional statistical and string based features along with our model further improves its performance. We therefor used a setting similar to Yamada et al. \cite{yamada2016joint} where a Gradient Boosted Regression Tree was fitted with our models prediction score as a feature along with $7$ other statistical and string based features. The statistical features are prior probability $P(e)$ and conditional probability $P(e|m)$ as described above, along with a feature counting the number of candidates generated for the mention and a feature giving the maximum conditional probability of the entity for all mentions in the document. For string similarity features we used the edit distance between the mention and the entity title in Wikipedia, a feature indicating weather the mention is a prefix or postfix of the entity Wikipedia title and a feature indicating weather the Wikipedia entity title is a prefix or postfix of the mention. Following Yamada we used sklearn's GradientBoostingClassifier implementation \cite{pedregosa2011scikit} with a deviance loss and set the learning rate, number of estimator and maximum depth of a tree to $0.02$, $10000$ and $4$, respectively. 
-	
-	As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all candidate entities.
-	We also compare to the following papers - Lazic et al. \cite{Lazic2015}, Francis-Landau et al. \cite{Francis-Landau2016}, He et al. \cite{He2013}, Hoffart et al. \cite{hoffart2011robust} and Chisholm et al. \cite{Chisholm2015} ,as they are all strong local approaches and a good source for comparison.
+	As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all possible entities.
+	We also display the evaluation on CoNLL test-b for the following papers - Lazic et al. \cite{Lazic2015}, Francis-Landau et al. \cite{Francis-Landau2016}, He et al. \cite{He2013}, Hoffart et al. \cite{hoffart2011robust} and Chisholm et al. \cite{Chisholm2015} ,as they are all strong local approaches and a good source for comparison.
 		
 	\subsection{Results}
 	
-	The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{tab:a}. 
+	The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{tab:a}. We used the \textit{PPRforNED} dataset \cite{Pershina2015} for extracting the candidates of each mention, as it yielded $99.7$\% candidate-generation recall and provided better results compared to YAGO. 
 	
 	
 	\begin{table}[h]
@@ -212,6 +227,25 @@
 		\caption{\label{tab:a} Evaluation on CoNLL. Bold font denotes the models offered in this study}
 	\end{table}
 
+	Table \ref{tab:b} includes the evaluation on the Wikilinks test set. In this corpus we report on $97.3$\% candidate generation recall, having in average 13.5 candidates per mention.
+	 
+	\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{|c| p{1.5cm}|}
+			\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
+			\hline \bf Model & \bf Micro     accuracy  \\ \hline
+			ARNN  &  \bf64.8\\
+			GBRT: Base + ARNN features & \bf 66.8 \\
+			Yamada et al.(partial) & $59.8$ ** \\
+			Cheng et al. & * \\ 
+			Baseline (MPS) & $55.9$ \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{tab:b} Evaluation on Web-Fragment data (Wikilinks)}
+	\end{table}
+	* needs to be added \newline
+	** needs to be updated \newline \newline
 	
 	add insights regarding the results and comparison 
 	\subsection{Model sensitivity}
