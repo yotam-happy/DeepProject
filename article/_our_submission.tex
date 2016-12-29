@@ -75,11 +75,11 @@
 	
 	Named Entity Disambiguation (NED) is the task of disambiguating mentions within a fragment of text against a given knowledge base of entities and linking each mention to its intended entity. It has been recognized as an important downstream task for many NLP problems such as text categorization \cite{gabrilovich2007computing} and information retrieval \cite{dalton2014entity}. 
 	
-	NED algorithms can broadly be divided into local and global approaches, where local algorithms disambiguate mentions independently using local textual context while global approaches assume some coherence among mentions within a single document and therefore employ a coherency model to simultaneously disambiguate many mentions. Much attention was given recently to global algorithms \cite{ratinov2011local,guo2014entity,pershina2015personalized} \hl{(there's newer stuff)} which demonstrate very good performance on standard datasets. However while most standard datasets are based on text corpora such as news reports and Wikipedia paragraphs that are expected to be relatively long, well formed and coherent, other corpora such as fragments of web pages can be shorter, noisier and less coherent.
+	NED algorithms can broadly be divided into local and global approaches, where local algorithms disambiguate mentions independently using local textual context while global approaches assume some coherence among mentions within a single document and therefore employ a coherency model to simultaneously disambiguate many mentions. Much attention was given recently to global algorithms \cite{ratinov2011local,guo2014entity,pershina2015personalized} \hl{(there's newer stuff)} which demonstrate very good performance on standard datasets. However, while most standard datasets are based on text corpora such as news reports and Wikipedia paragraphs that are indeed relatively well formed and coherent, other corpora such as fragments of web pages can be noisier and less coherent.
 	
 	Deep Neural Networks (DNN) have recently gained traction as state-of-the-art architectures that can model powerful data representations and complex feature interaction. DNNs achieve state-of-the-art results on a wide variety of tasks ranging from image classification \cite{krizhevsky2012imagenet} to machine translation \cite{bahdanau2014neural}. For the task of NED, He at el. \shortcite{he2013learning} used stacked auto-encoders to learn entity and context representations. More recently Sun at el. and Francis-Landau at el. \shortcite{sun2015modeling,francis2016capturing} have proposed models that use convolutional neural networks for modeling and combining representations of a range of input signals and granularities. 
 	
-	We propose a novel Deep-Learning based disambiguation algorithm where NED is treated as separating correct entity assignments from corrupt ones given only a local context. Our model is based on Recurrent Neural Networks (RNNs) since they are state-of-the-art language modeling architectures. We use a neural attention mechanism to enable the model to decide which contextual signals are most important when considering a specific entity assignment. We as well describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance.
+	We propose a novel Deep-Learning based disambiguation algorithm where NED is treated as separating correct entity assignments from corrupt ones given only a local context. Our model is based on Recurrent Neural Networks (RNNs) since they are state-of-the-art language modeling architectures. inspired by Globerson at el \cite{Globerson2016} that showed an attention model is beneficial for NED, we develop a neural attention mechanism to enable the model to decide which contextual signals are most important when considering a specific entity assignment. We as well describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance.
 	
 	To test our method we craft a large-scale dataset of short web fragments containing mentions disambiguated into Wikipedia by thousands of website editors. Our dataset is extracted from a subset of the Wikilinks dataset \cite{singh12:wiki-links} which is re-purposed for NED. It represents a large-scale and difficult task with \hl{count} unique mentions disambiguated into $100K$ unique entities and where context is limited and noisy. We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on this dataset and in addition examine our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-out-the-art methods on a smaller and cleaner dataset.
 	
@@ -91,7 +91,7 @@
 	
 	We assume our model is only given examples of correct entity assignments during training and therefore automatically generate examples of corrupt assignments. For each $(context,entity)$ pair where $entity$ is a correct assignment for a given $contex$ we produce $k$ corrupt examples with the same $context$ and a corrupt entity uniformly sampled from all entities in the dataset. Using the combined dataset of correct and corrupt examples our algorithm learns to separate correct assignments from the generated corrupt ones.
 	
-	In our implementation we have set the hidden layer size to be 300 and used a ReLU non-linearity for this layer. We have found the width and depth of the classifier to be of little impact on performance, but using a ReLU non-linearity was found to be important. We have also applied dropout with $p=0.5$ to the hidden layer.
+	In our implementation we have set the hidden layer size to be 300 and used a ReLU non-linearity for this layer. Preliminary evaluations showed the width and depth of the classifier to be of little impact on performance, but using a ReLU non-linearity was found to be important. We have also applied dropout with $p=0.5$ to the hidden layer.
 	
 	\subsection{Attentional RNN component}
 	
@@ -104,7 +104,7 @@
 	
 	Our Attentional RNN component is based on a general RNN unit fitted with an attention mechanism. The mechanics of the Attentional RNN component are depicted in Figure \ref{fig:arnn}. 
 		
-	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector by a function $f$ parametrized by $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ that may be parametrized by $\Theta_2$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
+	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector by a function $f$ parametrized by $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ parametrized by $\Theta_2$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
 	
 	\begin{equation}
 	\label{eq1}
@@ -125,12 +125,13 @@
 	\end{aligned}
 	\end{equation}
 	
-	The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. We then use a softmax to squeeze the attention values such that $\sum_{i=1}^{t} a'_i = 1$ and compute the final output $o_{attn}$ as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate. We parametrize our attention function $r$ as a single layer NN as shown in equation \ref{eq3}
+	The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. We use the softmax function to normalize the attention values such that $\sum_{i=1}^{t} a'_i = 1$ and compute the final output $o_{attn}$ as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate. We parametrize our attention function $r$ as a single layer NN as shown in equation \ref{eq3} where $A, B$ are the layer weights and $b$ is a bias term.
 	
 	\begin{equation}
 	\label{eq3}
 	r_{\Theta_3}(o_t, v_{candidate}) = Ao_t + Bv_{candidate} + b \\
 	\end{equation}
+	
 	
 	\subsection{Training initial word and entity embeddings}
 	
@@ -197,16 +198,32 @@
 		
 	\subsection{Results}
 	
+	\begin{table}[h]
+		\begin{center}
+			\begin{tabular}{|c| p{1.5cm}|}
+				\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
+				\hline \bf Model & \bf Micro     accuracy  \\ \hline
+				ARNN  &  \bf64.8\\
+				GBRT: Base + ARNN features & \bf 66.8 \\
+				Yamada et al.(partial) & $59.8$ ** \\
+				Cheng et al. & * \\ 
+				Baseline (MPS) & $55.9$ \\
+				\hline
+			\end{tabular}
+		\end{center}
+		\caption{\label{tab:b} Evaluation on Web-Fragment data (Wikilinks)}
+	\end{table}
+	
 	The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{tab:a}. 
-	
-	
+
+		
 	\begin{table}[h]
 		\begin{center}
 			\begin{tabular}{|p{3.5cm}| p{1.5cm} p{1.5cm}|}
 				\hline \multicolumn{3}{|c|}{CoNLL test-b} \\
 				\hline Model & Micro     accuracy & Macro     accuracy \\ \hline
-				\bf ARNN  & \bf 84.2 & \bf 85 \\
-				\bf GBRT: Base + ARNN features & \bf 85.6 & \bf 88 \\
+				\bf ARNN  & \bf $87.3$ & \bf $88.6$ \\
+				\bf GBRT: Base + ARNN features & \bf $86.9$ & \bf $89.1$ \\
 				Yamada et al. (partial) & $90.9$ & $92.4$ \\
 				Lazic et al. & $86.4$ & - \\
 				Francis-Landau et al. & $85.5$ & - \\
