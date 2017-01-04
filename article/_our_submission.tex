@@ -79,7 +79,9 @@
 
 \toin{The intro is currently super-drafty (even after my pass). My comments are mainly intended to restructure the flow and point out our main arguments. We will refine it over and over again until we're sababa with it :)}
 
-Named Entity Disambiguation (NED) is the task of linking mentions within a fragment of text against a given knowledge base of entities, such as Freebase or Wikipedia. It has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
+Named Entity Disambiguation (NED) is the task of linking entity mentions within a fragment of text against a given knowledge base of entities, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself independently from other tasks such as detecting mention bounds (Named Entity Recognition) and retrieving an high-recall set of candidate entities (Candidate Generation). Both NED and EL has been recognized as an important components in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
+
+
 \toin{These tasks don't really interest the NLP community these days... text categorization is considered virtually "solved", and IR is uncompetitive because Google, unlike academia, has the ability to A/B test its solutions.}
 \toin{Also, if we intend to perform some extrinsic evaluation (e.g. plug our NED into a QA system), we should name that task explicitly, and even cite the particular paper we intend to augment.}
 \toin{Question: are we dealing with finding the span as well, or given the span, are we just trying to link it to the right concept? The exact definition should appear here, and this distinction needs to be discussed in the background.}
@@ -89,16 +91,19 @@ NED algorithms can broadly be divided into local and global approaches. Local al
 \toin{Question: could we create a similar dataset of questions or tweets? I think this would provide a much more versatile benchmark, and perhaps allow more cases for your method to shine.}
 \toin{You start by telling the point about global vs local, and mentioning (too lightly) that current datasets favor global algorithms. Rather than delivering the punchline, you start talking about deep learning. I have restructured the intro to reflect the first point, and moved the DNN literature to the "background" section.}
 
-In this work, we investigate the task of NED in a setting where only local context is available. In particular, we create a dataset of 17\todo{insert actual number} sentences containing 42\todo{insert actual number} mentions of named entities, extracted from web page fragments. This dataset is significantly larger than previously collected ones\todo{add cites}, allowing us to train a neural...\todo{continue from here}
+In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of $3.2M$ short fragments each containing a mention of a named entity, extracted from web pages. Our dataset contains $18K$ unique mentions linking to over $100K$ unique entities. This dataset is significantly larger than previously collected ones such as CoNLL, TAC and ACE\cite{hoffart2011robust, ji2010overview, bentivogli2010extending}, allowing us to train a deep neural network model. 
+
+We propose a novel neural network architecture based on Recurrent Neural Networks (RNNs) with an attention mechanism, where the RNN units model textual context as a sequence and the attention mechanism gives importance to contextual signals based on the specific candidate entity being evaluated. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs and by devising an attention model that can reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated.
+
+
 \toin{This sentence, or the one/two that follows, needs to state the algorithmic innovation. By "innovation", I mean: what does it do differently from Globerson/Yamada?}
 \toin{Mention this as well: "We also describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance." What is its importance?}
 
 \toin{Incorporate the information from here into the new flow}
-To test our method we craft a large-scale dataset of short web fragments containing mentions disambiguated into Wikipedia by thousands of website editors. Our dataset is extracted from a subset of the Wikilinks dataset \cite{singh12:wiki-links} which is re-purposed for NED. It represents a large-scale and difficult task with \hl{count} unique mentions disambiguated into $100K$ unique entities and where context is limited and noisy. We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on this dataset and in addition examine our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-out-the-art methods on a smaller and cleaner dataset.
+
+We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on our web based dataset, showing that existing state-of-the-art methods are not optimal in such settings, and that our model can better model noisy and short context. In addition we evaluate our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-of-the-art local methods on a smaller and cleaner dataset. We conclude that RNNs are well suited for local disambiguation, but that there is still much room for improvement in real world scenarios where text is short, noisy and less coherent.
 
 \toin{What are the main results? Conclusions? What have we learned from this paper? Why is it important that this paper is accepted?}
-
-
 
 \section{Background}
 
