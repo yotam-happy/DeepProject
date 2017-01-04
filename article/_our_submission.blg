@@ -1,11 +1,16 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: _our_submission.aux
+White space in argument---line 15 of file _our_submission.aux
+ : \citation{hoffart2011robust,
+ :                              ji2010overview, bentivogli2010extending}
+I'm skipping whatever remains of this command
 The style file: acl2016.bst
 Database file #1: _our_submission.bib
 Database file #2: _noam_bib.bib
+Warning--I didn't find a database entry for "berant2013semantic"
 Warning--there's a number but no volume in Cheng2013
 Warning--empty journal in Francis-Landau2016
 Warning--empty journal in He2013
 Warning--empty journal in Pershina2015
 Warning--there's a number but no volume in Pershina2015
 Warning--empty institution in singh12:wiki-links
-(There were 6 warnings)
+(There was 1 error message)

@@ -1,27 +1,10 @@
 \begin{thebibliography}{}
 
-\bibitem[\protect\citename{Abadi \bgroup et al.\egroup
-  }2015]{tensorflow2015-whitepaper}
-Mart\'{\i}n Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen,
-  Craig Citro, Greg~S. Corrado, Andy Davis, Jeffrey Dean, Matthieu Devin,
-  Sanjay Ghemawat, Ian Goodfellow, Andrew Harp, Geoffrey Irving, Michael Isard,
-  Yangqing Jia, Rafal Jozefowicz, Lukasz Kaiser, Manjunath Kudlur, Josh
-  Levenberg, Dan Man\'{e}, Rajat Monga, Sherry Moore, Derek Murray, Chris Olah,
-  Mike Schuster, Jonathon Shlens, Benoit Steiner, Ilya Sutskever, Kunal Talwar,
-  Paul Tucker, Vincent Vanhoucke, Vijay Vasudevan, Fernanda Vi\'{e}gas, Oriol
-  Vinyals, Pete Warden, Martin Wattenberg, Martin Wicke, Yuan Yu, and Xiaoqiang
-  Zheng.
-\newblock 2015.
-\newblock {TensorFlow}: Large-scale machine learning on heterogeneous systems.
-\newblock Software available from tensorflow.org.
-
-\bibitem[\protect\citename{Bahdanau \bgroup et al.\egroup
-  }2014]{bahdanau2014neural}
-Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
-\newblock 2014.
-\newblock Neural machine translation by jointly learning to align and
-  translate.
-\newblock {\em arXiv preprint arXiv:1409.0473}.
+\bibitem[\protect\citename{Bunescu and Bunescu}2006]{Bunescu2006}
+Razvan Bunescu and Razvan Bunescu.
+\newblock 2006.
+\newblock {Using Encyclopedic Knowledge for Named Entity Disambiguation}.
+\newblock {\em IN EACL}, pages 9----16.
 
 \bibitem[\protect\citename{Cheng and Roth}2013]{Cheng2013}
 Xiao Cheng and Dan Roth.
@@ -30,16 +13,9 @@ Xiao Cheng and Dan Roth.
 \newblock {\em Empirical Methods in Natural Language Processing},
   (October):1787--1796.
 
-\bibitem[\protect\citename{Chisholm and Hachey}2015a]{chisholm2015entity}
+\bibitem[\protect\citename{Chisholm and Hachey}2015]{Chisholm2015}
 Andrew Chisholm and Ben Hachey.
-\newblock 2015a.
-\newblock Entity disambiguation with web links.
-\newblock {\em Transactions of the Association for Computational Linguistics},
-  3:145--156.
-
-\bibitem[\protect\citename{Chisholm and Hachey}2015b]{Chisholm2015}
-Andrew Chisholm and Ben Hachey.
-\newblock 2015b.
+\newblock 2015.
 \newblock {Entity Disambiguation with Web Links}.
 \newblock {\em Transactions of the Association for Computational Linguistics},
   3(0):145--156.
@@ -52,20 +28,6 @@ Kyunghyun Cho, Bart Van~Merri{\"e}nboer, Caglar Gulcehre, Dzmitry Bahdanau,
   statistical machine translation.
 \newblock {\em arXiv preprint arXiv:1406.1078}.
 
-\bibitem[\protect\citename{Chollet}2015]{chollet2015}
-François Chollet.
-\newblock 2015.
-\newblock keras.
-\newblock \url{https://github.com/fchollet/keras}.
-
-\bibitem[\protect\citename{Dalton \bgroup et al.\egroup
-  }2014]{dalton2014entity}
-Jeffrey Dalton, Laura Dietz, and James Allan.
-\newblock 2014.
-\newblock Entity query feature expansion using knowledge base links.
-\newblock In {\em Proceedings of the 37th international ACM SIGIR conference on
-  Research \& development in information retrieval}, pages 365--374. ACM.
-
 \bibitem[\protect\citename{Duchi \bgroup et al.\egroup
   }2011]{duchi2011adaptive}
 John Duchi, Elad Hazan, and Yoram Singer.
@@ -75,26 +37,12 @@ John Duchi, Elad Hazan, and Yoram Singer.
 \newblock {\em Journal of Machine Learning Research}, 12(Jul):2121--2159.
 
 \bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016a]{francis2016capturing}
+  }2016]{Francis-Landau2016}
 Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016a.
-\newblock Capturing semantic similarity for entity linking with convolutional
-  neural networks.
-\newblock {\em arXiv preprint arXiv:1604.00734}.
-
-\bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016b]{Francis-Landau2016}
-Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016b.
+\newblock 2016.
 \newblock {Capturing Semantic Similarity for Entity Linking with Convolutional
   Neural Networks}.
 \newblock pages 1256--1261.
-
-\bibitem[\protect\citename{Friedman}2001]{friedman2001greedy}
-Jerome~H Friedman.
-\newblock 2001.
-\newblock Greedy function approximation: a gradient boosting machine.
-\newblock {\em Annals of statistics}, pages 1189--1232.
 
 \bibitem[\protect\citename{Gabrilovich and
   Markovitch}2007]{gabrilovich2007computing}
@@ -125,15 +73,9 @@ Ben Hachey, Will Radford, Joel Nothman, Matthew Honnibal, and James~R. Curran.
 \newblock {Evaluating entity linking with wikipedia}.
 \newblock {\em Artificial Intelligence}, 194:130--150.
 
-\bibitem[\protect\citename{He \bgroup et al.\egroup }2013a]{he2013learning}
+\bibitem[\protect\citename{He \bgroup et al.\egroup }2013]{He2013}
 Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
-\newblock 2013a.
-\newblock Learning entity representation for entity disambiguation.
-\newblock In {\em ACL (2)}, pages 30--34.
-
-\bibitem[\protect\citename{He \bgroup et al.\egroup }2013b]{He2013}
-Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
-\newblock 2013b.
+\newblock 2013.
 \newblock {Learning Entity Representation for Entity Disambiguation}.
 \newblock pages 30--34.
 
@@ -147,14 +89,6 @@ Johannes Hoffart, Mohamed~Amir Yosef, Ilaria Bordino, Hagen F{\"u}rstenau,
 \newblock In {\em Proceedings of the Conference on Empirical Methods in Natural
   Language Processing}, pages 782--792. Association for Computational
   Linguistics.
-
-\bibitem[\protect\citename{Krizhevsky \bgroup et al.\egroup
-  }2012]{krizhevsky2012imagenet}
-Alex Krizhevsky, Ilya Sutskever, and Geoffrey~E Hinton.
-\newblock 2012.
-\newblock Imagenet classification with deep convolutional neural networks.
-\newblock In {\em Advances in neural information processing systems}, pages
-  1097--1105.
 
 \bibitem[\protect\citename{Lazic \bgroup et al.\egroup }2015]{Lazic2015}
 Nevena Lazic, Amarnag Subramanya, Michael Ringgaard, and Fernando Pereira.
@@ -223,14 +157,6 @@ Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
 \newblock {Local and Global Algorithms for Disambiguation to Wikipedia}.
 \newblock {\em Acl 2011}, 1:1375--1384.
 
-\bibitem[\protect\citename{Sang and {De Meulder}}2003]{Sang2003}
-Erik F. Tjong~Kim Sang and Fien {De Meulder}.
-\newblock 2003.
-\newblock {Introduction to the CoNLL-2003 Shared Task: Language-Independent
-  Named Entity Recognition}.
-\newblock {\em CONLL '03 Proceedings of the seventh conference on Natural
-  language learning at HLT-NAACL 2003}, 4:142--147.
-
 \bibitem[\protect\citename{Singh \bgroup et al.\egroup
   }2012]{singh12:wiki-links}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
@@ -239,45 +165,19 @@ Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
   via links to {Wikipedia}.
 \newblock Technical Report UM-CS-2012-015.
 
-\bibitem[\protect\citename{Sun \bgroup et al.\egroup }2015]{sun2015modeling}
-Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang.
-\newblock 2015.
-\newblock Modeling mention, context and entity with neural networks for entity
-  disambiguation.
-\newblock In {\em Proceedings of the International Joint Conference on
-  Artificial Intelligence (IJCAI)}, pages 1333--1339.
-
-\bibitem[\protect\citename{Team \bgroup et al.\egroup }2016]{team2016theano}
-The Theano~Development Team, Rami Al-Rfou, Guillaume Alain, Amjad Almahairi,
-  Christof Angermueller, Dzmitry Bahdanau, Nicolas Ballas, Fr{\'e}d{\'e}ric
-  Bastien, Justin Bayer, Anatoly Belikov, et~al.
-\newblock 2016.
-\newblock Theano: A python framework for fast computation of mathematical
-  expressions.
-\newblock {\em arXiv preprint arXiv:1605.02688}.
-
-\bibitem[\protect\citename{Vinyals \bgroup et al.\egroup
-  }2015]{vinyals2015grammar}
-Oriol Vinyals, {\L}ukasz Kaiser, Terry Koo, Slav Petrov, Ilya Sutskever, and
-  Geoffrey Hinton.
-\newblock 2015.
-\newblock Grammar as a foreign language.
-\newblock In {\em Advances in Neural Information Processing Systems}, pages
-  2773--2781.
-
-\bibitem[\protect\citename{Yamada \bgroup et al.\egroup
-  }2016a]{yamada2016joint}
+\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016a]{Yamada2016}
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
 \newblock 2016a.
-\newblock Joint learning of the embedding of words and entities for named
-  entity disambiguation.
-\newblock {\em arXiv preprint arXiv:1601.01343}.
-
-\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016b]{Yamada2016}
-Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
-\newblock 2016b.
 \newblock {Joint Learning of the Embedding of Words and Entities for Named
   Entity Disambiguation}.
 \newblock {\em arXiv preprint arXiv:1601.01343}, page~10.
+
+\bibitem[\protect\citename{Yamada \bgroup et al.\egroup
+  }2016b]{yamada2016joint}
+Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
+\newblock 2016b.
+\newblock Joint learning of the embedding of words and entities for named
+  entity disambiguation.
+\newblock {\em arXiv preprint arXiv:1601.01343}.
 
 \end{thebibliography}
