@@ -108,6 +108,35 @@ We demonstrate our model greatly outperforms existing state-of-the-art NED algor
 
 \section{Background}
 
+\subsection{Related work}
+
+** Cucerzan (2007) \toin{should we talk about it???!}
+ 
+** Bunesco (2006)
+The first attempt to use Wikipedia as an knowledge base for local disambiguation was offered by Busco and Pasca and included an SVM based NED system with local contextual features \cite{Bunescu2006}.
+
+** Hoffart (2011)
+Hoffart et al. suggested a collective disambiguation graph-based framework called AIDA, which employs a mention, context and coherency models. \cite{hoffart2011robust}. hl{talks about the problem with coherence can when entities are forced to be coherent in the doc cluster. claims that in his experiments $2/3$ of the mentions didn't even proceed to the coherence graph module}
+
+** Ratinov and Cheng (2011 and 2013)
+Similar models were exploited in other global algorithms, such as GLOW and Relational Inference for the task of Wikification \cite{Ratinov2011,Cheng2013}, when the latter extends the former approach by combing inference with semantic knowledge and a ranking SVM model. hl{Ratinov shows that local based methods are hard to be beat}
+
+** Chisholm (2015)
+
+** Lazic (2015)
+
+# survey CoNLL,ACE, TAC other tasks
+
+# Previous work of NED with NN
+
+** He (2013)
+
+** Sun (2015)
+
+** francis (2016)
+
+** yamada (2016)
+
 \toin{This section provides readers who are less familiar with the literature the necessary information to understand your contribution. Things that need to appear in this section:
 
 - Previous work on NED.
@@ -283,12 +312,12 @@ The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{
 			Francis-Landau et al. & $85.5$ & - \\
 			He et al. & 84.82 & $83.37$ \\	
 			Hoffart et al. & $79.57$ & $80.71$ \\
-			Chisholm et al. & $88.7$ & - \\			
+			Chisholm et al. & $86.1$ & - \\			
 			Baseline (MPS) & $77$ & $77$ \\
 			\hline
 		\end{tabular}
 	\end{center}
-	\caption{\label{tab:a} Evaluation on CoNLL. Bold font denotes the models offered in this study}
+	\caption{\label{tab:a} Local evaluation on CoNLL. Bold font denotes the models offered in this study}
 \end{table}
 
 
