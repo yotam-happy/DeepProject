@@ -44,9 +44,17 @@ John Duchi, Elad Hazan, and Yoram Singer.
 \newblock {\em Journal of Machine Learning Research}, 12(Jul):2121--2159.
 
 \bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016]{Francis-Landau2016}
+  }2016a]{francis2016capturing}
 Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016.
+\newblock 2016a.
+\newblock Capturing semantic similarity for entity linking with convolutional
+  neural networks.
+\newblock {\em arXiv preprint arXiv:1604.00734}.
+
+\bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
+  }2016b]{Francis-Landau2016}
+Matthew Francis-Landau, Greg Durrett, and Dan Klein.
+\newblock 2016b.
 \newblock {Capturing Semantic Similarity for Entity Linking with Convolutional
   Neural Networks}.
 \newblock pages 1256--1261.
@@ -117,6 +125,11 @@ Omer Levy and Yoav Goldberg.
 \newblock In {\em Advances in neural information processing systems}, pages
   2177--2185.
 
+\bibitem[\protect\citename{Melamud and Goldberger}2014]{Melamud2014}
+Oren Melamud and Jacob Goldberger.
+\newblock 2014.
+\newblock {Learning Generic Context Embedding with Bidirectional LSTM}.
+
 \bibitem[\protect\citename{Mikolov \bgroup et al.\egroup
   }2013]{mikolov2013distributed}
 Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S Corrado, and Jeff Dean.
@@ -164,27 +177,42 @@ Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
 \newblock {Local and Global Algorithms for Disambiguation to Wikipedia}.
 \newblock {\em Acl 2011}, 1:1375--1384.
 
-\bibitem[\protect\citename{Singh \bgroup et al.\egroup
-  }2012]{singh12:wiki-links}
+\bibitem[\protect\citename{Singh \bgroup et al.\egroup }2012a]{Singh2012}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
-\newblock 2012.
+\newblock 2012a.
+\newblock {Wikilinks: A large-scale cross-document coreference corpus labeled
+  via links to Wikipedia}.
+\newblock {\em {\ldots} of Massachusetts, Amherst {\ldots}}, pages 1--14.
+
+\bibitem[\protect\citename{Singh \bgroup et al.\egroup
+  }2012b]{singh12:wiki-links}
+Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
+\newblock 2012b.
 \newblock Wikilinks: A large-scale cross-document coreference corpus labeled
   via links to {Wikipedia}.
 \newblock Technical Report UM-CS-2012-015.
 
-\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016a]{Yamada2016}
-Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
-\newblock 2016a.
-\newblock {Joint Learning of the Embedding of Words and Entities for Named
-  Entity Disambiguation}.
-\newblock {\em arXiv preprint arXiv:1601.01343}, page~10.
+\bibitem[\protect\citename{Sun \bgroup et al.\egroup }2015]{sun2015modeling}
+Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang.
+\newblock 2015.
+\newblock Modeling mention, context and entity with neural networks for entity
+  disambiguation.
+\newblock In {\em Proceedings of the International Joint Conference on
+  Artificial Intelligence (IJCAI)}, pages 1333--1339.
 
 \bibitem[\protect\citename{Yamada \bgroup et al.\egroup
-  }2016b]{yamada2016joint}
+  }2016a]{yamada2016joint}
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
-\newblock 2016b.
+\newblock 2016a.
 \newblock Joint learning of the embedding of words and entities for named
   entity disambiguation.
 \newblock {\em arXiv preprint arXiv:1601.01343}.
+
+\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016b]{Yamada2016}
+Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
+\newblock 2016b.
+\newblock {Joint Learning of the Embedding of Words and Entities for Named
+  Entity Disambiguation}.
+\newblock {\em arXiv preprint arXiv:1601.01343}, page~10.
 
 \end{thebibliography}
