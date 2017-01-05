@@ -239,71 +239,87 @@ In this section we describe the setup used when evaluating our model and present
 
 \subsection{Wikilinks}
 
-Prior to evaluating our method on the Wikilinks dataset we have collected the following statistics from the Wikilinks training set: $P(e)$ is the prior probability of seeing entity $e$ in the training set and $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$. 
-
-When evaluating a NED system it is required to use some method for generating candidate entities first. We use a simple method where given mention $m$, we considered all candidates for whom $P(e|m)>0$ as candidates. This simple method gives $97\%$ ground-truth recall on the test set. 
-We used GRUs as our RNN unit and used fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered out stop words according to NLTK's stop-word list.
-The optimization of the model was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. A single epoch with $2.6M$ mentions and $k=5$ for corrupt example generation was used for training the model taking half a day using a 20-core CPU machine.
+When evaluating a NED system it is required to use some method for generating candidate entities first. We use a simple method where given mention $m$, we considered all candidates for whom $P(e|m)>0$ as candidates where $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$ in the training corpus. This simple method gives $97\%$ ground-truth recall on the test set. 
+We used fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered stop words according to NLTK's stop-word list.
+Model optimization was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. A single epoch with $2.6M$ mentions and $k=5$ for corrupt example generation was used for training the model taking half a day using a 20-core CPU machine.
 
 We have used the following methods as base line on the Wikilink dataset:
 
 \begin{itemize} 
-	\item  \textbf{Yamada et al.} \shortcite{Yamada2016} have created a state-of-the-art NED system for jointly mapping entities and words onto the same vector space via the skip-gram model and using these for disambiguation. As Wikilinks has only one mention per fragment we use only the local features described by Yamada at el.
+	\item  \textbf{Yamada et al.} \shortcite{Yamada2016} have created a state-of-the-art NED system that models entity-context similarity with word and entity embedding trained using the skip-gram model. We have obtained trained embeddings from the authors and used statistical features collected from the Wikilinks training set. We used only the local features described by Yamada at el. and trained their ranking model on Wikilinks training set.
 	
-	\item \textbf{Cheng et al.} \shortcite{Cheng2013} addressed the Disambiguation to Wikipedia, or the "Wikificaiton" task, with a combination of local and global approaches. Mentions are disambiguated locally by generating a ranked list of candidates for each mention using the GLOW Wikification system proposed by Ratinov et al. \shortcite{Ratinov2011}. We compare our results to the ranking step of the algorithm, were a linear Ranking SVM is trained over a set of local and global features to return the list of candidates sorted by their likelihood.
+	\item \textbf{Cheng et al.} \shortcite{Cheng2013} have made publicly available \footnote{Available at https://cogcomp.cs.illinois.edu/page/software\_view/Wikifier } a global method which uses the GLOW system by Ratinov et al. \shortcite{Ratinov2011} for local disambiguation. We compare our results to the ranking step of the algorithm, without the their global component.
 	
 	\item We include Most Probable Sense (MPS) as a baseline. This baseline picks the entity with the highest $P(e|m)$ as the correct mention. This simple baseline is notoriously known to give competitive results in many NED datasets 
 \end{itemize}
 
+Due to long running time of Cheng et al. we have created Wikilink-Small, a smaller version of our test data with $10000$ randomly sampled mentions and have evaluated on this data.
+
 \subsection{CoNLL}
 CoNLL is an evaluation corpus created by Hoffart et al. \shortcite{hoffart2011robust} commonly used for benchmarking NED solutions \cite{Globerson2016,Hachey2013,Yamada2016,Pershina2015}. CoNLL was composed by manually annotating Reuters newswire articles from 1996. It contains $1393$ documents from a period of $12$ days split into train, development and test sets. Following previous works we have only evaluated our method on non-NIL mentions. For candidate generation we used the publicly available candidate dataset by Pershina at el. \shortcite{Pershina2015} with over $99\%$ gold sense recall.
 
-CoNLL has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to a more complex training method where we first trained our model on a large corpus of mentions derived from Wikipedia cross references and then fine tuned the resulting model on CoNLL training set. To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. Due to constrained resources we set $k=1$ for corrupt example generation and trained $1$ epoch, which took around $4$ days to train. The resulting model was then fine-tuned on CoNLL training set, where corrupt examples were produced by considering all possible candidates for each mention.
+CoNLL has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to a more complex training method where we first trained our model on a large corpus of mentions derived from Wikipedia cross-references and then fine tuned the resulting model on CoNLL training set. To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. Due to constrained resources we set $k=1$ for corrupt example generation and trained $1$ epoch, which took around $4$ days to train. The resulting model was then fine-tuned on CoNLL training set, where corrupt examples were produced by considering all possible candidates for each mention.
 
 We have also found that using traditional statistical and string based features along with our model further improves its performance. We therefor used a setting similar to Yamada et al. \shortcite{yamada2016joint} where a Gradient Boosted Regression Tree was fitted with our models prediction score as a feature along with $7$ other statistical and string based features. The statistical features are prior probability $P(e)$ and conditional probability $P(e|m)$ as described above, along with a feature counting the number of candidates generated for the mention and a feature giving the maximum conditional probability of the entity for all mentions in the document. For string similarity features we used the edit distance between the mention and the entity title in Wikipedia, a feature indicating weather the mention is a prefix or postfix of the entity Wikipedia title and a feature indicating weather the Wikipedia entity title is a prefix or postfix of the mention. Following Yamada we used sklearn's GradientBoostingClassifier implementation \cite{pedregosa2011scikit} with a deviance loss and set the learning rate, number of estimator and maximum depth of a tree to $0.02$, $10000$ and $4$, respectively. 
 
 As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all candidate entities.
-We also compare to the following papers - Lazic et al. \shortcite{Lazic2015}, Francis-Landau et al. \shortcite{Francis-Landau2016}, He et al. \shortcite{He2013}, Hoffart et al. \shortcite{hoffart2011robust} and Chisholm et al. \shortcite{Chisholm2015} ,as they are all strong local approaches and a good source for comparison.
-	
+We also compare to the following papers - Francis-Landau et al. \shortcite{Francis-Landau2016}, He et al. \shortcite{He2013}, Hoffart et al. \shortcite{hoffart2011robust} and Chisholm et al. \shortcite{Chisholm2015} ,as they are all strong local approaches and a good source for comparison.
+
 \subsection{Results}
+
+Our main evaluation results on the Wikilinks dataset are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms both Yamada at el and the base line on this data by substantial margins. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. 
 
 \begin{table}[h]
 	\begin{center}
 		\begin{tabular}{|c| p{1.5cm}|}
-			\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
-			\hline \bf Model & \bf Micro     accuracy  \\ \hline
-			ARNN  &  \bf64.8\\
-			GBRT: Base + ARNN features & \bf 66.8 \\
-			Yamada et al.(partial) & $59.8$ ** \\
-			Cheng et al. & * \\ 
-			Baseline (MPS) & $55.9$ \\
+			\hline \multicolumn{2}{|c|}{Wikilinks Evaluation} \\
+			\hline \bf Model & \bf P@1  \\ \hline
+			ARNN  &                              $64.8$ \\
+			\bf GBRT: Base + ARNN features & \bf $66.8$ \\
+			Yamada at el. &                      $59.8$ \\
+			Baseline (MPS) &                     $55.9$ \\
 			\hline
 		\end{tabular}
 	\end{center}
-	\caption{\label{tab:b} Evaluation on Web-Fragment data (Wikilinks)}
+	\caption{\label{tab:wikilink} Evaluation on Web-Fragment data (Wikilinks)}
 \end{table}
 
-The micro and macro accuracy scores on CoNLL test-b are displayed in table \ref{tab:a}. 
+Table \ref{tab:wikilinks-small} shows evaluation results for the Wikilinks-Small test set. We used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. We believe this to explain their poor performance, as Wikilinks is substantially different from other NED datasets partly for being noisy and partly for being annotated by web content authors rather then expert annotators. This last difference results in substantially different annotation patterns.
 
-	
+\begin{table}[h]
+	\begin{center}
+		\begin{tabular}{|c| p{1.5cm}|}
+			\hline \multicolumn{2}{|c|}{Wikilinks-Small Evaluation} \\
+			\hline \bf Model & \bf Micro     accuracy  \\ \hline
+			\bf ARNN  &  \bf $?$ \\
+			Cheng et al. & $~52$ \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{tab:wikilinks-small} Evaluation on Web-Fragment data (Wikilinks)}
+\end{table}
+
+The micro and macro P@1 scores on CoNLL test-b are displayed in table \ref{tab:a}. On this dataset our model achieves reasonable results, however it cannot beat state-of-the-art results since it requires large quantities of training data to properly model the large number of parameters in the model. 
+
 \begin{table}[h]
 	\begin{center}
 		\begin{tabular}{|p{3.5cm}| p{1.5cm} p{1.5cm}|}
-			\hline \multicolumn{3}{|c|}{CoNLL test-b} \\
-			\hline Model & Micro     accuracy & Macro     accuracy \\ \hline
-			\bf ARNN  & \bf $87.3$ & \bf $88.6$ \\
-			\bf GBRT: Base + ARNN features & \bf $86.9$ & \bf $89.1$ \\
-			Yamada et al. (partial) & $90.9$ & $92.4$ \\
-			Lazic et al. & $86.4$ & - \\
-			Francis-Landau et al. & $85.5$ & - \\
-			He et al. & 84.82 & $83.37$ \\	
-			Hoffart et al. & $79.57$ & $80.71$ \\
-			Chisholm et al. & $86.1$ & - \\			
-			Baseline (MPS) & $77$ & $77$ \\
+			\hline \multicolumn{3}{|c|}{CoNLL test-b (Local methods)} \\
+			\hline Model & Micro P@1 & Macro P@1 \\ 
+			\hline \multicolumn{3}{|c|}{PPRforNED} \\
+			\hline RNN Attention    & $87.3$  & $88.6$ \\
+			Yamada et al. local     & $90.9$  & $92.4$ \\
+			Baseline (MPS)          & $77$    & $77$ \\
+			\hline \multicolumn{3}{|c|}{Yago} \\
+			\hline RNN Attention    & $?$  & $?$ \\
+			Yamada et al. local     & $87.2$  & $89.6$ \\
+			Francis-Landau et al.   & $85.5$  & - \\
+			Chisholm et al. local   & $86.1$  & - \\
+			\hline Lazic et al.     & $86.4$  & - \\
 			\hline
 		\end{tabular}
 	\end{center}
-	\caption{\label{tab:a} Local evaluation on CoNLL. Bold font denotes the models offered in this study}
+	\caption{\label{tab:conll} Evaluation on CoNLL. Bold font denotes the models offered in this study}
 \end{table}
 
 
@@ -312,22 +328,18 @@ add insights regarding the results and comparison
 
 \toin{Where is ARNN w/o init but with attention?}
 
-\hl{Noam: this should be extended} elaborate on: \newline
-!! ESA embedding initialization \newline
-!! attention vs. no attention\newline
-
 \begin{table}[h]
-\begin{center}
-	\begin{tabular}{|c| p{1.5cm}|}
-		\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
-		\hline \bf Model & \bf Micro     accuracy  \\ \hline
-		ARNN w/o ESA init. & $61$ \\
-		ARNN w/ ESA init. w/o Attention & $64.1$ \\
-		ARNN w/ ESA \& Attention & $64.8$ \\ 
-		\hline
-	\end{tabular}
-\end{center}
-\caption{\label{tab:c} ARNN Model sensetivity}
+	\begin{center}
+		\begin{tabular}{|c| p{1.5cm}|}
+			\hline \multicolumn{2}{|c|}{Wikilinks test set} \\
+			\hline \bf Model & \bf Micro     accuracy  \\ \hline
+			ARNN w/o ESA init. & $61$ \\
+			ARNN w/ ESA init. w/o Attention & $64.1$ \\
+			ARNN w/ ESA \& Attention & $64.8$ \\ 
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{tab:c} ARNN Model sensetivity}
 \end{table}
 
 \section{Conclusions}
