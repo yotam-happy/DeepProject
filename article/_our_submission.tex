@@ -110,30 +110,16 @@ We demonstrate our model greatly outperforms existing state-of-the-art NED algor
 
 \subsection{Related work}
 
-** Cucerzan (2007) \toin{should we talk about it???!}
- 
-** Bunesco (2006)
-The first attempt to use Wikipedia as an knowledge base for local disambiguation was offered by Busco and Pasca and included an SVM based NED system with local contextual features \cite{Bunescu2006}.
+The first attempt to use Wikipedia as an knowledge base for local disambiguation was offered by Busco and Pasca in 2006 \cite{Bunescu2006}.
+Hoffart et al. suggested a collective global disambiguation graph-based framework, named AIDA, which employs a mention, context and coherency models. \cite{hoffart2011robust}. Similar models were exploited in other global algorithms, such as the GLOW and the Relational Inference systems for the task of Wikification \cite{Ratinov2011,Cheng2013}, when the latter extends the former by combing semantic knowledge with a classification model. Chisholm et al. incorporated web-links data from the Wikilinks dataset to push NED performance to a new level \cite{chisholm2015entity}. More recently, a selective-context model, proposed by Lazic et al., has shown that only few context words are informative for the tasks of disambiguation \cite{Lazic2015}.
 
-** Hoffart (2011)
-Hoffart et al. suggested a collective disambiguation graph-based framework called AIDA, which employs a mention, context and coherency models. \cite{hoffart2011robust}. \hl{talks about the problem with coherence can when entities are forced to be coherent in the doc cluster. claims that in his experiments $2/3$ of the mentions didn't even proceed to the coherence graph module}
-
-** Ratinov and Cheng (2011 and 2013)
-Similar models were exploited in other global algorithms, such as GLOW and Relational Inference for the task of Wikification \cite{Ratinov2011,Cheng2013}, when the latter extends the former approach by combing inference with semantic knowledge and a ranking SVM model. \hl{Ratinov shows that local based methods are hard to be beat}
-
-** Chisholm (2015)
-
-** Lazic (2015)
+In the aforementioned studies two important observations stand out and influence our algorithmic approach. First, it has been shown that local disambiguation techniques produce a hard baseline to beat even by global NED extensions, which are not even engaged in most of the disambiguation task of traditional data sets \cite{Ratinov2011, hoffart2011robust}. This observation, which seems to be intuitive to the human reader, has led us to concentrate on generating a strong local context-based disambiguation solution. Moreover, following the results of Lazic et al. we designed our model to have an attention mechanism, for reducing the effect of non-informative nearby words.
 
 \# survey CoNLL,ACE, TAC other tasks
 
 \# Previous work of NED with NN
 
-** He (2013)
-
-** Sun (2015)
-
-** francis (2016)
+Maybe the first attempt of using Deep Neural Networks (DNN) for NED was demonstrated by He et al. \cite{He2013}, as they learned a similarity measure between the mention and its context to candidates from Wikipedia using stacked autoencoders. Recent studies, suggested Constitutional Neural Net (CNN) architectures for learning semantic similarity between the context, the mention and the candidate \cite{sun2015modeling,francis2016capturing}. 
 
 ** yamada (2016)
 

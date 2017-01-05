@@ -13,9 +13,16 @@ Xiao Cheng and Dan Roth.
 \newblock {\em Empirical Methods in Natural Language Processing},
   (October):1787--1796.
 
-\bibitem[\protect\citename{Chisholm and Hachey}2015]{Chisholm2015}
+\bibitem[\protect\citename{Chisholm and Hachey}2015a]{chisholm2015entity}
 Andrew Chisholm and Ben Hachey.
-\newblock 2015.
+\newblock 2015a.
+\newblock Entity disambiguation with web links.
+\newblock {\em Transactions of the Association for Computational Linguistics},
+  3:145--156.
+
+\bibitem[\protect\citename{Chisholm and Hachey}2015b]{Chisholm2015}
+Andrew Chisholm and Ben Hachey.
+\newblock 2015b.
 \newblock {Entity Disambiguation with Web Links}.
 \newblock {\em Transactions of the Association for Computational Linguistics},
   3(0):145--156.
