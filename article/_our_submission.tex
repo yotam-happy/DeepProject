@@ -237,11 +237,14 @@ For our experiments we trained embeddings of length 300 for 10 iterations over t
 
 In this section we describe the setup used when evaluating our model and present evaluation results for two datasets. We evaluate the effect of initializing word and entity embeddings on our model as well.
 
+In all experiments we trained our model with fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered stop words according to NLTK's stop-word list.
+
+Model optimization was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves.
+
 \subsection{Wikilinks}
 
-When evaluating a NED system it is required to use some method for generating candidate entities first. We use a simple method where given mention $m$, we considered all candidates for whom $P(e|m)>0$ as candidates where $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$ in the training corpus. This simple method gives $97\%$ ground-truth recall on the test set. 
-We used fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered stop words according to NLTK's stop-word list.
-Model optimization was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. A single epoch with $2.6M$ mentions and $k=5$ for corrupt example generation was used for training the model taking half a day using a 20-core CPU machine.
+When evaluating a NED system it is required to use some method for generating candidate entities. We use a simple method where given mention $m$ we consider all candidates for whom $P(e|m)>0$, where $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$ in the training corpus. This simple method gives $97\%$ ground-truth recall on the test set. 
+We trained for a single \todo{YOTAM: I have better a training regime} epoch with $2.6M$ mentions and $k=5$ for corrupt example generation. Training the model took half a day using a 20-core CPU machine.
 
 We have used the following methods as base line on the Wikilink dataset:
 
@@ -253,7 +256,7 @@ We have used the following methods as base line on the Wikilink dataset:
 	\item We include Most Probable Sense (MPS) as a baseline. This baseline picks the entity with the highest $P(e|m)$ as the correct mention. This simple baseline is notoriously known to give competitive results in many NED datasets 
 \end{itemize}
 
-Due to long running time of Cheng et al. we have created Wikilink-Small, a smaller version of our test data with $10000$ randomly sampled mentions and have evaluated on this data.
+Due to long running time of Cheng et al. we have evaluated their method on Wikilink-Small, a smaller version of our test data with $10000$ randomly sampled mentions.
 
 \subsection{CoNLL}
 CoNLL is an evaluation corpus created by Hoffart et al. \shortcite{hoffart2011robust} commonly used for benchmarking NED solutions \cite{Globerson2016,Hachey2013,Yamada2016,Pershina2015}. CoNLL was composed by manually annotating Reuters newswire articles from 1996. It contains $1393$ documents from a period of $12$ days split into train, development and test sets. Following previous works we have only evaluated our method on non-NIL mentions. For candidate generation we used the publicly available candidate dataset by Pershina at el. \shortcite{Pershina2015} with over $99\%$ gold sense recall.
@@ -267,7 +270,7 @@ We also compare to the following papers - Francis-Landau et al. \shortcite{Franc
 
 \subsection{Results}
 
-Our main evaluation results on the Wikilinks dataset are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms both Yamada at el and the base line on this data by substantial margins. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. 
+Our main evaluation results on the Wikilinks dataset are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms both Yamada at el and the base line on this data by substantial margins. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. Our method outperforms the Baseline as well by a very large margin indicating our RNN model is indeed able to capture meaningful contextual features despite the noisy and short context.
 
 \begin{table}[h]
 	\begin{center}
@@ -284,7 +287,7 @@ Our main evaluation results on the Wikilinks dataset are reported in Table \ref{
 	\caption{\label{tab:wikilink} Evaluation on Web-Fragment data (Wikilinks)}
 \end{table}
 
-Table \ref{tab:wikilinks-small} shows evaluation results for the Wikilinks-Small test set. We used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. We believe this to explain their poor performance, as Wikilinks is substantially different from other NED datasets partly for being noisy and partly for being annotated by web content authors rather then expert annotators. This last difference results in substantially different annotation patterns.
+Table \ref{tab:wikilinks-small} shows evaluation results for the Wikilinks-Small test set. We used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. We believe this explains their poor performance, as Wikilinks is substantially different from other NED datasets both for being noisy and for being annotated by web content authors rather then expert annotators. This last difference results in substantially different annotation patterns.
 
 \begin{table}[h]
 	\begin{center}
