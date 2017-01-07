@@ -1,5 +1,12 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citename{Bentivogli \bgroup et al.\egroup
+  }]{bentivogli2010extending}
+Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
+  Emanuele Pianta, and Kateryna Tymoshenko.
+\newblock Extending english ace 2005 corpus annotation with ground-truth links
+  to wikipedia.
+
 \bibitem[\protect\citename{Bunescu and Bunescu}2006]{Bunescu2006}
 Razvan Bunescu and Razvan Bunescu.
 \newblock 2006.
@@ -104,6 +111,13 @@ Johannes Hoffart, Mohamed~Amir Yosef, Ilaria Bordino, Hagen F{\"u}rstenau,
 \newblock In {\em Proceedings of the Conference on Empirical Methods in Natural
   Language Processing}, pages 782--792. Association for Computational
   Linguistics.
+
+\bibitem[\protect\citename{Ji \bgroup et al.\egroup }2010]{ji2010overview}
+Heng Ji, Ralph Grishman, Hoa~Trang Dang, Kira Griffitt, and Joe Ellis.
+\newblock 2010.
+\newblock Overview of the tac 2010 knowledge base population track.
+\newblock In {\em Third Text Analysis Conference (TAC 2010)}, volume~3, pages
+  3--3.
 
 \bibitem[\protect\citename{Lazic \bgroup et al.\egroup }2015]{Lazic2015}
 Nevena Lazic, Amarnag Subramanya, Michael Ringgaard, and Fernando Pereira.

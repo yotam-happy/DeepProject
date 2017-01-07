@@ -15,11 +15,17 @@ Repeated entry---line 233 of file _noam_bib.bib
  :                     ,
 I'm skipping whatever remains of this entry
 Warning--I didn't find a database entry for "berant2013semantic"
+Warning--I didn't find a database entry for "ratinov2011glow"
+`year' is a missing field, not a string, for entry bentivogli2010extending
+while executing---line 1314 of file acl2016.bst
+Warning--empty year in bentivogli2010extending
+Warning--empty booktitle in bentivogli2010extending
 Warning--there's a number but no volume in Cheng2013
 Warning--empty journal in Francis-Landau2016
 Warning--empty journal in He2013
+Warning--can't use both volume and number fields in ji2010overview
 Warning--empty journal in Melamud2014
 Warning--empty journal in Pershina2015
 Warning--there's a number but no volume in Pershina2015
 Warning--empty institution in singh12:wiki-links
-(There were 3 error messages)
+(There were 4 error messages)
