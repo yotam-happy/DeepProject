@@ -7,11 +7,11 @@ Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
 \newblock Extending english ace 2005 corpus annotation with ground-truth links
   to wikipedia.
 
-\bibitem[\protect\citename{Bunescu and Bunescu}2006]{Bunescu2006}
-Razvan Bunescu and Razvan Bunescu.
+\bibitem[\protect\citename{Bunescu and Pasca}2006]{bunescu2006using}
+Razvan~C Bunescu and Marius Pasca.
 \newblock 2006.
-\newblock {Using Encyclopedic Knowledge for Named Entity Disambiguation}.
-\newblock {\em IN EACL}, pages 9----16.
+\newblock Using encyclopedic knowledge for named entity disambiguation.
+\newblock In {\em EACL}, volume~6, pages 9--16.
 
 \bibitem[\protect\citename{Cheng and Roth}2013]{Cheng2013}
 Xiao Cheng and Dan Roth.
@@ -174,17 +174,10 @@ Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
 \newblock {Local and Global Algorithms for Disambiguation to Wikipedia}.
 \newblock {\em Acl 2011}, 1:1375--1384.
 
-\bibitem[\protect\citename{Singh \bgroup et al.\egroup }2012a]{Singh2012}
-Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
-\newblock 2012a.
-\newblock {Wikilinks: A large-scale cross-document coreference corpus labeled
-  via links to Wikipedia}.
-\newblock {\em {\ldots} of Massachusetts, Amherst {\ldots}}, pages 1--14.
-
 \bibitem[\protect\citename{Singh \bgroup et al.\egroup
-  }2012b]{singh12:wiki-links}
+  }2012]{singh12:wiki-links}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
-\newblock 2012b.
+\newblock 2012.
 \newblock Wikilinks: A large-scale cross-document coreference corpus labeled
   via links to {Wikipedia}.
 \newblock Technical Report UM-CS-2012-015.
