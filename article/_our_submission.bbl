@@ -168,18 +168,9 @@ Maria Pershina.
 \newblock {Personalized Page Rank for Named Entity Disambiguation}.
 \newblock (Section 4):238--243.
 
-\bibitem[\protect\citename{Ratinov \bgroup et al.\egroup
-  }2011a]{ratinov2011local}
+\bibitem[\protect\citename{Ratinov \bgroup et al.\egroup }2011]{Ratinov2011}
 Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
-\newblock 2011a.
-\newblock Local and global algorithms for disambiguation to wikipedia.
-\newblock In {\em Proceedings of the 49th Annual Meeting of the Association for
-  Computational Linguistics: Human Language Technologies-Volume 1}, pages
-  1375--1384. Association for Computational Linguistics.
-
-\bibitem[\protect\citename{Ratinov \bgroup et al.\egroup }2011b]{Ratinov2011}
-Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
-\newblock 2011b.
+\newblock 2011.
 \newblock {Local and Global Algorithms for Disambiguation to Wikipedia}.
 \newblock {\em Acl 2011}, 1:1375--1384.
 
@@ -206,19 +197,11 @@ Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang.
 \newblock In {\em Proceedings of the International Joint Conference on
   Artificial Intelligence (IJCAI)}, pages 1333--1339.
 
-\bibitem[\protect\citename{Yamada \bgroup et al.\egroup
-  }2016a]{yamada2016joint}
+\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016]{yamada2016joint}
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
-\newblock 2016a.
+\newblock 2016.
 \newblock Joint learning of the embedding of words and entities for named
   entity disambiguation.
 \newblock {\em arXiv preprint arXiv:1601.01343}.
-
-\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016b]{Yamada2016}
-Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
-\newblock 2016b.
-\newblock {Joint Learning of the Embedding of Words and Entities for Named
-  Entity Disambiguation}.
-\newblock {\em arXiv preprint arXiv:1601.01343}, page~10.
 
 \end{thebibliography}
