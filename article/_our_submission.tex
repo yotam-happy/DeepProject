@@ -135,14 +135,14 @@ Some disambiguation systems are also evaluated on the ACE 2005 corpus \cite{Rati
 \toin{חבר׳ה, יש פה הרמה להנחתה שאתם לא מנצלים... מה רע בדאטאסטים האלה? מה אתם מחדשים על פניהם?}
 
 \toin{This section provides readers who are less familiar with the literature the necessary information to understand your contribution. Things that need to appear in this section:
-
-- Previous work on NED.
-
-- An in-depth survey of the existing datasets and how they were built.
-
-- Neural work on NED.
-
-At the end of each paragraph/subsection, mention how this work improves upon / differs from what you just discussed.
+	
+	- Previous work on NED.
+	
+	- An in-depth survey of the existing datasets and how they were built.
+	
+	- Neural work on NED.
+	
+	At the end of each paragraph/subsection, mention how this work improves upon / differs from what you just discussed.
 }
 
 %Deep Neural Networks (DNN) have recently gained traction as state-of-the-art architectures that can model powerful data representations and complex feature interaction. DNNs achieve state-of-the-art results on a wide variety of tasks ranging from image classification \cite{krizhevsky2012imagenet} to machine translation \cite{bahdanau2014neural}. For the task of NED, He at el. \shortcite{he2013learning} used stacked auto-encoders to learn entity and context representations. More recently Sun at el. and Francis-Landau at el. \shortcite{sun2015modeling,francis2016capturing} have proposed models that use convolutional neural networks for modeling and combining representations of a range of input signals and granularities. 
@@ -150,7 +150,6 @@ At the end of each paragraph/subsection, mention how this work improves upon / d
 %We propose a novel Deep-Learning based disambiguation algorithm where NED is treated as separating correct entity assignments from corrupt ones given only a local context. Our model is based on Recurrent Neural Networks (RNNs) since they are state-of-the-art language modeling architectures. inspired by Globerson at el \cite{Globerson2016} that showed an attention model is beneficial for NED, we develop a neural attention mechanism to enable the model to decide which contextual signals are most important when considering a specific entity assignment. We as well describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance.
 
 %To test our method we craft a large-scale dataset of short web fragments containing mentions disambiguated into Wikipedia by thousands of website editors. Our dataset is extracted from a subset of the Wikilinks dataset \cite{singh12:wiki-links} which is re-purposed for NED. It represents a large-scale and difficult task with \hl{count} unique mentions disambiguated into $100K$ unique entities and where context is limited and noisy. We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on this dataset and in addition examine our algorithm on CoNLL \cite{hoffart2011robust}, a standard NED dataset, and show results comparable to other state-out-the-art methods on a smaller and cleaner dataset.
-
 
 
 \section{WiikilinksNED Dataset: Entity Mentions in the Web}
