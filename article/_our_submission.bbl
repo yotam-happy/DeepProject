@@ -51,20 +51,12 @@ John Duchi, Elad Hazan, and Yoram Singer.
 \newblock {\em Journal of Machine Learning Research}, 12(Jul):2121--2159.
 
 \bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016a]{francis2016capturing}
+  }2016]{francis2016capturing}
 Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016a.
+\newblock 2016.
 \newblock Capturing semantic similarity for entity linking with convolutional
   neural networks.
 \newblock {\em arXiv preprint arXiv:1604.00734}.
-
-\bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
-  }2016b]{Francis-Landau2016}
-Matthew Francis-Landau, Greg Durrett, and Dan Klein.
-\newblock 2016b.
-\newblock {Capturing Semantic Similarity for Entity Linking with Convolutional
-  Neural Networks}.
-\newblock pages 1256--1261.
 
 \bibitem[\protect\citename{Gabrilovich and
   Markovitch}2007]{gabrilovich2007computing}
