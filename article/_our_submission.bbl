@@ -7,12 +7,6 @@ Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
 \newblock Extending english ace 2005 corpus annotation with ground-truth links
   to wikipedia.
 
-\bibitem[\protect\citename{Bunescu and Pasca}2006]{bunescu2006using}
-Razvan~C Bunescu and Marius Pasca.
-\newblock 2006.
-\newblock Using encyclopedic knowledge for named entity disambiguation.
-\newblock In {\em EACL}, volume~6, pages 9--16.
-
 \bibitem[\protect\citename{Cheng and Roth}2013]{Cheng2013}
 Xiao Cheng and Dan Roth.
 \newblock 2013.
@@ -42,6 +36,14 @@ Kyunghyun Cho, Bart Van~Merri{\"e}nboer, Caglar Gulcehre, Dzmitry Bahdanau,
   statistical machine translation.
 \newblock {\em arXiv preprint arXiv:1406.1078}.
 
+\bibitem[\protect\citename{Derczynski \bgroup et al.\egroup
+  }2015]{derczynski2015analysis}
+Leon Derczynski, Diana Maynard, Giuseppe Rizzo, Marieke van Erp, Genevieve
+  Gorrell, Rapha{\"e}l Troncy, Johann Petrak, and Kalina Bontcheva.
+\newblock 2015.
+\newblock Analysis of named entity recognition and linking for tweets.
+\newblock {\em Information Processing \& Management}, 51(2):32--49.
+
 \bibitem[\protect\citename{Duchi \bgroup et al.\egroup
   }2011]{duchi2011adaptive}
 John Duchi, Elad Hazan, and Yoram Singer.
@@ -67,10 +69,17 @@ Evgeniy Gabrilovich and Shaul Markovitch.
 \newblock In {\em IJcAI}, volume~7, pages 1606--1611.
 
 \bibitem[\protect\citename{Globerson \bgroup et al.\egroup
-  }2016]{Globerson2016}
+  }2016a]{globerson2016collective}
 Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
   Ringgaard, and Fernando Pereira.
-\newblock 2016.
+\newblock 2016a.
+\newblock Collective entity resolution with multi-focal attention.
+
+\bibitem[\protect\citename{Globerson \bgroup et al.\egroup
+  }2016b]{Globerson2016}
+Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
+  Ringgaard, and Fernando Pereira.
+\newblock 2016b.
 \newblock {Collective Entity Resolution with Multi-Focal Attention}.
 \newblock {\em Acl}, pages 621--631.
 
@@ -110,6 +119,13 @@ Heng Ji, Ralph Grishman, Hoa~Trang Dang, Kira Griffitt, and Joe Ellis.
 \newblock Overview of the tac 2010 knowledge base population track.
 \newblock In {\em Third Text Analysis Conference (TAC 2010)}, volume~3, pages
   3--3.
+
+\bibitem[\protect\citename{Klang and Nugues}2014]{klang2014named}
+Marcus Klang and Pierre Nugues.
+\newblock 2014.
+\newblock Named entity disambiguation in a question answering system.
+\newblock In {\em The Fifth Swedish Language Technology Conference (SLTC
+  2014)}.
 
 \bibitem[\protect\citename{Lazic \bgroup et al.\egroup }2015]{Lazic2015}
 Nevena Lazic, Amarnag Subramanya, Michael Ringgaard, and Fernando Pereira.
