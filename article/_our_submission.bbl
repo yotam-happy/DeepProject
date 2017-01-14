@@ -7,6 +7,12 @@ Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
 \newblock Extending english ace 2005 corpus annotation with ground-truth links
   to wikipedia.
 
+\bibitem[\protect\citename{Bunescu and Pasca}2006]{bunescu2006using}
+Razvan~C Bunescu and Marius Pasca.
+\newblock 2006.
+\newblock Using encyclopedic knowledge for named entity disambiguation.
+\newblock In {\em EACL}, volume~6, pages 9--16.
+
 \bibitem[\protect\citename{Cheng and Roth}2013]{Cheng2013}
 Xiao Cheng and Dan Roth.
 \newblock 2013.
@@ -14,19 +20,12 @@ Xiao Cheng and Dan Roth.
 \newblock {\em Empirical Methods in Natural Language Processing},
   (October):1787--1796.
 
-\bibitem[\protect\citename{Chisholm and Hachey}2015a]{chisholm2015entity}
+\bibitem[\protect\citename{Chisholm and Hachey}2015]{chisholm2015entity}
 Andrew Chisholm and Ben Hachey.
-\newblock 2015a.
+\newblock 2015.
 \newblock Entity disambiguation with web links.
 \newblock {\em Transactions of the Association for Computational Linguistics},
   3:145--156.
-
-\bibitem[\protect\citename{Chisholm and Hachey}2015b]{Chisholm2015}
-Andrew Chisholm and Ben Hachey.
-\newblock 2015b.
-\newblock {Entity Disambiguation with Web Links}.
-\newblock {\em Transactions of the Association for Computational Linguistics},
-  3(0):145--156.
 
 \bibitem[\protect\citename{Cho \bgroup et al.\egroup }2014]{cho2014learning}
 Kyunghyun Cho, Bart Van~Merri{\"e}nboer, Caglar Gulcehre, Dzmitry Bahdanau,
@@ -69,17 +68,10 @@ Evgeniy Gabrilovich and Shaul Markovitch.
 \newblock In {\em IJcAI}, volume~7, pages 1606--1611.
 
 \bibitem[\protect\citename{Globerson \bgroup et al.\egroup
-  }2016a]{globerson2016collective}
+  }2016]{Globerson2016}
 Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
   Ringgaard, and Fernando Pereira.
-\newblock 2016a.
-\newblock Collective entity resolution with multi-focal attention.
-
-\bibitem[\protect\citename{Globerson \bgroup et al.\egroup
-  }2016b]{Globerson2016}
-Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
-  Ringgaard, and Fernando Pereira.
-\newblock 2016b.
+\newblock 2016.
 \newblock {Collective Entity Resolution with Multi-Focal Attention}.
 \newblock {\em Acl}, pages 621--631.
 
@@ -151,6 +143,13 @@ Omer Levy and Yoav Goldberg.
 Oren Melamud and Jacob Goldberger.
 \newblock 2014.
 \newblock {Learning Generic Context Embedding with Bidirectional LSTM}.
+
+\bibitem[\protect\citename{Mihalcea and Csomai}2007]{mihalcea2007wikify}
+Rada Mihalcea and Andras Csomai.
+\newblock 2007.
+\newblock Wikify!: linking documents to encyclopedic knowledge.
+\newblock In {\em Proceedings of the sixteenth ACM conference on Conference on
+  information and knowledge management}, pages 233--242. ACM.
 
 \bibitem[\protect\citename{Mikolov \bgroup et al.\egroup
   }2013]{mikolov2013distributed}

@@ -1,14 +1,22 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: _our_submission.aux
 The style file: acl2016.bst
 Database file #1: _our_submission.bib
+I was expecting a `,' or a `}'---line 255 of file _our_submission.bib
+ :  
+ :  year={2010}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
 Database file #2: _noam_bib.bib
-Repeated entry---line 204 of file _noam_bib.bib
+Repeated entry---line 179 of file _noam_bib.bib
  : @article{Melamud2014
  :                     ,
 I'm skipping whatever remains of this entry
 Warning--I didn't find a database entry for "berant2013semantic"
+Warning--I didn't find a database entry for "globerson2016collective"
 Warning--I didn't find a database entry for "levy2015supervised"
 Warning--I didn't find a database entry for "Yamada2016"
+Warning--I didn't find a database entry for "Chisholm2015"
+Warning--I didn't find a database entry for "ratinov2011glow"
 `year' is a missing field, not a string, for entry bentivogli2010extending
 while executing---line 1314 of file acl2016.bst
 Warning--empty year in bentivogli2010extending
@@ -20,4 +28,4 @@ Warning--empty journal in Melamud2014
 Warning--empty journal in Pershina2015
 Warning--there's a number but no volume in Pershina2015
 Warning--empty institution in singh12:wiki-links
-(There were 2 error messages)
+(There were 3 error messages)
