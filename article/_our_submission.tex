@@ -247,28 +247,30 @@ We used \texttt{word2vecf}\footnote{\url{http://bitbucket.org/yoavgo/word2vecf}}
 \section{Evaluation}
 \label{experiments}
 
-In this section we describe the setup used when evaluating our model and present evaluation results for two datasets. We evaluate the effect of initializing word and entity embeddings on our model as well.
+In this section, we describe our experimental setup and compare our model to the state of the art on two datasets: our new WikilinksNED dataset, as well as the commonly-used CoNLL-YAGO dataset \cite{hoffart2011robust}. We also examine the effect of initializing our model with pre-trained word and entity embeddings.
 
-In all experiments we trained our model with fixed size left and right contexts, using a 20 word window to each side of the mention. In cases were the context was shorter than the fixed size, we padded it with a special $PAD$ symbol. Further, we filtered stop words according to NLTK's stop-word list.
+In all experiments, our model was trained with fixed-size left and right contexts (20 words in each direction). We used a special padding symbol when the actual context was shorter than the window. Further, we filtered stopwords using NLTK's stop-word list.\todo{Before or after selecting the window? If the stopwords are thrown before, the window is effectively larger. Also, why was this necessary?}
 
-Model optimization was carried out using standard back propagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves.
+Model optimization was carried out using standard backpropagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves.\todo{Move to section 4 where you talk about optimization/training.}
 
-\subsection{Wikilinks}
 
-When evaluating a NED system it is required to use some method for generating candidate entities. We use a simple method where given mention $m$ we consider all candidates for whom $P(e|m)>0$, where $P(e|m)$ is the probability of seeing entity $e$ as a ground-truth for mention $m$ in the training corpus. This simple method gives $97\%$ ground-truth recall on the test set. 
-We trained for a single \todo{YOTAM: I have better a training regime} epoch with $2.6M$ mentions and $k=5$ for corrupt example generation. Training the model took half a day using a 20-core CPU machine.
+\subsection{WikilinksNED}
 
-We have used the following methods as base line on the Wikilink dataset:
+\paragraph{Candidate Generation}
+To isolate the effect of candidate generation algorithms, we used the following simple method for all systems: given a mention $m$, consider all candidate entities $e$ that appeared as the ground-truth entity for $m$ at least once in the training corpus. This simple method yields $97\%$ ground-truth recall on the test set.
 
-\begin{itemize} 
-	\item  \textbf{Yamada et al.} \shortcite{Yamada2016} have created a state-of-the-art NED system that models entity-context similarity with word and entity embedding trained using the skip-gram model. We have obtained trained embeddings from the authors and used statistical features collected from the Wikilinks training set. We used only the local features described by Yamada at el. and trained their ranking model on Wikilinks training set.
-	
-	\item \textbf{Cheng et al.} \shortcite{Cheng2013} have made publicly available \footnote{Available at https://cogcomp.cs.illinois.edu/page/software\_view/Wikifier } a global method which uses the GLOW system by Ratinov et al. \shortcite{Ratinov2011} for local disambiguation. We compare our results to the ranking step of the algorithm, without the their global component.
-	
-	\item We include Most Probable Sense (MPS) as a baseline. This baseline picks the entity with the highest $P(e|m)$ as the correct mention. This simple baseline is notoriously known to give competitive results in many NED datasets 
-\end{itemize}
+We trained for a single \todo{YOTAM: I have better a training regime} epoch with $2.6M$ mentions and $k=5$ for corrupt example generation.\todo{The number of mentions is redundant (mentioned in 3). The two hyperparameters, 1 epoch and 5 negative samples, are important. Can they be moved to 5.0?} Training the model took half a day using a 20-core CPU machine.\todo{This is not an important detail, and it might also undermine your work. It seems way too long... Did you implement with TF/DyNet?}
 
-Due to long running time of Cheng et al. we have evaluated their method on Wikilink-Small, a smaller version of our test data with $10000$ randomly sampled mentions.
+\paragraph{Baselines}
+Since we are the first to evaluate NED algorithms on WikilinksNED, we ran a selection of existing local NED systems and compared their performance to our algorithm's. \textbf{Yamada et al.} \shortcite{Yamada2016} created a state-of-the-art NED system that models entity-context similarity with word and entity embeddings trained using the skip-gram model. We obtained the original embeddings from the authors, and trained the statistical features and ranking model on the WikilinksNED training set. Our configuration of Yamada et al.'s model used only their local features.
+
+\textbf{Cheng et al.} \shortcite{Cheng2013} have made their global NED system publicly available \footnote{\url{https://cogcomp.cs.illinois.edu/page/software\_view/Wikifier}}. This algorithm uses GLOW \cite{Ratinov2011} for local disambiguation. We compare our results to the ranking step of the algorithm, without the their global component. Due to the long running time of this system, we only evaluated their method on the smaller test set, which contains 10,000 randomly sampled instances from the full 320,000-example test set.
+
+Finally, we include the \textbf{Most Probable Sense (MPS)} baseline, which selects the entity that was seen most with the given mention during training.
+
+\paragraph{Results}
+\toin{Results on WikilinksNED should be here.}
+
 
 \subsection{CoNLL-YAGO}
 
