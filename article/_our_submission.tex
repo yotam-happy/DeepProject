@@ -56,7 +56,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-We address the task of Named Entity Disambiguation (NED) in a Web setting. We present WikilinksNED, a large-scale NED dataset of short web-page fragments containing mentions manually linked into Wikipedia by web content authors. In contrast to existing news-based datasets the web data is noisier and less coherent. We propose a model based on Attention-RNNs to capture useful features from short and noisy context. We evaluate our model on both WikilinksNED and a standard, smaller, news-based dataset. We find our model greatly outperforms existing state-of-the-art methods on WikilinksNED while achieving reasonable performance on the smaller dataset. We conclude our model can efficiently model noisy context given sufficient training. We analyze our results and show there is room for further improvement on such data.
+We address the task of Named Entity Disambiguation (NED) in a web setting. We present WikilinksNED, a large-scale NED dataset of short web-page fragments containing mentions manually linked into Wikipedia by web content authors. In contrast to existing news-based datasets the web data is noisier and less coherent. We propose a model based on Attention-RNNs to capture useful features from short and noisy context. We evaluate our model on both WikilinksNED and a standard, smaller, news-based dataset. We find our model greatly outperforms existing state-of-the-art methods on WikilinksNED while achieving reasonable performance on the smaller dataset. We conclude our model can efficiently model noisy context given sufficient training. We analyze our results and show there is room for further improvement on such data.
 \end{abstract}
 
 
@@ -67,7 +67,7 @@ We address the task of Named Entity Disambiguation (NED) in a Web setting. We pr
 
 The bibs from Google scholar lack a lot of information.}
 
-Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
+Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
 
 NED algorithms can broadly be divided into local and global approaches. Local algorithms disambiguate each mention independently using local context (e.g. the sentence in which the mention appeared), whereas global approaches assume some coherence among mentions within a single document, and try to disambiguate all mentions simultaneously. Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,globerson2016collective}. However, most of these datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. Other domains, such as web page fragments, social media \cite{derczynski2015analysis}, or questions \cite{klang2014named}, lack the sufficient coherence and context for global models to pay off.\todo{Potentially give citations for each domain. YOTAM: not sure how to cite these. Is the QA cite good?} Take for example this fragment taken from the web:
 
@@ -79,13 +79,11 @@ This fragment is considerably less structured and with a more personal tone then
 
 In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is significantly larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have found that performance of state-of-the-art methods is greatly impaired on this dataset and believe new algorithms that can better model local semantic and syntactic features are required.
 
-\todo{Why are you citing Hoffart 2011 if the task is from 2003? YOTAM: They were the ones to annotate it for NED}
-
 We propose a novel neural network architecture based on Recurrent Neural Networks (RNNs) with an attention mechanism, where the RNN units model textual context as a sequence and the attention mechanism gives importance to contextual signals based on the specific candidate entity being evaluated. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs and by devising an attention model that can reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated.
 
 We also describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance for model performance and training efficiency. 
 
-We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on our web based dataset, showing that existing state-of-the-art methods are not optimal in such settings, and that RNNs with attention can better model noisy and short context. In addition, we evaluate our algorithm on the CoNLL-YAGO dataset \cite{hoffart2011robust}, a dataset of annotated newswire articles, where it yields comparable performance to other state-of-the-art local methods. We conclude that RNNs with attention are well-suited for local disambiguation in clean and well-structured corpora, but that there is still much room for improvement in real world scenarios where text is short, noisy, and less coherent.
+We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on the web based dataset, showing that existing state-of-the-art methods are not optimal in such settings, and that RNNs with attention can better model noisy and short context. In addition, we evaluate our algorithm on the CoNLL-YAGO dataset \cite{hoffart2011robust}, a dataset of annotated newswire articles, where it yields reasonable results. However it cannot beat state-of-the-art results since it requires large quantities of training data to properly train the large number of parameters in the model. We conclude that RNNs with attention are well-suited for local disambiguation in real-worlds scenarios where context is noisy and less coherent, but analysis of our results reveals that there is still room for improvement.
 
 \section{Background}
 
@@ -135,20 +133,18 @@ Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced datas
 
 To get a sense of textual noise and entity-context coherence we have set up a small experiment where we measured the similarity between entities mentioned in WikilinksNED and their surrounding context, and compared the results to CoNLL-YAGO. We used state-of-the-art word and entity embeddings obtained from Yamada at el \cite{yamada2016joint} and computed cosine similarity between an entity embedding and the mean of context words embeddings. We compared results from all mentions in CoNLL-YAGO to a sample of 10000 web fragments taken from WikilinksNED, using a window of words of size 40 around entity mentions. On CoNLL-YAGO we found the mean similarity to be 0.188 while on WikilinksNED we got 0.163. We believe this result indicates that web fragments in WikilinksNED are indeed less coherent and noisier compared to CoNLL-YAGO documents.
 
-\todo{I agree with the reasoning, but we should have some sort of experiment/analysis to back this claim. YOTAM: what about this?}
+We prepared our dataset from the local-context version of Wikilinks,\footnote{\url{http://www.iesl.cs.umass.edu/data/wiki-links}} and resolved ground-truth links using a Wikipedia dump from April 2016\footnote{\url{https://dumps.wikimedia.org/}}. We used the \emph{page} and \emph{redirect} tables for resolution, and kept the database \emph{pageid} column as a unique identifier for Wikipedia entities. We discarded mentions where the ground-truth could not be resolved (only 3\% of mentions).
 
-We prepared our dataset from the local-context version of Wikilinks,\footnote{\url{http://www.iesl.cs.umass.edu/data/wiki-links}} and resolved ground-truth links from the 7/4/2016\todo{American or international dating? YOTAM: International... How can we make this clear?} dump of Wikipedia \footnote{\url{https://dumps.wikimedia.org/}}. We used the \emph{page} and \emph{redirect} tables for resolution, and kept the database \emph{pageid} column as a unique identifier for Wikipedia entities. We discarded mentions where the ground-truth could not be resolved (only 3\% of mentions).
+We collected all pairs of mention $m$ and entity $e$ appearing in the dataset, and computed the number of times $m$ refers to $e$ ($\#(m,e)$), as well as the conditional probability of $e$ given $m$: $P(e|m)=\#(m,e)/\sum_{e'}\#(m,e')$. Examining these distributions revealed many mentions belong to two extremes -- either they had very little ambiguity, or they appeared in the dataset only a handful of times and referred to different entities only a couple of times each.\todo{Not sure I understand the second case. Example? YOTAM: tried to improve explanation. } We deemed the former to be less interesting for the purpose of NED, and suspected the latter to be noise with high probability. To filter these cases, we kept only mentions for which at least two different entities have 10 mentions each ($\#(m,e) \ge 10$) and consist of at least 10\% of occurrences ($P(e|m) \ge 0.1$). This procedure aggressively filtered our dataset and we were left with $3.2M$ mentions.
 
-We collected all pairs of mention $m$ and entity $e$ appearing in the dataset, and computed the number of times $m$ refers to $e$ ($\#(m,e)$), as well as the conditional probability of $e$ given $m$: $P(e|m)=\#(m,e)/\sum_{e'}\#(m,e')$. Examining these distributions revealed many mentions belong to two extremes -- either they had very little ambiguity, or they appeared in the dataset only a handful of times and referred to different entities only a couple of times each.\todo{Not sure I understand the second case. Example? YOTAM: tried to improve explanation. } We deemed the former to be less interesting for the purpose of NED, and suspected the latter to be noise with high probability. To filter these cases, we kept only mentions for which at least two different entities have 10 mentions each ($\#(m,e) \ge 10$) and consist of at least 10\% of occurrences $P(e|m) \ge 0.1$. This procedure aggressively filtered our dataset and we were left with $3.2M$ mentions.
-
-Finally, we randomly split the data into train (90\%), validation (10\%), and test (10\%), according to domains in order to minimize lexical memorization (see \cite{levy2015supervised}).
+Finally, we randomly split the data into train (90\%), validation (10\%), and test (10\%), according to website domains in order to minimize lexical memorization (see \cite{levy2015supervised}).
 
 
 \section{Algorithm}
 
 \toin{This section should be organized as follows: 4. Overview, 4.1. Model Architecture, 4.2. Training, 4.3. Embedding Initialization. Overview should refer to the diagram, which 4.1. elaborates. 4.1. should include all the formulae, as well as the rationale behind the architecture.}
 
-Our DNN model is a discriminative model which takes a pair of local context and candidate entity, and outputs a likelihood for the candidate entity being correct.\todo{Omer, check this again. Is it a factor or a probability?}. Both words and entities are represented using embedding dictionaries and we interpret local context as a window-of-words to the left and right of a mention. The left and right contexts are fed into a duo of Attentional RNNs (ARRN) components which process each side and produce a fixed length vector representation. The resulting vectors along with the entity embedding are then fed into a classifier network with two output units that are trained to emit the likelihood of the candidate being a correct or corrupt assignment. 
+Our DNN model is a discriminative model which takes a pair of local context and candidate entity, and outputs a likelihood for the candidate entity being correct\todo{Omer, check this again. Is it a factor or a probability?}. Both words and entities are represented using embedding dictionaries and we interpret local context as a window-of-words to the left and right of a mention. The left and right contexts are fed into a duo of Attention-RNN (ARRN) components which process each side and produce a fixed length vector representation. The resulting vectors along with the entity embedding are then fed into a classifier network with two output units that are trained to emit the likelihood of the candidate being a correct or corrupt assignment. 
 
 \subsection{Model Architecture}
 
@@ -161,7 +157,7 @@ Our DNN model is a discriminative model which takes a pair of local context and 
   
 Our architecture has two main component: a duo of ARNN components and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained to emit the likelihood of the candidate being a correct or corrupt assignment by optimizing a cross-entropy loss function. 
 
-The ARNN components each process one side of the context (left and right) where the right context is fed into the ARNN in reverse. The ARNNs are based on a general RNN unit fitted with an attention mechanism, and their mechanics are depicted in Figure \ref{fig:arnn}. 
+The ARNN components each process one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}. The ARNNs are based on a general RNN unit fitted with an attention mechanism, and their mechanics are depicted in Figure \ref{fig:arnn}. 
 
 Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector by a function $f$ parametrized by $\Theta_1$. The output at each step is computed from the hidden state using a function $g$ parametrized by $\Theta_2$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
 
@@ -173,7 +169,7 @@ Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads
 \end{aligned}
 \end{equation}
 
-In our implementation we have used a standard GRU unit \cite{cho2014learning}, however any RNN can be a drop-in replacement. We fit the RNN unit with an additional attention mechanism, a mechanism commonly used for state-of-the-art encoder-decoder models where the output of the decoder at time step $t$ is used to decide which parts of the encoder output are important for decoding time step $t+1$ \cite{bahdanau2014neural, xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
+In our implementation we have used a standard GRU unit \cite{cho2014learning}, but any RNN can be a drop-in replacement. We fit the RNN unit with an additional attention mechanism, a mechanism commonly used for state-of-the-art encoder-decoder models where the output of the decoder at time step $t$ is used to decide which parts of the encoder output are important for decoding time step $t+1$ \cite{bahdanau2014neural, xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
 
 Equation \ref{eq2} details the equations governing the attention model.
 
@@ -186,40 +182,36 @@ Equation \ref{eq2} details the equations governing the attention model.
 \end{aligned}
 \end{equation}
 
-The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. A softmax function then normalizes the attention values and the final output $o_{attn}$ is computed as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate. We follow to Bahdanau at el. \cite{bahdanau2014neural} and parametrize the attention function $r$ is pas a single layer NN as shown in equation \ref{eq3} where $A, B$ are the layer weights and $b$ is a bias term.
+The main component in equation \ref{eq2} is the function $r$, parametrized by $\Theta_3$, which computes an attention value at each step using $v_{candidate}$, the candidate entity embedding, as a control signal. A softmax function then normalizes the attention values and the final output $o_{attn}$ is computed as a weighted sum of all the output vectors of the RNN. This allows the attention mechanism to decide on the importance of different context parts when examining a specific candidate. We follow Bahdanau at el. \cite{bahdanau2014neural} and parametrize the attention function $r$ as a single layer NN as shown in equation \ref{eq3} where $A, B$ are the layer weights and $b$ is a bias term.
 
 \begin{equation}
 \label{eq3}
 r_{\Theta_3}(o_t, v_{candidate}) = Ao_t + Bv_{candidate} + b \\
 \end{equation}
 
-\toin{Is this the first-ever use of attention in GRUs, or was this parametrization used before? It reads as if your contribution is inventing this mechanism, rather than using it. If this is not novel, I suggest rephrasing and citing appropriately; the explanation is very clear, but it needs to emphasize what you did *differently*.}
-
 \subsection{Training}
 
-We assume our model is only given examples of correct entity assignments during training and therefore automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$, which is sampled uniformly from all entities in the dataset. Using the combined dataset of correct and corrupt examples, our algorithm learns to separate correct assignments from the generated corrupt ones.
+We assume our model is only given examples of correct entity assignments during training and therefore automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We have considered two alternatives for corrupt sampling:
 
-Sampling corrupt assignments from the set of all entities rather then only possible candidates for each mention was done for two reasons: it diversifies the contexts in which each entity is given to the model as a negative example allowing the model to better generalize for unseen mentions and contexts, and allows to utilize unambiguous examples where only a single candidate is found (i.e. Wikipedia cross-references used in section \ref{experiments-conll} which contain a large number of unambiguous mentions) \todo{YOTAM: is this explanation good?}
+\paragraph{Near-misses:} 
+Sampling out of the candidate set of each mention. We have found this to be more effective where the training data reliably reflects the test-set distribution.
 
-Uniform sampling is done to match the distribution of positive examples of an entity to the prior probability of the entity in the corpus - in effect biasing the network towards more frequent entities. \todo{YOTAM - should i add a formula to show this? i can show this with a formula but its a bit tedious}
+\paragraph{Global:} 
+Sampling from the entire dictionary of entities. More effective where the training data or candidate generation does not reflect the test-set well. Has an added benefit of allowing us to utilize unambiguous training examples where only a single candidate is found.
 
-Model optimization was carried out using standard backpropagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. In our experiments we trained all models for $20$ epochs and used $k=5$ for corrupt example generation. We found the performance of our model substantially improves for the first few epochs and then continues to slowly converge with marginal gains. 
+In our evaluation we specify exactly which approach was used for each experiment and provide an empirical comparison of the two approaches.
 
-\todo{YOTAM - I have the training graph, here or in the evaluation section? }
+We sample corrupt examples uniformly in both cases. This matches the distribution of positive examples to the prior probability of the entities for Global sampling and the conditional prior for Near-misses -- In effect biasing the network towards more frequent entities. 
+
+Model optimization was carried out using standard backpropagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. We found the performance of our model substantially improves for the first few epochs and then continues to slowly converge with marginal gains, and therefore trained all models for $8$ epochs with $k=5$ for corrupt example generation. 
 
 \subsection{Embedding Initialization}
 
-\toin{In the model architecture, and perhaps also in the overview, you should mention that both words and entities are embedded. In the training subsection, you should mention whether the embeddings were finetuned or not.}
-Training our model implicitly embeds the vocabulary of words and collection of entities in a common space. However, we find that explicitly initializing these embeddings with vectors pre-trained over a large collection of unlabeled data significantly improved \hl{whatever} (see Section \ref{experiments}\todo{Refer to the exact subsection where you discuss this result}). To this end, we implemented an SGNS-based approach \cite{mikolov2013distributed} that simultaneously trains both word and entity vectors.
+Training our model implicitly embeds the vocabulary of words and collection of entities in a common space. However, we find that explicitly initializing these embeddings with vectors pre-trained over a large collection of unlabeled data significantly improved both performance and training speed (see Section \ref{experiments}\todo{Refer to the exact subsection where you discuss this result}). To this end, we implemented an SGNS-based approach \cite{mikolov2013distributed} that simultaneously trains both word and entity vectors.
 
 We used \texttt{word2vecf}\footnote{\url{http://bitbucket.org/yoavgo/word2vecf}} \cite{levy2014dependency}, which allows one to train word and context embeddings using arbitrary definitions of "word" and "context" by providing a dataset of word-context pairs $(w,c)$, rather than a textual corpus. In our usage, we define a context as an entity $e$. To compile a dataset of $(w,e)$ pairs, we consider every word $w$ that appeared in the Wikipedia article describing entity $e$. We limit our vocabularies to words that appeared at least 20 times in the corpus and entities that contain at least 20 words in their articles. We ran the process for 10 epochs and produced vectors of 300 dimensions; other hyperparameters were set to their defaults.
 
 \newcite{levy2014neural} showed that SGNS implicitly factorizes the word-context PMI matrix. Our approach is doing the same for the word-entity PMI matrix, which is highly related to the word-entity TFIDF matrix used in Explicit Semantic Analysis \cite{gabrilovich2007computing}.
-
-\hl{-needs developing-}
-
-\hl{-show results of the analogies experiment we did indicating semantic structure for the WORD vectors-}
-
 
 \section{Evaluation}
 \label{experiments}
