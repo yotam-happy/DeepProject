@@ -188,6 +188,23 @@ Model optimization was carried out using standard backpropagation and an AdaGrad
 
 \subsection{Embedding Initialization}
 
+\begin{table*}[t]
+	\begin{center}
+		\begin{tabular}{|c| c | c | }
+			\hline \multicolumn{3}{|c|}{Wikilinks Test-Set Evaluation} \\
+			\hline \bf Model               & \bf Sampled Test Set (10K)  & \bf Full Test Set (300K)  \\
+			Baseline (MPS)                 & $60$   & $59.6$ \\
+			Cheng et al.                   & $50.7$ & - \\
+			Yamada at el.                  & $67.6$ & $66.9$ \\
+			\hline
+			Our Attention-RNN              & $73.2$ & $73$ \\
+			Our RNN, w/o Attention         & $??$   & $??$ \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{\label{tab:wikilink} Evaluation on Web-Fragment data (Wikilinks)}
+\end{table*}
+
 Training our model implicitly embeds the vocabulary of words and collection of entities in a common space. However, we find that explicitly initializing these embeddings with vectors pre-trained over a large collection of unlabeled data significantly improved both performance and training speed (see Section \ref{experiments}\todo{Refer to the exact subsection where you discuss this result}). To this end, we implemented an SGNS-based approach \cite{mikolov2013distributed} that simultaneously trains both word and entity vectors.
 
 We used \texttt{word2vecf}\footnote{\url{http://bitbucket.org/yoavgo/word2vecf}} \cite{levy2014dependency}, which allows one to train word and context embeddings using arbitrary definitions of "word" and "context" by providing a dataset of word-context pairs $(w,c)$, rather than a textual corpus. In our usage, we define a context as an entity $e$. To compile a dataset of $(w,e)$ pairs, we consider every word $w$ that appeared in the Wikipedia article describing entity $e$. We limit our vocabularies to words that appeared at least 20 times in the corpus and entities that contain at least 20 words in their articles. We ran the process for 10 epochs and produced vectors of 300 dimensions; other hyperparameters were set to their defaults.
@@ -217,26 +234,8 @@ Since we are the first to evaluate NED algorithms on WikilinksNED, we ran a sele
 
 Finally, we include the \textbf{Most Probable Sense (MPS)} baseline, which selects the entity that was seen most with the given mention during training.
 
-\begin{table*}[t]
-	\begin{center}
-		\begin{tabular}{|c| c | c | }
-			\hline \multicolumn{3}{|c|}{Wikilinks Evaluation} \\
-			\hline \bf Model               & \bf Sampled Test Set (10K)  & \bf Full Test Set (300K)  \\
-			Baseline (MPS)                 & $60$   & $59.6$ \\
-			Cheng et al.                   & $50.7$ & - \\
-			Yamada at el.                  & $67.6$ & $66.9$ \\
-			\hline
-			Our Attention-RNN              & $73.2$ & $73$ \\
-			Our RNN, w/o Attention         & $??$   & $??$ \\
-			\hline
-		\end{tabular}
-	\end{center}
-	\caption{\label{tab:wikilink} Evaluation on Web-Fragment data (Wikilinks)}
-\end{table*}
-
-
 \paragraph{Results}
-Experimental results on the Wikilinks dataset are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms Yamada at el. on this data by over 5 points. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. Our method outperforms the Baseline as well by a very large margin indicating our RNN model is indeed able to capture meaningful contextual features despite the noisy and short context. 
+We used standard micro P@1 accuracy for evaluation on WikilinksNED. Experimental results are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms Yamada at el. on this data by over 5 points. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. Our method outperforms the Baseline as well by a very large margin indicating our RNN model is indeed able to capture meaningful contextual features despite the noisy and short context. 
 
 When running Cheng at el \shortcite{Cheng2013} we have used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets based on news corpora and annotated by experts.
 
@@ -246,7 +245,9 @@ We find that the attention mechanism significantly improves results by attending
 \label{experiments-conll}
 
 \paragraph{Training}
-CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to a more complex training method where we first trained our model on a large corpus of mentions derived from Wikipedia cross-references using an All-Entity corrupt-sampling approach. We then fine-tuned the resulting model on CoNLL-YAGO training set using the Near-Misses corrupt-sampling approach. To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. We set $k=5$ for corrupt example generation and trained for $1$ epoch. The resulting model was then fine-tuned on CoNLL-YAGO training set, where corrupt examples were produced by considering all possible candidates for each mention.
+CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to a more complex training method. We first trained our model on a large corpus of Wikipedia derived data, and fine-tuned on CoNLL-YAGO training set. We then used the model in a similar setting to \newcite{yamada2016joint} where a GBRT was trained with our model as a feature along with the statistical and string based features defined by Yamada. 
+
+To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. We set $k=5$ for corrupt example generation and trained for $1$ epoch with All-Entity corrupt-sampling. The resulting model was then fine-tuned on CoNLL-YAGO training set, where corrupt examples were produced by considering all possible candidates for each mention.
 
 \paragraph{Candidate Generation}
 For comparability with existing methods we used two publicly available candidates datasets:
@@ -257,7 +258,9 @@ For comparability with existing methods we used two publicly available candidate
 
 \paragraph{Baselines}
 As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all candidate entities.
-We also compare to the following papers - Francis-Landau et al. \shortcite{francis2016capturing}, He et al. \shortcite{He2013}, Hoffart et al. \shortcite{hoffart2011robust} and Chisholm et al. \shortcite{Chisholm2015} ,as they are all strong local approaches and a good source for comparison.
+We also compare to the following papers - Francis-Landau et al. \shortcite{francis2016capturing},  Yamada at el. \shortcite{yamada2016joint}, and Chisholm et al. \shortcite{Chisholm2015}, as they are all strong local approaches and a good source for comparison.
+%He et al. \shortcite{He2013}, Hoffart et al. \shortcite{hoffart2011robust} - YOTAM: I removed these as they are non-local - Make sure again!!%
+
 
 \paragraph{Results}
 The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves reasonable results, however it cannot beat state-of-the-art results since it requires large quantities of training data to properly train the large number of parameters in the model. Further, the relative cleanliness of the data allows existing approaches to perform very well and marginalizes the effect of utilizing a deep and powerful neural model.
@@ -268,14 +271,13 @@ The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{
 			\hline \multicolumn{3}{|c|}{CoNLL-YAGO test-b (Local methods)} \\
 			\hline Model & Micro P@1 & Macro P@1 \\ 
 			\hline \multicolumn{3}{|c|}{PPRforNED} \\
-			\hline ARNN + Shallow features    & $87.3$  & $88.6$ \\
+			\hline Our ARNN + GBRT    & $87.3$  & $88.6$ \\
 			Yamada et al. local               & $90.9$  & $92.4$ \\
 			\hline \multicolumn{3}{|c|}{Yago} \\
-			\hline ARNN + Shallow features    & $83.3$  & $86.3$ \\
+			\hline Our ARNN + GBRT    & $83.3$  & $86.3$ \\
 			Yamada et al. local               & $87.2$  & $89.6$ \\
 			Francis-Landau et al.             & $85.5$  & - \\
 			Chisholm et al. local             & $86.1$  & - \\
-			\hline Lazic et al.               & $86.4$  & - \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -284,23 +286,23 @@ The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{
 
 \subsection{Effects of initialized embeddings and corrupt-sampling schemes}
 
-We performed a study of the effects of using pre-initialized embeddings for our model, and of using either All-Entity or Near-Misses corrupt-sampling. The evaluation was done on the evaluation set of the WikilinksNED corpus and can be seen in Table \ref{tab:c}. We have found that using pre-initialized embeddings gives a much better starting point for training compared to random initialization. This results in faster convergence and a significant performance gain.
+We performed a study of the effects of using pre-initialized embeddings for our model, and of using either All-Entity or Near-Misses corrupt-sampling. The evaluation was done on a $10\%$ sample of the evaluation set of the WikilinksNED corpus and can be seen in Table \ref{tab:c}. We have found that using pre-initialized embeddings gives a much better starting point for training compared to random initialization. This results in faster convergence and a significant performance gain.
 
 Comparison of All-Entity and Near-Misses corrupt-sampling reveals that when using Near-Misses, our model achieves significantly improved performance. We attribute this difference both to the more efficient nature of training with near misses, and to Near-Misses preserving the conditional-prior of entities which is a stronger signal then the prior probability preserved by All-Entity corrupt-sampling.
 
 \begin{table}[h]
 	\begin{center}
 		\begin{tabular}{|c| p{1.5cm}|}
-			\hline \multicolumn{2}{|c|}{Training} \\
+			\hline \multicolumn{2}{|c|}{Wikilinks Evaluation-Set} \\
 			\hline \bf Model & \bf Micro     accuracy  \\ \hline
-			Global, pre-initialization & $??$ \\ 
-			Global, random initialization & $??$ \\ 
-			Near-misses, pre-initialization & $??$ \\ 
-			Near-misses, random initialization & $??$ \\ 
+			All-Entity, with init. & $0.7$ \\ 
+			All-Entity, random init. & $0.671$ \\ 
+			Near-misses, with init. & $0.725$ \\ 
+			Near-misses, random init. & $??$ \\ 
 			\hline
 		\end{tabular}
 	\end{center}
-	\caption{\label{tab:c} Corrupt-sampling and Pre-initialization}
+	\caption{\label{tab:c} Corrupt-sampling and Initialization}
 \end{table}
 
 \subsection{Discussion//Conclusions}
