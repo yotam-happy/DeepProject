@@ -1,5 +1,13 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citename{Bahdanau \bgroup et al.\egroup
+  }2014]{bahdanau2014neural}
+Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+\newblock 2014.
+\newblock Neural machine translation by jointly learning to align and
+  translate.
+\newblock {\em arXiv preprint arXiv:1409.0473}.
+
 \bibitem[\protect\citename{Bentivogli \bgroup et al.\egroup
   }]{bentivogli2010extending}
 Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
@@ -82,12 +90,6 @@ Zhaochen Guo and Denilson Barbosa.
 \newblock In {\em Proceedings of the 23rd International Conference on World
   Wide Web}, pages 1305--1310. ACM.
 
-\bibitem[\protect\citename{Hachey \bgroup et al.\egroup }2013]{Hachey2013}
-Ben Hachey, Will Radford, Joel Nothman, Matthew Honnibal, and James~R. Curran.
-\newblock 2013.
-\newblock {Evaluating entity linking with wikipedia}.
-\newblock {\em Artificial Intelligence}, 194:130--150.
-
 \bibitem[\protect\citename{He \bgroup et al.\egroup }2013]{He2013}
 Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
 \newblock 2013.
@@ -139,6 +141,11 @@ Omer Levy and Yoav Goldberg.
 \newblock In {\em Advances in neural information processing systems}, pages
   2177--2185.
 
+\bibitem[\protect\citename{Locke}2009]{locke2009named}
+Brian~William Locke.
+\newblock 2009.
+\newblock Named entity recognition: Adapting to microblogging.
+
 \bibitem[\protect\citename{Melamud and Goldberger}2014]{Melamud2014}
 Oren Melamud and Jacob Goldberger.
 \newblock 2014.
@@ -159,15 +166,6 @@ Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg~S Corrado, and Jeff Dean.
   compositionality.
 \newblock In {\em Advances in neural information processing systems}, pages
   3111--3119.
-
-\bibitem[\protect\citename{Pedregosa \bgroup et al.\egroup
-  }2011]{pedregosa2011scikit}
-Fabian Pedregosa, Ga{\"e}l Varoquaux, Alexandre Gramfort, Vincent Michel,
-  Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron
-  Weiss, Vincent Dubourg, et~al.
-\newblock 2011.
-\newblock Scikit-learn: Machine learning in python.
-\newblock {\em Journal of Machine Learning Research}, 12(Oct):2825--2830.
 
 \bibitem[\protect\citename{Pershina \bgroup et al.\egroup
   }2015]{pershina2015personalized}
