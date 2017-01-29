@@ -290,15 +290,17 @@ We performed a study of the effects of using pre-initialized embeddings for our 
 
 Comparison of All-Entity and Near-Misses corrupt-sampling reveals that when using Near-Misses, our model achieves significantly improved performance. We attribute this difference both to the more efficient nature of training with near misses, and to Near-Misses preserving the conditional-prior of entities which is a stronger signal then the prior probability preserved by All-Entity corrupt-sampling.
 
+
 \begin{table}[h]
+		\toin{YOTAM: ** = Missing one more epoch for Near-misses, random init. - tommorow}
 	\begin{center}
 		\begin{tabular}{|c| p{1.5cm}|}
 			\hline \multicolumn{2}{|c|}{Wikilinks Evaluation-Set} \\
 			\hline \bf Model & \bf Micro     accuracy  \\ \hline
-			All-Entity, with init. & $0.7$ \\ 
-			All-Entity, random init. & $0.671$ \\ 
-			Near-misses, with init. & $0.725$ \\ 
-			Near-misses, random init. & $??$ \\ 
+			All-Entity, with init. & $70$ \\ 
+			All-Entity, random init. & $67.1$ \\ 
+			Near-misses, with init. & $72.5$ \\ 
+			Near-misses, random init. & $67.2**$ \\ 
 			\hline
 		\end{tabular}
 	\end{center}
