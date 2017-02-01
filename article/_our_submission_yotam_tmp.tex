@@ -60,7 +60,7 @@ We address the task of Named Entity Disambiguation (NED) for noisy text.
 We present WikilinksNED, a large-scale NED dataset of short web-page fragments. 
 in contrast to existing news-based datasets WikilinksNED is significantly noisier and less coherent, making it more difficult to disambiguate. 
 We propose a model based on Attention-RNNs to both exploit the sequential nature of text and attend to the most important signals in it.
-We evaluate both on WikilinksNED and on a standard, smaller, news-based dataset and find our model greatly outperforms existing state-of-the-art methods on WikilinksNED while achieving comparable performance on the smaller dataset. 
+We evaluate both on WikilinksNED and on a standard, smaller, news-based dataset and find our model significantly outperforms existing state-of-the-art methods on WikilinksNED while achieving reasonable performance on the smaller dataset. 
 \end{abstract}
 
 
@@ -81,17 +81,15 @@ NED algorithms can broadly be divided into local and global approaches. Local al
 
 This fragment is considerably less structured and with a more personal tone then news reports. It clearly references the entity \textit{Monopoly\_(Game)}, however expressions such as 'experiment', and 'Industry' can generate a lot of noise when disambiguating \textit{Monopoly\_(Game)} from the much more common entity \textit{Monopoly} (economics term). Some sense of local semantics and syntactics must be considered in order to separate the useful signals (e.g. indoor games, played) from the noisy ones.
 
-In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is significantly larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have found that performance of state-of-the-art methods is greatly impaired on this dataset and believe new algorithms that can better model local semantic and syntactic features are required.
+In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is significantly larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have found that performance of state-of-the-art methods are significantly impaired on this dataset and believe new algorithms that can better model local semantic and syntactic features are required.
 
 We propose a novel neural network architecture based on Recurrent Neural Networks (RNNs) with an attention mechanism, where the RNN units model textual context as a sequence and the attention mechanism gives importance to contextual signals based on the specific candidate entity being evaluated. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs and by devising an attention model that can reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated.
 
 We also describe a novel method for initializing word and entity embeddings used in our model and demonstrate its importance for model performance and training efficiency. 
 
-\toin{Noam: The next sentence sounds odd...}We demonstrate our model greatly outperforms existing state-of-the-art NED algorithms on the web based dataset, showing that existing state-of-the-art methods are not optimal in such settings, and that RNNs with attention can better model noisy and short context. In addition, we evaluate our algorithm on the CoNLL-YAGO dataset \cite{hoffart2011robust}, a dataset of annotated newswire articles, where it yields reasonable results. However it cannot beat state-of-the-art results since it requires large quantities of training data to properly train the large number of parameters in the model. We conclude that RNNs with attention are well-suited for local disambiguation in real-worlds scenarios where context is noisy and less coherent, but analysis of our results reveals that there is still room for improvement.
+We demonstrate our model significantly outperforms existing state-of-the-art NED algorithms on the web based dataset, showing that existing state-of-the-art methods are not optimal in such settings, and that RNNs with attention can better model noisy and short context. In addition, we evaluate our algorithm on the CoNLL-YAGO dataset \cite{hoffart2011robust}, a dataset of annotated newswire articles, where it yields reasonable results. However it cannot beat state-of-the-art results since it requires large quantities of training data to properly train the large number of parameters in the model. We conclude that RNNs with attention are well-suited for local disambiguation in real-worlds scenarios where context is noisy and less coherent, but analysis of our results reveals that there is still room for improvement.
 
-\section{Background}
-
-\subsection{Related Work}
+\section{Related Work}
 
 Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While providing a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches, which add a layer of sophistication on top of local approaches by considering the coherency of entities assignment within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism.
 
@@ -202,7 +200,7 @@ Model optimization was carried out using standard backpropagation and an AdaGrad
 			Yamada at el.                  & $67.6$ & $66.9$ \\
 			\hline
 			Our Attention-RNN              & $73.2$ & $73$ \\
-			Our RNN, w/o Attention         & $??$   & $??$ \\
+			Our RNN, w/o Attention         & $72.1$   & $72.2$ \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -312,7 +310,7 @@ Comparison of All-Entity and Near-Misses corrupt-sampling reveals that when usin
 \end{table}
 
 \subsection{Discussion//Conclusions}
-We believe these results demonstrate that our ARNN model is better then existing state-of-the-art techniques at modeling noisy context when sufficient amounts of training examples are available. This allows us to greatly outperform state-of-the-art algorithms which are found to be suboptimal in a noisy environment such as web content. 
+We believe these results demonstrate that our ARNN model is better then existing state-of-the-art techniques at modeling noisy context when sufficient amounts of training examples are available. This allows us to significantly outperform state-of-the-art algorithms which are found to be suboptimal in a noisy environment such as web content. 
 
 However the gap between results of all systems tested on both CoNLL-YAGO and WikilinksNED indicates that web mentions are indeed a more challenging test case then news-based corpora. We believe this to be an important and challenging real-world scenario where noise in the form of mis-structured text, incoherent topics and grammatical/spelling mistakes are present. This scenario represents a distinct test-case that lays in between the standard new-based datasets and the much noisier Tweeter data that has been receiving increasing attention lately. We believe recursive neural models are a promising direction for this task, while there is still much room for improvement. 
 
