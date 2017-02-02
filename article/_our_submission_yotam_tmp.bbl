@@ -1,0 +1,262 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citename{Bahdanau \bgroup et al.\egroup
+  }2014]{bahdanau2014neural}
+Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+\newblock 2014.
+\newblock Neural machine translation by jointly learning to align and
+  translate.
+\newblock {\em CoRR}, abs/1409.0473.
+
+\bibitem[\protect\citename{Bentivogli \bgroup et al.\egroup
+  }2010]{bentivogli2010extending}
+Luisa Bentivogli, Pamela Forner, Claudio Giuliano, Alessandro Marchetti,
+  Emanuele Pianta, and Kateryna Tymoshenko, 2010.
+\newblock {\em Proceedings of the 2nd Workshop on The People's Web Meets NLP:
+  Collaboratively Constructed Semantic Resources}, chapter Extending English
+  ACE 2005 Corpus Annotation with Ground-truth Links to Wikipedia, pages
+  19--27.
+\newblock Coling 2010 Organizing Committee.
+
+\bibitem[\protect\citename{Berant and Liang}2014]{berant2013semantic}
+Jonathan Berant and Percy Liang.
+\newblock 2014.
+\newblock Semantic parsing via paraphrasing.
+\newblock In {\em Proceedings of the 52nd Annual Meeting of the Association for
+  Computational Linguistics (Volume 1: Long Papers)}, pages 1415--1425.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Bunescu and Pa{\c{s}}ca}2006]{bunescu2006using}
+Razvan Bunescu and Marius Pa{\c{s}}ca.
+\newblock 2006.
+\newblock Using encyclopedic knowledge for named entity disambiguation.
+\newblock In {\em 11th Conference of the European Chapter of the Association
+  for Computational Linguistics}.
+
+\bibitem[\protect\citename{Cheng and Roth}2013]{Cheng2013}
+Xiao Cheng and Dan Roth.
+\newblock 2013.
+\newblock Relational inference for wikification.
+\newblock In {\em Proceedings of the 2013 Conference on Empirical Methods in
+  Natural Language Processing}, pages 1787--1796. Association for Computational
+  Linguistics.
+
+\bibitem[\protect\citename{Chisholm and Hachey}2015]{chisholm2015entity}
+Andrew Chisholm and Ben Hachey.
+\newblock 2015.
+\newblock Entity disambiguation with web links.
+\newblock {\em Transactions of the Association of Computational Linguistics},
+  3:145--156.
+
+\bibitem[\protect\citename{Cho \bgroup et al.\egroup }2014]{cho2014learning}
+Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi
+  Bougares, Holger Schwenk, and Yoshua Bengio.
+\newblock 2014.
+\newblock Learning phrase representations using rnn encoder--decoder for
+  statistical machine translation.
+\newblock In {\em Proceedings of the 2014 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 1724--1734. Association for
+  Computational Linguistics.
+
+\bibitem[\protect\citename{Duchi \bgroup et al.\egroup
+  }2011]{duchi2011adaptive}
+John~C. Duchi, Elad Hazan, and Yoram Singer.
+\newblock 2011.
+\newblock Adaptive subgradient methods for online learning and stochastic
+  optimization.
+\newblock {\em Journal of Machine Learning Research}, 12:2121--2159.
+
+\bibitem[\protect\citename{Francis-Landau \bgroup et al.\egroup
+  }2016]{francis2016capturing}
+Matthew Francis-Landau, Greg Durrett, and Dan Klein.
+\newblock 2016.
+\newblock Capturing semantic similarity for entity linking with convolutional
+  neural networks.
+\newblock In {\em Proceedings of the 2016 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies}, pages 1256--1261. Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Fromreide \bgroup et al.\egroup
+  }2014]{fromreide2014crowdsourcing}
+Hege Fromreide, Dirk Hovy, and Anders S{\o}gaard.
+\newblock 2014.
+\newblock Crowdsourcing and annotating ner for twitter \#drift.
+\newblock In {\em Proceedings of the Ninth International Conference on Language
+  Resources and Evaluation (LREC-2014)}. European Language Resources
+  Association (ELRA).
+
+\bibitem[\protect\citename{Gabrilovich and
+  Markovitch}2007]{gabrilovich2007computing}
+Evgeniy Gabrilovich and Shaul Markovitch.
+\newblock 2007.
+\newblock Computing semantic relatedness using wikipedia-based explicit
+  semantic analysis.
+\newblock In {\em {IJCAI} 2007, Proceedings of the 20th International Joint
+  Conference on Artificial Intelligence, Hyderabad, India, January 6-12, 2007},
+  pages 1606--1611.
+
+\bibitem[\protect\citename{Globerson \bgroup et al.\egroup
+  }2016]{Globerson2016}
+Amir Globerson, Nevena Lazic, Soumen Chakrabarti, Amarnag Subramanya, Michael
+  Ringaard, and Fernando Pereira.
+\newblock 2016.
+\newblock Collective entity resolution with multi-focal attention.
+\newblock In {\em Proceedings of the 54th Annual Meeting of the Association for
+  Computational Linguistics (Volume 1: Long Papers)}, pages 621--631.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Guo and Barbosa}2014]{guo2014entity}
+Zhaochen Guo and Denilson Barbosa.
+\newblock 2014.
+\newblock Entity linking with a unified semantic representation.
+\newblock In {\em Proceedings of the 23rd International Conference on World
+  Wide Web}, WWW '14 Companion, pages 1305--1310, New York, NY, USA. ACM.
+
+\bibitem[\protect\citename{He \bgroup et al.\egroup }2013]{he2013learning}
+Zhengyan He, Shujie Liu, Mu~Li, Ming Zhou, Longkai Zhang, and Houfeng Wang.
+\newblock 2013.
+\newblock Learning entity representation for entity disambiguation.
+\newblock In {\em Proceedings of the 51st Annual Meeting of the Association for
+  Computational Linguistics (Volume 2: Short Papers)}, pages 30--34.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Hoffart \bgroup et al.\egroup
+  }2011]{hoffart2011robust}
+Johannes Hoffart, Amir~Mohamed Yosef, Ilaria Bordino, Hagen F{\"u}rstenau,
+  Manfred Pinkal, Marc Spaniol, Bilyana Taneva, Stefan Thater, and Gerhard
+  Weikum.
+\newblock 2011.
+\newblock Robust disambiguation of named entities in text.
+\newblock In {\em Proceedings of the 2011 Conference on Empirical Methods in
+  Natural Language Processing}, pages 782--792. Association for Computational
+  Linguistics.
+
+\bibitem[\protect\citename{Hu \bgroup et al.\egroup }2015]{Hu2015Entity}
+Zhiting Hu, Poyao Huang, Yuntian Deng, Yingkai Gao, and Eric Xing.
+\newblock 2015.
+\newblock Entity hierarchy embedding.
+\newblock In {\em Proceedings of the 53rd Annual Meeting of the Association for
+  Computational Linguistics and the 7th International Joint Conference on
+  Natural Language Processing (Volume 1: Long Papers)}, pages 1292--1300.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Ji \bgroup et al.\egroup }2010]{ji2010overview}
+Heng Ji, Ralph Grishman, Hoa~Trang Dang, Kira Griffitt, and Joe Ellis.
+\newblock 2010.
+\newblock Overview of the tac 2010 knowledge base population track.
+\newblock In {\em Third Text Analysis Conference (TAC 2010)}, volume~3, pages
+  3--3.
+
+\bibitem[\protect\citename{Lazic \bgroup et al.\egroup }2015]{Lazic2015}
+Nevena Lazic, Amarnag Subramanya, Michael Ringgaard, and Fernando Pereira.
+\newblock 2015.
+\newblock Plato: A selective context model for entity resolution.
+\newblock {\em Transactions of the Association of Computational Linguistics},
+  3:503--515.
+
+\bibitem[\protect\citename{Levy and Goldberg}2014a]{levy2014dependency}
+Omer Levy and Yoav Goldberg.
+\newblock 2014a.
+\newblock Dependency-based word embeddings.
+\newblock In {\em Proceedings of the 52nd Annual Meeting of the Association for
+  Computational Linguistics (Volume 2: Short Papers)}, pages 302--308.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Levy and Goldberg}2014b]{levy2014neural}
+Omer Levy and Yoav Goldberg.
+\newblock 2014b.
+\newblock Neural word embedding as implicit matrix factorization.
+\newblock In {\em Advances in Neural Information Processing Systems 27: Annual
+  Conference on Neural Information Processing Systems 2014, December 8-13 2014,
+  Montreal, Quebec, Canada}, pages 2177--2185.
+
+\bibitem[\protect\citename{Levy \bgroup et al.\egroup
+  }2015]{levy2015supervised}
+Omer Levy, Steffen Remus, Chris Biemann, and Ido Dagan.
+\newblock 2015.
+\newblock Do supervised distributional methods really learn lexical inference
+  relations?
+\newblock In {\em Proceedings of the 2015 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies}, pages 970--976. Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Mihalcea and Csomai}2007]{mihalcea2007wikify}
+Rada Mihalcea and Andras Csomai.
+\newblock 2007.
+\newblock Wikify!: Linking documents to encyclopedic knowledge.
+\newblock In {\em Proceedings of the Sixteenth ACM Conference on Conference on
+  Information and Knowledge Management}, CIKM '07, pages 233--242, New York,
+  NY, USA. ACM.
+
+\bibitem[\protect\citename{Mikolov \bgroup et al.\egroup
+  }2013]{mikolov2013distributed}
+Tomas Mikolov, Ilya Sutskever, Kai Chen, Gregory~S. Corrado, and Jeffrey Dean.
+\newblock 2013.
+\newblock Distributed representations of words and phrases and their
+  compositionality.
+\newblock In {\em Advances in Neural Information Processing Systems 26: 27th
+  Annual Conference on Neural Information Processing Systems 2013. Proceedings
+  of a meeting held December 5-8, 2013, Lake Tahoe, Nevada, United States.},
+  pages 3111--3119.
+
+\bibitem[\protect\citename{Pershina \bgroup et al.\egroup
+  }2015]{pershina2015personalized}
+Maria Pershina, Yifan He, and Ralph Grishman.
+\newblock 2015.
+\newblock Personalized page rank for named entity disambiguation.
+\newblock In {\em Proceedings of the 2015 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies}, pages 238--243. Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Ratinov and Roth}2011]{ratinov2011glow}
+Lev{-}Arie Ratinov and Dan Roth.
+\newblock 2011.
+\newblock {GLOW} {TAC-KBP2011} entity linking system.
+\newblock In {\em Proceedings of the Fourth Text Analysis Conference, {TAC}
+  2011, Gaithersburg, Maryland, USA, November 14-15, 2011}.
+
+\bibitem[\protect\citename{Ratinov \bgroup et al.\egroup }2011]{Ratinov2011}
+Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
+\newblock 2011.
+\newblock Local and global algorithms for disambiguation to wikipedia.
+\newblock In {\em Proceedings of the 49th Annual Meeting of the Association for
+  Computational Linguistics: Human Language Technologies}, pages 1375--1384.
+  Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Singh \bgroup et al.\egroup
+  }2012]{singh12:wiki-links}
+Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
+\newblock 2012.
+\newblock Wikilinks: A large-scale cross-document coreference corpus labeled
+  via links to wikipedia.
+\newblock {\em University of Massachusetts, Amherst, Tech. Rep.
+  UM-CS-2012-015}.
+
+\bibitem[\protect\citename{Sun \bgroup et al.\egroup }2015]{sun2015modeling}
+Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang.
+\newblock 2015.
+\newblock Modeling mention, context and entity with neural networks for entity
+  disambiguation.
+\newblock In {\em Proceedings of the Twenty-Fourth International Joint
+  Conference on Artificial Intelligence, {IJCAI} 2015, Buenos Aires, Argentina,
+  July 25-31, 2015}, pages 1333--1339.
+
+\bibitem[\protect\citename{Xu \bgroup et al.\egroup }2015]{xu2015show}
+Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron~C. Courville, Ruslan
+  Salakhutdinov, Richard~S. Zemel, and Yoshua Bengio.
+\newblock 2015.
+\newblock Show, attend and tell: Neural image caption generation with visual
+  attention.
+\newblock In {\em Proceedings of the 32nd International Conference on Machine
+  Learning, {ICML} 2015, Lille, France, 6-11 July 2015}, pages 2048--2057.
+
+\bibitem[\protect\citename{Yamada \bgroup et al.\egroup }2016]{yamada2016joint}
+Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, and Yoshiyasu Takefuji.
+\newblock 2016.
+\newblock Joint learning of the embedding of words and entities for named
+  entity disambiguation.
+\newblock In {\em Proceedings of The 20th SIGNLL Conference on Computational
+  Natural Language Learning}, pages 250--259. Association for Computational
+  Linguistics.
+
+\end{thebibliography}
