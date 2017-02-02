@@ -116,7 +116,7 @@ To get a sense of textual noise and entity-context coherence we have set up a sm
 
 We prepared our dataset from the local-context version of Wikilinks\footnote{\url{http://www.iesl.cs.umass.edu/data/wiki-links}}, and resolved ground-truth links using a Wikipedia dump from April 2016\footnote{\url{https://dumps.wikimedia.org/}}. We used the \emph{page} and \emph{redirect} tables for resolution, and kept the database \emph{pageid} column as a unique identifier for Wikipedia entities. We discarded mentions where the ground-truth could not be resolved (only 3\% of mentions).
 
-We collected all pairs of mention $m$ and entity $e$ appearing in the dataset, and computed the number of times $m$ refers to $e$ ($\#(m,e)$), as well as the conditional probability of $e$ given $m$: $P(e|m)=\#(m,e)/\sum_{e'}\#(m,e')$. Examining these distributions revealed many mentions belong to two extremes -- either they had very little ambiguity, or they appeared in the dataset only a handful of times and referred to different entities only a couple of times each.\todo{Not sure I understand the second case. Example? YOTAM: tried to improve explanation. } We deemed the former to be less interesting for the purpose of NED, and suspected the latter to be noise with high probability. To filter these cases, we kept only mentions for which at least two different entities have 10 mentions each ($\#(m,e) \ge 10$) and consist of at least 10\% of occurrences ($P(e|m) \ge 0.1$). This procedure aggressively filtered our dataset and we were left with $3.2M$ mentions.
+We collected all pairs of mention $m$ and entity $e$ appearing in the dataset, and computed the number of times $m$ refers to $e$ ($\#(m,e)$), as well as the conditional probability of $e$ given $m$: $P(e|m)=\#(m,e)/\sum_{e'}\#(m,e')$. Examining these distributions revealed many mentions belong to two extremes -- either they had very little ambiguity, or they appeared in the dataset only a handful of times and referred to different entities only a couple of times each. We deemed the former to be less interesting for the purpose of NED, and suspected the latter to be noise with high probability. To filter these cases, we kept only mentions for which at least two different entities have 10 mentions each ($\#(m,e) \ge 10$) and consist of at least 10\% of occurrences ($P(e|m) \ge 0.1$). This procedure aggressively filtered our dataset and we were left with $3.2M$ mentions.
 
 Finally, we randomly split the data into train (90\%), validation (10\%), and test (10\%), according to website domains in order to minimize lexical memorization (see \cite{levy2015supervised}).
 
@@ -216,8 +216,6 @@ In this section, we describe our experimental setup and compare our model to the
 
 In all experiments, our model was trained with fixed-size left and right contexts (20 words in each direction). We used a special padding symbol when the actual context was shorter than the window. Further, we filtered stopwords using NLTK's stop-word list prior to selecting the window in order to focus on more informative words.
 
-%We experiment with our model both as a standalone model and as a feature along with shallow statistical and string based features. For the second case, we used a setting similar to Yamada et al. \shortcite{yamada2016joint} where a Gradient Boosted Regression Tree was fitted with our models prediction score as a feature along with $7$ other statistical and string based features. The statistical features are prior probability $P(e)$ and conditional probability $P(e|m)$ as described above, along with a feature counting the number of candidates generated for the mention and a feature giving the maximum conditional probability of the entity for all mentions in the document. For string similarity features we used the edit distance between the mention and the entity title in Wikipedia, a feature indicating weather the mention is a prefix or postfix of the entity Wikipedia title and a feature indicating weather the Wikipedia entity title is a prefix or postfix of the mention. Following Yamada we used sklearn's GradientBoostingClassifier implementation \cite{pedregosa2011scikit} with a deviance loss and set the learning rate, number of estimator and maximum depth of a tree to $0.02$, $10000$ and $4$, respectively. 
-
 \subsection{WikilinksNED}
 
 \paragraph{Training} we use Near-Misses corrupt-sampling which was found to perform well due to a large training data that represents the test-data well.
@@ -233,11 +231,9 @@ Since we are the first to evaluate NED algorithms on WikilinksNED, we ran a sele
 Finally, we include the \textbf{Most Probable Sense (MPS)} baseline, which selects the entity that was seen most with the given mention during training.
 
 \paragraph{Results}
-We used standard micro P@1 accuracy for evaluation on WikilinksNED. Experimental results are reported in Table \ref{tab:wikilink}. Our algorithm significantly outperforms Yamada at el. on this data by over 5 points. This result indicates that the skip-gram model used by Yamada at el. which averages the embedding vectors of all context words is non-optimal compared to our more sophisticated context modeling on this dataset. Our method outperforms the Baseline as well by a very large margin indicating our RNN model is indeed able to capture meaningful contextual features despite the noisy and short context. 
+We used standard micro P@1 accuracy for evaluation on WikilinksNED. Experimental results comparing our model, both with and without the attention mechanism, and the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small margin.
 
-When running Cheng at el \shortcite{Cheng2013} we have used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets based on news corpora and annotated by experts.
-
-We find that the attention mechanism significantly improves results by attending to the most discriminative parts of the context given a specific candidate mention.
+When running Cheng at el \shortcite{Cheng2013} we have used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets.
 
 \subsection{CoNLL-YAGO}
 \label{experiments-conll}
@@ -256,12 +252,12 @@ For comparability with existing methods we used two publicly available candidate
 
 \paragraph{Baselines}
 As a baseline we took the standard Most Probable Sense (MPS) prediction, which corresponds to the $\arg\max_{e\in{{E}}}{P(e|m)}$, where $E$ is the group of all candidate entities.
-	We also compare to the following papers - Francis-Landau et al. \shortcite{francis2016capturing},  Yamada at el. \shortcite{yamada2016joint}, and Chisholm et al. \shortcite{chisholm2015entity}, as they are all strong local approaches and a good source for comparison.
+We also compare to the following papers - Francis-Landau et al. \shortcite{francis2016capturing},  Yamada at el. \shortcite{yamada2016joint}, and Chisholm et al. \shortcite{chisholm2015entity}, as they are all strong local approaches and a good source for comparison.
 %He et al. \shortcite{He2013}, Hoffart et al. \shortcite{hoffart2011robust} - YOTAM: I removed these as they are non-local - Make sure again!!%
 
 
 \paragraph{Results}
-The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves reasonable results, however it cannot beat state-of-the-art results since it requires large quantities of training data to properly train the large number of parameters in the model. Further, the relative cleanliness of the data allows existing approaches to perform very well and marginalizes the effect of utilizing a deep and powerful neural model.
+The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves reasonable results, however it cannot beat state-of-the-art results due to an insufficient training set and our reliance on domain adaptation.
 
 \begin{table}[h]
 	\begin{center}
@@ -290,7 +286,6 @@ Comparison of All-Entity and Near-Misses corrupt-sampling reveals that when usin
 
 
 \begin{table}[h]
-		\toin{YOTAM: ** = Missing one more epoch for Near-misses, random init. - tommorow}
 	\begin{center}
 		\begin{tabular}{|c| p{1.5cm}|}
 			\hline \multicolumn{2}{|c|}{Wikilinks Evaluation-Set} \\
@@ -298,7 +293,7 @@ Comparison of All-Entity and Near-Misses corrupt-sampling reveals that when usin
 			All-Entity, with init. & $70$ \\ 
 			All-Entity, random init. & $67.1$ \\ 
 			Near-misses, with init. & $72.5$ \\ 
-			Near-misses, random init. & $67.2**$ \\ 
+			Near-misses, random init. & $67.2$ \\ 
 			\hline
 		\end{tabular}
 	\end{center}
