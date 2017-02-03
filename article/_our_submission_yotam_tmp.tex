@@ -88,7 +88,7 @@
 	
 	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While providing a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches, which add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. However, global approaches are inherently restricted to documents of sufficient length and coherency.
 	
-	The first published attempt of using Deep Neural Networks (DNNs) for NED was by \newcite{he2013learning}, that used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. Recently, the increasing popularity of DNNs inspired a number of works that used Convolutional Neural Nets (CNN) for learning semantic similarity between context, mention and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using entity and context embeddings \cite{yamada2016joint,Hu2015Entity}.
+	The first published attempt of using deep neural networks (DNNs) for NED was by \newcite{he2013learning}, that used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. Recently, the increasing popularity of DNNs inspired a number of works that used Convolutional Neural Nets (CNN) for learning semantic similarity between context, mention and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using entity and context embeddings \cite{yamada2016joint,Hu2015Entity}.
 	
 	In this paper, we train a Recurrent Neural Network (RNN) model, which unlike CNNs and embeddings, are naturally adapt to exploit the sequential structure of text. Moreover, we implement a neural attention mechanism, inspired by results from \newcite{Lazic2015} that successfully used a probabilistic attention-like model for NED.
 	
@@ -186,7 +186,7 @@
 			\begin{tabular}{|c| c | c | }
 				\hline \multicolumn{3}{|c|}{Wikilinks Test-Set Evaluation} \\
 				\hline \bf Model               & \bf Sampled Test Set (10K)  & \bf Full Test Set (300K)  \\
-				Baseline (MPS)                 & $60$   & $59.6$ \\
+				\hline Baseline (MPS)                 & $60$   & $59.6$ \\
 				Cheng et al.                   & $50.7$ & - \\
 				Yamada at el.                  & $67.6$ & $66.9$ \\
 				\hline
