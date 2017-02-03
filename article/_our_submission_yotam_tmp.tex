@@ -303,33 +303,34 @@
 	
 	We randomly sampled and manually analyzed $200$ individual cases of prediction errors made by our model. This set was obtained from WikilinksNED's validation set that was not used for training. 
 	
-	Working with crowd-sourced data, we expected some errors to result from noise in the ground truths themselves. Indeed, we found that $19.5$\% (39/200) of the prediction errors were not false, where two thirds originated from wrong ground truth annotations of the author and one third were predictions with an equivalent meaning as the correct entity. Interestingly, in $92$\% of the ground truth errors, our model suggested a more convincing solution than the original author by using specific hints from the context. In this manner, the  mention \textit{'Supreme leader'} , which was contextually associated to the Iranian leader Ali Khamenei, was linked by our model with \textit{'supreme leader of Iran'} while the "correct" tag was the general \textit{'supreme leader'} entity.
-	From the remaining $162$ error-entries, $19$\% (31/162) were cases where a Wikipedia disambiguation-page was chosen as either the correct or predicted entity ($3$\% and $16$\%, respectively). We decided to discount this error type from further analysis, as it is logically equivalent to remain unresolved. Eventually we ended up with $130$ error cases to analyze.
+	Working with crowd-sourced data, we expected some errors to result from noise in the ground truths themselves. Indeed, we found that $19.5$\% (39/200) of the prediction errors were not false, out of which $5\%$ (2) where wrong labels, $33\%$ (13) were predictions with an equivalent meaning as the correct entity, and in $61.5\%$ (24) our model suggested a more convincing solution than the original author by using specific hints from the context. In this manner, the  mention \textit{'Supreme leader'} , which was contextually associated to the Iranian leader Ali Khamenei, was linked by our model with \textit{'supreme leader of Iran'} while the "correct" tag was the general \textit{'supreme leader'} entity.
+	
+	In addition, $15.5\%$ (31/200) were cases where a Wikipedia disambiguation-page was chosen as either the correct or predicted entity ($2.5\%$ and $14\%$, respectively). We considered the rest of the 130 errors as true semantic errors, and analyzed them in-depth.
 	
 	\begin{table}[ht]
 		\begin{center}
 			\begin{tabular}{|p{3.5cm}| ll |}
 				%\hline \multicolumn{2}{|c|}{Error distribution} \\
 				\hline \bf Error type 		& \bf Fraction  	&\\ 
-				\hline \multicolumn{3}{|c|}{Fake errors} \\
+				\hline \multicolumn{3}{|c|}{False errors} \\
 				\hline Not errors 			& $19.5\%$ 	& $(39/200)$  \\ 
 				- Annotation error 			& $5\%$    	& $(2/39)$ \\ 
 				- Better suggestion			& $61.5\%$ 	&$(24/39)$ \\
 			    - Equivalent entities		& $ 33\%$ 	&$(13/39)$ \\ 
-				Disambiguation page			& $19\%$   	&$(31/161)$ \\ 
-				\hline \multicolumn{3}{|c|}{True errors} \\
+				Disambiguation page			& $15.5\%$   	&$(31/200)$ \\ 
+				\hline \multicolumn{3}{|c|}{True semantic errors} \\
 				\hline	Too specific/general  	& $31.5\%$ 	&$(41/130)$ \\ 
-				Cross-refer. error type		& $26\%$ 	&$(34/130)$ \\ 
-				Low-count error type		& $21.5\%$ &$(28/130)$ \\
+				'almost correct' errors		& $26\%$ 	&$(34/130)$ \\ 
+				insufficient training		& $21.5\%$ &$(28/130)$ \\
 				\hline
 			\end{tabular}
 		\end{center}
-		\caption{\label{tab:d} Error distribution in $200$ samples. Categories of true errors are not fully distinct}
+		\caption{\label{tab:d} Error distribution in $200$ samples. Categories of true errors are not fully distinct.}
 	\end{table}
 	
-	First, we noticed that in $31.5$\% of the errors (41/130) our model selected an entity that can be understood as a specific ($6$\%) or general ($25$\%) realization of the correct solution. For example, instead of predicting \textit{'Aroma of wine'} for a text on the scent and flavor of Turkish wine, the model addressed the mention \textit{'Aroma'} with the general \textit{'Odor'} entity. We further investigated and saw that in almost half of those cases, either the predicted or the correct web-page contained a non-trivial link to the other page, thus implying a strong correlation between both entities. Overall, we observed this type of cross-reference relation in $26$\% (34/130) of the error cases. A closer look discovered two prominent types of cross-reference errors that occurred repeatedly in the data. The first category was of a film/book/theater type of error ($8.4$\%), where the actual and the predicted entities were a different display of the same narrative. Even though having different jargon and producers, those fields share extremely similar content, which may explain why they tend to be frequently confused by the algorithm. The short context makes this disambiguation task difficult even for humans, when almost third (4/14) of all of those cases were tagged as hard and ambiguous for the reader. The second issue of the model was in differentiating between adjectives that are used to describe properties of a nation. Particularity, mentions such as \textit{'Germanic'}, \textit{'Chinese'} and \textit{'Dutch'} were falsely assigned to entities that describe language instead of people, and vice versa. We observed this type of mistake in $8.4$\% of the errors (11/130).
+	First, we noticed that in $31.5$\% of the true errors (41/130) our model selected an entity that can be understood as a specific ($6$\%) or general ($25$\%) realization of the correct solution. For example, instead of predicting \textit{'Aroma of wine'} for a text on the scent and flavor of Turkish wine, the model assigned the mention \textit{'Aroma'} with the general \textit{'Odor'} entity. We observed that in $26$\% (34/130) of the error cases, the predicted entity had a very strong semantic relationship to the correct entity. A closer look discovered two prominent types of 'almost correct' errors occurred repeatedly in the data. The first was a film/book/theater type of error ($8.4$\%), where the actual and the predicted entities were a different display of the same narrative. Even though having different jargon and producers, those fields share extremely similar content, which may explain why they tend to be frequently confused by the algorithm. A third (4/14) of those cases were tagged as truly ambiguous even for human reader. The second prominent type of 'almost correct' errors where differentiating between adjectives that are used to describe properties of a nation. Particularity, mentions such as \textit{'Germanic'}, \textit{'Chinese'} and \textit{'Dutch'} were falsely assigned to entities that describe language instead of people, and vice versa. We observed this type of mistake in $8.4$\% of the errors (11/130).
 	
-	A further interesting trend was the prediction policy of the model in cases where the entity had low-count. We defined low-count entities as entities which appeared less than 10 times in the data, and hence were probably not seen in the model's training period. We saw that the model followed the MPS in $75$\% of the low-count events. This shows that entity-mention pairs, which are alien to the model, tend to bias its prediction towards the baseline. Further, the amount of generalization error in low-count conditions was also significant $35.7\%$ (10/28), as the uncertainty of the prediction was captured by a similar but less specific entity suggestion.
+	Another interesting type of errors where in cases where the correct entity had insufficient training. We defined insufficient training errors as errors where the correct entity appeared less than 10 times in the training data. We saw that the model followed the MPS in $75$\% of these cases, showing that our model tends to follow the baseline in such cases. Further, the amount of generalization error in low-count conditions was also significant ($35.7\%$), as our model tended to select more general entities.
 	
 	\section{Conclusions}
 	Our results indicate that the expressibility of attention-rnns indeed allows us to extract useful features from noisy context, when sufficient amounts of training examples are available. This allows our model to significantly out-perform existing state-of-the-art models. We find that both using pre-initialized embedding vocabularies, and the corrupt-sampling method employed are very important for properly training our model.
