@@ -65,6 +65,8 @@
 	
 	
 	\section{Introduction}
+	
+	\toin{General English comment: you use the "have been" been tense quite a bit. Prefer past simple. E.g: we ran the model, we crawled the web, we wrote code, etc.}
 		
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
 	
@@ -78,19 +80,27 @@
 	
 	In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is two orders of magnitude larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have empirically found our dataset to be significantly noisier and more challenging then standard datasets, suggesting new approaches that can better model semantics are required.
 	
-	We propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated.
+	We propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated. We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
 	
-	We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
+	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods.We conclude that RNNs with attention are well-suited for disambiguation in real-world scenarios where only a short, noisy and less coherent context is given.\todo{Last sentence is redundant.}
 	
-	We demonstrate our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, showing that RNNs with attention are adapt to modeling short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. We conclude that RNNs with attention are well-suited for disambiguation in real-world scenarios where only a short, noisy and less coherent context is given.
+	\toin{What about the analysis? Do we have any interesting conclusions from it?}
 	
 	\section{Related Work}
 	
-	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While providing a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches, which add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. However, global approaches are inherently restricted to documents of sufficient length and coherency.
+	\toin{This section clearly has different parts that are not directly connected. Use "paragraphs" to divide them. See example below.}
+	
+	\paragraph{Local vs Global NED}
+	
+	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While providing a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches, which add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document.\todo{This sentence is mesurbal, needs rephrasing.} For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. However, global approaches are inherently restricted to documents of sufficient length and coherency.
+	
+	\paragraph{Neural Approaches}
 	
 	The first published attempt of using deep neural networks (DNNs) for NED was by \newcite{he2013learning}, that used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. Recently, the increasing popularity of DNNs inspired a number of works that used Convolutional Neural Nets (CNN) for learning semantic similarity between context, mention and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using entity and context embeddings \cite{yamada2016joint,Hu2015Entity}.
 	
-	In this paper, we train a Recurrent Neural Network (RNN) model, which unlike CNNs and embeddings, are naturally adapt to exploit the sequential structure of text. Moreover, we implement a neural attention mechanism, inspired by results from \newcite{Lazic2015} that successfully used a probabilistic attention-like model for NED.
+	In this paper, we train a Recurrent Neural Network (RNN) model, which unlike CNNs and embeddings, are designed to exploit the sequential nature of text. Moreover, we implement a neural attention mechanism, inspired by results from \newcite{Lazic2015} that successfully used a probabilistic attention-like model for NED.
+	
+	\paragraph{Noisy Data}
 	
 	\newcite{chisholm2015entity} have shown that despite the noisy nature of web data, augmenting Wikipedia derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather then using it for training alone. Moreover, we argue that manually designing features for noisy text can be difficult and therefore use DNNs to automatically capture useful features.
 	
@@ -98,9 +108,9 @@
 	
 	Our WikilinksNED dataset is substantially different from currently available datasets since these are all based on high quality content from either news-articles or Wikipedia, while WikilinksNED is a test-case for generally noisier, less coherent and lower quality data. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors and is not annotated by either experts, or a high-quality community effort in the case of Wikipedia. It is also significantly larger in size, being two orders of magnitude larger then existing news-based datasets.
 	
-	Recently, a number of Tweet based datasets have been compiled as well \cite{fromreide2014crowdsourcing}. These represent a much more extreme case then our dataset in terms of noise, shortness and spelling variations, and are much smaller in size. Due to the unique nature of Tweet data, proposed algorithms tend to be substantially different from algorithms used for other NED tasks.
+	Recently, a number of Twitter-based datasets were compiled as well \cite{fromreide2014crowdsourcing}. These represent a much more extreme case then our dataset in terms of noise, shortness and spelling variations, and are much smaller in size. Due to the unique nature of Tweet data, proposed algorithms tend to be substantially different from algorithms used for other NED tasks.
 	
-	\section{WikilinksNED Dataset: Entity Mentions in the Web}
+	\section{The WikilinksNED Dataset: \qquad\qquad Entity Mentions in the Web}
 	\label{sec:w}
 	
 	We introduce WikilinksNED, a new large-scale NED dataset based on text fragments from the web. Our dataset is derived from the Wikilinks corpus \cite{singh12:wiki-links}, which was constructed by crawling the web and collecting hyperlinks (mentions) linking to Wikipedia concepts (entities) and their surrounding text (context). Wikilinks contains 40 million mentions covering 3 million entities, collected from over 10 million web pages. 
@@ -113,7 +123,7 @@
 	
 	We collected all pairs of mention $m$ and entity $e$ appearing in the dataset, and computed the number of times $m$ refers to $e$ ($\#(m,e)$), as well as the conditional probability of $e$ given $m$: $P(e|m)=\#(m,e)/\sum_{e'}\#(m,e')$. Examining these distributions revealed many mentions belong to two extremes -- either they had very little ambiguity, or they appeared in the dataset only a handful of times and referred to different entities only a couple of times each. We deemed the former to be less interesting for the purpose of NED, and suspected the latter to be noise with high probability. To filter these cases, we kept only mentions for which at least two different entities have 10 mentions each ($\#(m,e) \ge 10$) and consist of at least 10\% of occurrences ($P(e|m) \ge 0.1$). This procedure aggressively filtered our dataset and we were left with $3.2M$ mentions.
 	
-	Finally, we randomly split the data into train (90\%), validation (10\%), and test (10\%), according to website domains in order to minimize lexical memorization (see \cite{levy2015supervised}).
+	Finally, we randomly split the data into train (90\%), validation (10\%), and test (10\%), according to website domains in order to minimize lexical memorization \cite{levy2015supervised}.
 	
 	
 	\section{Algorithm}
@@ -122,16 +132,20 @@
 	
 	\subsection{Model Architecture}
 	
+	\toin{I think the "left context" label should be on top and the "right context" at the bottom (other way around).}
+	
+	\toin{You should refer to figure 1 from within the text, in this section, as soon as possible. Consider adding an opening sentence "Figure ref illustrates..."}
+	
 	\begin{figure}
 		\centering
 		\includegraphics[scale=1]{diagrams/model_color_v4.pdf}
-		\caption{Architecture of our Neural Network model. A close up of the Attention-RNN component appears in the dashed box.}
+		\caption{The architecture of our Neural Network model. A close-up of the Attention-RNN component appears in the dashed box.}
 		\label{fig:arnn}
 	\end{figure}	
 	
-	Our architecture has two main components: a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function. 
+	Our architecture has two main components: a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function.
 	
-	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to 'remember' important signals while scanning the context and to recognize signals spanning multiple words.
+	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to ``remember'' important signals while scanning the context and to recognize signals spanning multiple words.
 	
 	\begin{equation}
 	\label{eq1}
@@ -141,7 +155,7 @@
 	\end{aligned}
 	\end{equation}
 	
-	In our implementation we have used a standard GRU unit \cite{cho2014learning}, but any RNN can be a drop-in replacement. We fit the RNN unit with an additional attention mechanism, commonly used with state-of-the-art encoder-decoder models \cite{bahdanau2014neural,xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
+	In our implementation we used a standard GRU unit \cite{cho2014learning}, but any RNN can be a drop-in replacement. We fit the RNN unit with an additional attention mechanism, commonly used with state-of-the-art encoder-decoder models \cite{bahdanau2014neural,xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
 	
 	Equation \ref{eq2} details the equations governing the attention model.
 	
@@ -150,7 +164,7 @@
 	\begin{aligned}
 	& a_t \in \mathbb{R}; a_t=r_{\Theta_3}(o_t, v_{candidate}) \\
 	& a'_t  = \frac{1}{\sum_{i=1}^{t} \exp\{a_i\}} \exp \{a_t\} \\
-	& o_{attn}=\sum_{i=1}^{t} a'_t o_t
+	& o_{attn}=\sum_{t} a'_t o_t
 	\end{aligned}
 	\end{equation}
 	
@@ -161,15 +175,18 @@
 	r_{\Theta_3}(o_t, v_{candidate}) = Ao_t + Bv_{candidate} + b \\
 	\end{equation}
 	
+	\toin{Missing from this description: word embeddings (the bottom-most layer). It needs to be mentioned that the input vectors $v_t$ are embeddings, and in a footnote, their size.}
+	
 	\subsection{Training}
 	
-	We assume our model is only given examples of correct entity assignments during training and therefore use \textit{corrupt-sampling}, where we automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We have considered two alternatives for corrupt sampling:
+	We assume our model is only given examples of correct entity assignments during training and therefore use \textit{corrupt-sampling}, where we automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling:
 	
-	\paragraph{Near-Misses:} 
+	\begin{description}
+	\item{\textbf{Near-Misses:}} 
 	Sampling out of the candidate set of each mention. We have found this to be more effective where the training data reliably reflects the test-set distribution.
-	
-	\paragraph{All-Entity:} 
+	\item{\textbf{All-Entity:}} 
 	Sampling from the entire dictionary of entities. Better suited to cases where the training data or candidate generation does not reflect the test-set well. Has an added benefit of allowing us to utilize unambiguous training examples where only a single candidate is found.
+	\end{description}
 	
 	In our evaluation we specify exactly which approach was used for each experiment and provide an empirical comparison of the two approaches.
 	
@@ -228,15 +245,15 @@
 	Finally, we include the \textbf{Most Probable Sense (MPS)} baseline, which selects the entity that was seen most with the given mention during training.
 	
 	\paragraph{Results}
-	We used standard micro P@1 accuracy for evaluation. Experimental results comparing our model, both with and without the attention mechanism, and the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small margin.
+	We used standard micro P@1 accuracy for evaluation. Experimental results comparing our model with the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small margin.
 	
-	When running Cheng at el \shortcite{Cheng2013} we have used a pre-trained model supplied by Cheng at el which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets.
+	When running Cheng at el \shortcite{Cheng2013} we used a pre-trained model supplied by the authors, which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets.
 	
 	\subsection{CoNLL-YAGO}
 	\label{experiments-conll}
 	
 	\paragraph{Training}
-	CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to domain adaptation for training. We first trained our model on a large corpus of Wikipedia derived data, and adapted the trained model to CoNLL-YAGO using its training set. We proceeded to use the model in a similar setting to \newcite{yamada2016joint} where a GBRT was trained with our model as a feature along with the statistical and string based features defined by Yamada. 
+	CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. We therefore resorted to domain adaptation for training. We first trained our model on a large corpus of Wikipedia derived data, and adapted the trained model to CoNLL-YAGO using its training set. We proceeded to use the model in a similar setting to \newcite{yamada2016joint} where a GBRT was trained with our model as a feature along with the statistical and string based features defined by Yamada.\todo{This is the first mention of GBRT. WTF is a GBRT? :)} 
 	
 	To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. We trained with All-Entity corrupt sampling for $1$ epoch. The resulting model was then adapted by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention.
 	
@@ -254,7 +271,7 @@
 	
 	
 	\paragraph{Results}
-	The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves comparable results, however it cannot beat state-of-the-art results due to an insufficient training set and our reliance on domain adaptation.
+	The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves comparable results, however it does not outperform the state-of-the-art, probably because of the relatively small training set and our reliance on domain adaptation.
 	
 	\begin{table}[ht]
 		\begin{center}
