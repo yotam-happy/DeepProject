@@ -143,7 +143,7 @@
 		\label{fig:arnn}
 	\end{figure}	
 	
-	Our architecture has two main components: a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function.
+	Figure \ref{fig:arnn} demonstrates two main components of our architecture: a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function.
 	
 	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to ``remember'' important signals while scanning the context and to recognize signals spanning multiple words.
 	

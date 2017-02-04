@@ -1,5 +1,20 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citename{Abadi \bgroup et al.\egroup
+  }2015]{tensorflow2015-whitepaper}
+Mart\'{\i}n Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen,
+  Craig Citro, Greg~S. Corrado, Andy Davis, Jeffrey Dean, Matthieu Devin,
+  Sanjay Ghemawat, Ian Goodfellow, Andrew Harp, Geoffrey Irving, Michael Isard,
+  Yangqing Jia, Rafal Jozefowicz, Lukasz Kaiser, Manjunath Kudlur, Josh
+  Levenberg, Dan Man\'{e}, Rajat Monga, Sherry Moore, Derek Murray, Chris Olah,
+  Mike Schuster, Jonathon Shlens, Benoit Steiner, Ilya Sutskever, Kunal Talwar,
+  Paul Tucker, Vincent Vanhoucke, Vijay Vasudevan, Fernanda Vi\'{e}gas, Oriol
+  Vinyals, Pete Warden, Martin Wattenberg, Martin Wicke, Yuan Yu, and Xiaoqiang
+  Zheng.
+\newblock 2015.
+\newblock {TensorFlow}: Large-scale machine learning on heterogeneous systems.
+\newblock Software available from tensorflow.org.
+
 \bibitem[\protect\citename{Bahdanau \bgroup et al.\egroup
   }2014]{bahdanau2014neural}
 Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
@@ -57,6 +72,12 @@ Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi
 \newblock In {\em Proceedings of the 2014 Conference on Empirical Methods in
   Natural Language Processing (EMNLP)}, pages 1724--1734. Association for
   Computational Linguistics.
+
+\bibitem[\protect\citename{Chollet}2015]{chollet2015}
+François Chollet.
+\newblock 2015.
+\newblock keras.
+\newblock \url{https://github.com/fchollet/keras}.
 
 \bibitem[\protect\citename{Duchi \bgroup et al.\egroup
   }2011]{duchi2011adaptive}
