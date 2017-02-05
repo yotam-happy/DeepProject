@@ -97,6 +97,12 @@ Matthew Francis-Landau, Greg Durrett, and Dan Klein.
   Chapter of the Association for Computational Linguistics: Human Language
   Technologies}, pages 1256--1261. Association for Computational Linguistics.
 
+\bibitem[\protect\citename{Friedman}2001]{friedman2001greedy}
+Jerome~H Friedman.
+\newblock 2001.
+\newblock Greedy function approximation: a gradient boosting machine.
+\newblock {\em Annals of statistics}, pages 1189--1232.
+
 \bibitem[\protect\citename{Fromreide \bgroup et al.\egroup
   }2014]{fromreide2014crowdsourcing}
 Hege Fromreide, Dirk Hovy, and Anders S{\o}gaard.
@@ -220,6 +226,14 @@ Tomas Mikolov, Ilya Sutskever, Kai Chen, Gregory~S. Corrado, and Jeffrey Dean.
   of a meeting held December 5-8, 2013, Lake Tahoe, Nevada, United States.},
   pages 3111--3119.
 
+\bibitem[\protect\citename{Mou \bgroup et al.\egroup }2016]{mou2016How}
+Lili Mou, Zhao Meng, Rui Yan, Ge~Li, Yan Xu, Lu~Zhang, and Zhi Jin.
+\newblock 2016.
+\newblock How transferable are neural networks in nlp applications?
+\newblock In {\em Proceedings of the 2016 Conference on Empirical Methods in
+  Natural Language Processing}, pages 479--489. Association for Computational
+  Linguistics.
+
 \bibitem[\protect\citename{Pershina \bgroup et al.\egroup
   }2015]{pershina2015personalized}
 Maria Pershina, Yifan He, and Ralph Grishman.
@@ -243,6 +257,14 @@ Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson.
 \newblock In {\em Proceedings of the 49th Annual Meeting of the Association for
   Computational Linguistics: Human Language Technologies}, pages 1375--1384.
   Association for Computational Linguistics.
+
+\bibitem[\protect\citename{Ritter \bgroup et al.\egroup }2011]{ritter2011Named}
+Alan Ritter, Sam Clark, Mausam, and Oren Etzioni.
+\newblock 2011.
+\newblock Named entity recognition in tweets: An experimental study.
+\newblock In {\em Proceedings of the 2011 Conference on Empirical Methods in
+  Natural Language Processing}, pages 1524--1534. Association for Computational
+  Linguistics.
 
 \bibitem[\protect\citename{Singh \bgroup et al.\egroup
   }2012]{singh12:wiki-links}
