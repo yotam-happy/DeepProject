@@ -87,11 +87,9 @@
 	
 	\section{Related Work}
 	
-	\toin{This section clearly has different parts that are not directly connected. Use "paragraphs" to divide them. See example below.}
-	
 	\paragraph{Local vs Global NED}
 	
-	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While providing a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches, which add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document.\todo{This sentence is mesurbal, needs rephrasing.} For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. However, global approaches are inherently restricted to documents of sufficient length and coherency.
+	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches. These add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. However, global approaches are inherently restricted to documents of sufficient length and coherency.
 	
 	\paragraph{Neural Approaches}
 	
@@ -255,14 +253,14 @@
 	CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. To fit our model to this dataset we first used a simple domain adaptation technique and then incorporated a number of basic statistical and string based features.
 	
 	\paragraph{Domain Adaptation}
-	We used a simple domain adaptation technique where we first trained our model on an available large corpus of label data derived from Wikipedia, and then trained the resulting model on the smaller training set of CoNLL \cite{mou2016How}. The Wikipedia corpus was built by extracting all cross-reference links along with their context, resulting in over $80$ million training examples. We trained our model with All-Entity corrupt sampling for $1$ epoch on this data. The resulting model was then adapted to CoNLL-YAGO by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention.
+	We used a simple domain adaptation technique where we first trained our model on an available large corpus of label data derived from Wikipedia, and then trained the resulting model on the smaller training set of CoNLL \cite{mou2016How}. The Wikipedia corpus was built by extracting all cross-reference links along with their context, resulting in over $80$ million training examples. We trained our model with All-Entity corrupt sampling for $1$ epoch on this data. The resulting model was then adapted to CoNLL-YAGO by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention as corrupt-samples (Near-Misses corrupt sampling).
 
 	\paragraph{Additional Features}	
-	We proceeded to use the model in a similar setting to \newcite{yamada2016joint} where a Gradient Boosting Regression Tree (GBRT) model was trained with our model's prediction as a feature along with a number of statistical and string based features defined by Yamada. The statistical features include entity prior probability, conditional probability, number of candidates for the given mention and maximum conditional probability of the entity in the document. The string based features include edit distance between mention and entity title and two boolean features indicating weather the entity title starts or ends with the mention and vice versa. The GBRT model parameters where set to the values reported as optimal by Yamada\footnote{Learning rate of $0.02$; maximal tree depth of $4$; $10,000$ trees.}.
+	We proceeded to use the model in a similar setting to \newcite{yamada2016joint} where a Gradient Boosting Regression Tree (GBRT) \cite{friedman2001greedy} model was trained with our model's prediction as a feature along with a number of statistical and string based features defined by Yamada. The statistical features include entity prior probability, conditional probability, number of candidates for the given mention and maximum conditional probability of the entity in the document. The string based features include edit distance between mention and entity title and two boolean features indicating whether the entity title starts or ends with the mention and vice versa. The GBRT model parameters where set to the values reported as optimal by Yamada\footnote{Learning rate of $0.02$; maximal tree depth of $4$; $10,000$ trees.}.
 			
 	\paragraph{Candidate Generation}
 	For comparability with existing methods we used two publicly available candidates datasets: (1) PPRforNED - Pershina at el. \shortcite{pershina2015personalized};
-(2) YAGO - Hoffart at el. \shortcite{hoffart2011robust}.
+	(2) YAGO - Hoffart at el. \shortcite{hoffart2011robust}.
 	
 	\paragraph{Baselines}
 	As a baseline we took the standard Most Probable Sense (MPS) prediction, which selects the entity that was seen most with the given mention during training.
