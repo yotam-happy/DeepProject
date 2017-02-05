@@ -66,9 +66,7 @@
 	
 	
 	\section{Introduction}
-	
-	\toin{General English comment: you use the "have been" been tense quite a bit. Prefer past simple. E.g: we ran the model, we crawled the web, we wrote code, etc.}
-		
+			
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
 	
 	NED algorithms can broadly be divided into local and global approaches. Local algorithms disambiguate each mention independently using local context (e.g. the sentence in which the mention appeared), whereas global approaches assume coherence among mentions within a single document, and try to disambiguate all mentions simultaneously. Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}. However, most of these datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. Other domains, such as web page fragments, social media, or questions, lack the sufficient coherence and context for global models to pay off. Take for example this fragment taken from the web:
@@ -83,9 +81,9 @@
 	
 	We propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated. We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
 	
-	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. We conclude that RNNs with attention are well-suited for disambiguation in real-world scenarios where only a short, noisy and less coherent context is given.\todo{Last sentence is redundant.}
+	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. 
 	
-	\toin{What about the analysis? Do we have any interesting conclusions from it?}
+	To better understand our results we performed an error analysis of the WikilinksNED experiment. We found that many false errors originate from annotation noise, limiting to some extent achievable performance on this dataset. Three additional key sources of error were identified, and should be addressed in future work: Lack of sufficient training for long-tail entities, selecting overly specific or general entities, and failing to distinguish entities that are semantically highly related (e.g. a book and a movie of the same narrative). 
 	
 	\section{Related Work}
 	
@@ -133,10 +131,6 @@
 	
 	\subsection{Model Architecture}
 	
-	\toin{I think the "left context" label should be on top and the "right context" at the bottom (other way around).}
-	
-	\toin{You should refer to figure 1 from within the text, in this section, as soon as possible. Consider adding an opening sentence "Figure ref illustrates..."}
-	
 	\begin{figure}
 		\centering
 		\includegraphics[scale=1]{diagrams/model_color_v4.pdf}
@@ -144,9 +138,14 @@
 		\label{fig:arnn}
 	\end{figure}	
 	
-	Figure \ref{fig:arnn} demonstrates two main components of our architecture: a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function.
+	Figure \ref{fig:arnn} illustrates the main components of our architecture: an embedding layer, a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. 
 	
-	Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to ``remember'' important signals while scanning the context and to recognize signals spanning multiple words.
+	
+	\paragraph{Embedding}
+	The embedding layer first embeds both the entity and the context words as vectors\footnote{We use vectors with 300 dimensions for both words and entities}. 
+	
+	\paragraph{ARNN}
+	The ARNN unit is composed from an RNN and an attention mechanism. Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to ``remember'' important signals while scanning the context and to recognize signals spanning multiple words.
 	
 	\begin{equation}
 	\label{eq1}
@@ -176,7 +175,8 @@
 	r_{\Theta_3}(o_t, v_{candidate}) = Ao_t + Bv_{candidate} + b \\
 	\end{equation}
 	
-	\toin{Missing from this description: word embeddings (the bottom-most layer). It needs to be mentioned that the input vectors $v_t$ are embeddings, and in a footnote, their size.}
+	\paragraph{Classifier}
+	The classifier network consists of a hidden layer\footnote{300 dimensions with ReLU, and $p=0.5$ dropout.} and an output layer with two output units in a softmax. The output units are trained by optimizing a cross-entropy loss function.
 	
 	\subsection{Training}
 	
