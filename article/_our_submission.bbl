@@ -167,6 +167,16 @@ Zhiting Hu, Poyao Huang, Yuntian Deng, Yingkai Gao, and Eric Xing.
   Natural Language Processing (Volume 1: Long Papers)}, pages 1292--1300.
   Association for Computational Linguistics.
 
+\bibitem[\protect\citename{Huang \bgroup et al.\egroup
+  }2014]{Huang2014Collective}
+Hongzhao Huang, Yunbo Cao, Xiaojiang Huang, Heng Ji, and Chin-Yew Lin.
+\newblock 2014.
+\newblock Collective tweet wikification based on semi-supervised graph
+  regularization.
+\newblock In {\em Proceedings of the 52nd Annual Meeting of the Association for
+  Computational Linguistics (Volume 1: Long Papers)}, pages 380--390.
+  Association for Computational Linguistics.
+
 \bibitem[\protect\citename{Ji \bgroup et al.\egroup }2010]{ji2010overview}
 Heng Ji, Ralph Grishman, Hoa~Trang Dang, Kira Griffitt, and Joe Ellis.
 \newblock 2010.

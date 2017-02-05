@@ -1,13 +1,12 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: _our_submission.aux
 The style file: acl2016.bst
 Database file #1: _our_submission.bib
-Repeated entry---line 616 of file _our_submission.bib
+Repeated entry---line 629 of file _our_submission.bib
  : @misc{chollet2015
  :                  ,
 I'm skipping whatever remains of this entry
-Repeated entry---line 626 of file _our_submission.bib
+Repeated entry---line 639 of file _our_submission.bib
  : @misc{tensorflow2015-whitepaper
  :                                ,
 I'm skipping whatever remains of this entry
-Warning--I didn't find a database entry for "Huang2014Collective"
 (There were 2 error messages)
