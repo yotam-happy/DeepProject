@@ -116,7 +116,7 @@
 	
 	We introduce WikilinksNED, a new large-scale NED dataset based on text fragments from the web. Our dataset is derived from the Wikilinks corpus \cite{singh12:wiki-links}, which was constructed by crawling the web and collecting hyperlinks (mentions) linking to Wikipedia concepts (entities) and their surrounding text (context). Wikilinks contains 40 million mentions covering 3 million entities, collected from over 10 million web pages. 
 	
-	Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced dataset where thousands of human annotators provide ground truths for mentions of interest. This means that the dataset also contains various kinds of noise, including erroneous ground-truth labels, malformed mentions, and incoherent contexts. The contextual noise in particular presents an interesting test-case that supplements existing datasets that are sourced from mostly coherent and well-formed text (news and Wikipedia). 
+	Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced dataset where thousands of human annotators provide ground truths for mentions of interest. This means that the dataset also contains various kinds of noise especially due to incoherent contexts. The contextual noise presents an interesting test-case that supplements existing datasets that are sourced from mostly coherent and well-formed text (news and Wikipedia). 
 	
 	To get a sense of textual noise we have set up a small experiment where we measured the similarity between entities mentioned in WikilinksNED and their surrounding context, and compared the results to CoNLL-YAGO. We used state-of-the-art word and entity embeddings obtained from \newcite{yamada2016joint} and computed cosine similarity between embeddings of the correct entity assignment and the mean of context words. We compared results from all mentions in CoNLL-YAGO to a sample of 50000 web fragments taken from WikilinksNED, using a window of words of size 40 around entity mentions. We have found the similarity between context and the correct entity is indeed lower for web mentions, and found this result to be statistically significant with very high probability ($p<10^{-5}$) . This result indicates that web fragments in WikilinksNED are indeed noisier compared to CoNLL-YAGO documents.
 	
@@ -180,7 +180,7 @@
 	
 	\subsection{Training}
 	
-	We assume our model is only given examples of correct entity assignments during training and therefore use \textit{corrupt-sampling}, where we automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling:
+	We assume our model is only given examples of correct entity assignments during training and therefore use \textit{corrupt-sampling}, where we automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling and provide an empirical comparison of the two approaches (Section \ref{experiments}):
 	
 	\begin{description}
 	\item{\textbf{Near-Misses:}} 
@@ -188,8 +188,6 @@
 	\item{\textbf{All-Entity:}} 
 	Sampling from the entire dictionary of entities. Better suited to cases where the training data or candidate generation does not reflect the test-set well. Has an added benefit of allowing us to utilize unambiguous training examples where only a single candidate is found.
 	\end{description}
-	
-	In our evaluation we specify exactly which approach was used for each experiment and provide an empirical comparison of the two approaches.
 	
 	We sample corrupt examples uniformly in both alternatives since with uniform sampling the ratio between the number of positive and negative examples of an entity is higher for popular entities, thus biasing the network towards popular entities. In the All-Entity case, this ratio is approximately proportional to the prior probability of the entity. 
 	
