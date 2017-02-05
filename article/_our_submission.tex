@@ -95,7 +95,7 @@
 	\paragraph{Local vs Global NED}
 	
 	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches. These add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. 
-	
+	\toin{Noam: why not to use Lazic's results as a precedent/motivation for the neural attention? (only several words are informative regarding the disambiguation)}
 	Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}.
 	However, global approaches are difficult to apply in domains where only short and noisy text is available. For example \newcite{Huang2014Collective} requires disambiguating many tweets together for applying a global model. 
 	
@@ -111,7 +111,8 @@
 	
 	\paragraph{Noisy Data}
 	
-	\newcite{chisholm2015entity} have shown that despite the noisy nature of web data, augmenting Wikipedia derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather then using it for training alone. Moreover, we argue that manually designing features for noisy text can be difficult and therefore use DNNs to automatically capture useful features.
+	\newcite{chisholm2015entity} have shown that despite the noisy nature of web data, augmenting Wikipedia derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. 
+	Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather then using it for training alone. Moreover, we argue that manually designing features for noisy text can be difficult and therefore use DNNs to automatically capture useful features.\toin{Noam: we must emphasize here the difference from Chisholm. Explicitly say - The context in our model is not modeled in BOW fashion ,hence it allows to capture semantic information between context words (Another reason to use NN)}
 	
 	Commonly used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO is a dataset based on Reuters newswire articles that was created by \newcite{hoffart2011robust} by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO entities. It contains $1393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} is another, smaller, dataset for NED based on news articles. ACE 2005 corpus is another news based dataset annotated by \newcite{bentivogli2010extending}. \newcite{Ratinov2011} have used a random sample of paragraphs from Wikipedia for evaluation, however they did not make the precise sample they used publicly available. 
 	
