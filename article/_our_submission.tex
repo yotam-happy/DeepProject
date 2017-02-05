@@ -69,15 +69,17 @@
 			
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
 	
-	NED algorithms can broadly be divided into local and global approaches. Local algorithms disambiguate each mention independently using local context (e.g. the sentence in which the mention appeared), whereas global approaches assume coherence among mentions within a single document, and try to disambiguate all mentions simultaneously. Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}. However, most of these datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. Other domains, such as web page fragments, social media, or questions, lack the sufficient coherence and context for global models to pay off. Take for example this fragment taken from the web:
+	NED algorithms can broadly be divided into local and global approaches. Local algorithms disambiguate each mention independently using local context (e.g. the sentence in which the mention appeared), whereas global approaches assume coherence among mentions within a single document, and try to disambiguate all mentions simultaneously. Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}. However, most of these datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. 
+	
+	In this work, we investigate the task of NED in a different setting, where only local and noisy context is available. Domains such as web page fragments, social media, or questions, are shorter and not as well curated as news items and Wikipedia. Such domains might lack the sufficient coherence and context for global models to pay off, and can contain considerable amounts of contextual noise. Take for example this fragment taken from the web:
 	
 	\begin{quote}
 		``I had no choice but to experiment with other indoor games. I was born in Atlantic City so the obvious next choice was \textbf{Monopoly}. I played until I became a successful Captain of Industry.''
 	\end{quote}
 	
-	This fragment is considerably less structured and with a more personal tone than news reports. It clearly references the entity \textit{Monopoly\_(Game)}, however expressions such as 'experiment', and 'Industry' can generate a lot of noise when disambiguating \textit{Monopoly\_(Game)} from the much more common entity \textit{Monopoly} (economics term). Some sense of local semantics must be considered in order to separate the useful signals (e.g. indoor games, played) from the noisy ones.
+	This short fragment is considerably less structured and with a more personal tone than news reports. It clearly references the entity \textit{Monopoly\_(Game)}, however expressions such as 'experiment', and 'Industry' can generate a lot of noise when disambiguating \textit{Monopoly\_(Game)} from the much more common entity \textit{Monopoly} (economics term). Some sense of local semantics must be considered in order to separate the useful signals (e.g. indoor games, played) from the noisy ones.
 	
-	In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is two orders of magnitude larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have empirically found our dataset to be significantly noisier and more challenging than standard datasets, suggesting new approaches that can better model semantics are required.
+	In this work we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset contains 18K unique mentions linking to over 100K unique entities. This dataset is two orders of magnitude larger than previously collected ones such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE 2010 \cite{bentivogli2010extending}. We have empirically found our dataset to be significantly noisier and more challenging than standard datasets, suggesting new approaches that can better model semantics are required.
 	
 	We propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise by assigning weights to different contextual signals based on the specific candidate entity being evaluated. We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
 	
@@ -204,7 +206,7 @@
 				Cheng et al.                   & $50.7$ & - \\
 				Yamada at el.                  & $67.6$ & $66.9$ \\
 				\hline
-				Our Attention-RNN              & $73.2$ & $73$ \\
+				\bf Our Attention-RNN              & $\bf 73.2$ & $\bf 73$ \\
 				Our RNN, w/o Attention         & $72.1$   & $72.2$ \\
 				\hline
 			\end{tabular}
@@ -242,7 +244,7 @@
 	Finally, we include the \textbf{Most Probable Sense (MPS)} baseline, which selects the entity that was seen most with the given mention during training.
 	
 	\paragraph{Results}
-	We used standard micro P@1 accuracy for evaluation. Experimental results comparing our model with the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small margin.
+	We used standard micro P@1 accuracy for evaluation. Experimental results comparing our model with the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small, yet statistically significant, margin.
 	
 	When running Cheng at el \shortcite{Cheng2013} we used a pre-trained model supplied by the authors, which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets.
 	
@@ -303,7 +305,7 @@
 			\begin{tabular}{|c| p{1.5cm}|}
 				\hline \multicolumn{2}{|c|}{Wikilinks Evaluation-Set} \\
 				\hline \bf Model & \bf Micro     accuracy  \\ \hline
-				Near-misses, with init. & $72.5$ \\ 
+				\bf Near-misses, with init. &  $\bf 72.5$ \\ 
 				Near-misses, random init. & $67.2$ \\ 
 				All-Entity, with init. & $70$ \\ 
 				All-Entity, random init. & $67.1$ \\ 
