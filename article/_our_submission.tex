@@ -59,7 +59,7 @@
 		We address the task of Named Entity Disambiguation (NED) for noisy text. 
 		We present WikilinksNED, a large-scale NED dataset of fragments taken from web-pages, that is significantly noisier and more challenging then existing news-based datasets.
 		We propose a model based on Attention-RNNs to model the sequential nature of text, and attend to the useful signals in it.
-		We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance.
+		We describe novel methods for sampling the training and for initializing word and entity embeddings, and demonstrate their importance for model performance.
 		We evaluate both on WikilinksNED and on a standard, smaller, news-based dataset and find our model significantly outperforms existing state-of-the-art methods on WikilinksNED while achieving comparable performance on the smaller dataset. 
 	\end{abstract}
 	
@@ -257,11 +257,8 @@
 	To derive the Wikipedia training corpus we have extracted all cross-reference links from Wikipedia along with their context, resulting in over $80$ million training examples. We trained with All-Entity corrupt sampling for $1$ epoch. The resulting model was then adapted by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention.
 	
 	\paragraph{Candidate Generation}
-	For comparability with existing methods we used two publicly available candidates datasets:
-	\begin{itemize}
-		\item PPRforNED - Pershina at el. \shortcite{pershina2015personalized}
-		\item YAGO - Hoffart at el. \shortcite{hoffart2011robust}
-	\end{itemize}
+	For comparability with existing methods we used two publicly available candidates datasets: (1) PPRforNED - Pershina at el. \shortcite{pershina2015personalized};
+(2) YAGO - Hoffart at el. \shortcite{hoffart2011robust}.
 	
 	\paragraph{Baselines}
 	As a baseline we took the standard Most Probable Sense (MPS) prediction, which selects the entity that was seen most with the given mention during training.
@@ -349,11 +346,13 @@
 	Another interesting type of errors where in cases where the correct entity had insufficient training. We defined insufficient training errors as errors where the correct entity appeared less than 10 times in the training data. We saw that the model followed the MPS in $75$\% of these cases, showing that our model tends to follow the baseline in such cases. Further, the amount of generalization error in low-count conditions was also significant ($35.7\%$), as our model tended to select more general entities.
 	
 	\section{Conclusions}
-	Our results indicate that the expressibility of attention-rnns indeed allows us to extract useful features from noisy context, when sufficient amounts of training examples are available. This allows our model to significantly out-perform existing state-of-the-art models. We find that both using pre-initialized embedding vocabularies, and the corrupt-sampling method employed are very important for properly training our model.
+	Our results indicate that the expressibility of attention-RNNs indeed allows us to extract useful features from noisy context, when sufficient amounts of training examples are available. This allows our model to significantly out-perform existing state-of-the-art models. We find that both using pre-initialized embedding vocabularies, and the corrupt-sampling method employed are very important for properly training our model.
 	
 	However, the gap between results of all systems tested on both CoNLL-YAGO and WikilinksNED indicates that mentions with noisy context are indeed a challenging test. We believe this to be an important real-world scenario, that represents a distinct test-case that fills a gap between existing new-based datasets and the much noisier Tweeter data that has received increasing attention. We find recurrent neural models are a promising direction for this task, while there is still room for improvement. 
 	
-	Finally, our error analysis shows a number of possible improvements should be addressed. Since we use the training set for candidate generation, non-nonsensical candidates (i.e. disambiguation pages) cause our model to err and should be removed from the candidate set. In addition, we observe that lack of sufficient training for long-tail entities is still a problem, even when a large training set is available. We believe this, and some subtle semantic cases (book/movie) can be at least partially addressed by considering semantic properties of entities, such as types and categories. We intend to address these in future work.
+		\toin{Add here a citation about the twitter data}
+	
+	Finally, our error analysis shows a number of possible improvements that should be addressed. Since we use the training set for candidate generation, non-nonsensical candidates (i.e. disambiguation pages) cause our model to err and should be removed from the candidate set. In addition, we observe that lack of sufficient training for long-tail entities is still a problem, even when a large training set is available. We believe this, and some subtle semantic cases (book/movie) can be at least partially addressed by considering semantic properties of entities, such as types and categories. We intend to address these in future work.
 	
 	\bibliographystyle{acl2016}
 	\bibliography{_our_submission}
