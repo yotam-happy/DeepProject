@@ -60,7 +60,7 @@
 		We present WikilinksNED, a large-scale NED dataset of fragments taken from web-pages, that is significantly noisier and more challenging then existing news-based datasets.
 		We propose a model based on Attention-RNNs to model the sequential nature of text, and attend to the useful signals in it.
 		We describe novel methods for sampling the training and for initializing word and entity embeddings, and demonstrate their importance for model performance.
-		We evaluate both on WikilinksNED and on a standard, smaller, news-based dataset and find our model significantly outperforms existing state-of-the-art methods on WikilinksNED while achieving comparable performance on the smaller dataset. 
+		We evaluate both on WikilinksNED and on a standard, smaller, news-based dataset and find our model significantly outperforms existing state-of-the-art methods on WikilinksNED while achieving comparable performance on the smaller less-noisy dataset. 
 	\end{abstract}
 	
 	
@@ -85,8 +85,8 @@
 	
 	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. 
 	
-	To better understand our results we performed an error analysis of the WikilinksNED experiment. We found that many false errors originate from annotation noise, limiting to some extent achievable performance on this dataset. Three additional key sources of error were identified, and should be addressed in future work: Lack of sufficient training for long-tail entities, selecting overly specific or general entities, and failing to distinguish entities that are semantically highly related (e.g. a book and a movie of the same narrative). 
-	
+%	To better understand our results we performed an error analysis of the WikilinksNED experiment. We found that many false errors originate from annotation noise, limiting to some extent achievable performance on this dataset. Three additional key sources of error were identified, and should be addressed in future work: lack of sufficient training for long-tail entities, selecting overly specific or general entities, and failing to distinguish entities that are semantically highly related (e.g. a book and a movie of the same narrative). 
+%	
 	\section{Related Work}
 	
 	\paragraph{Local vs Global NED}
@@ -94,25 +94,25 @@
 	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches. These add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the Relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. 
 	\toin{Noam: why not to use Lazic's results as a precedent/motivation for the neural attention? (only several words are informative regarding the disambiguation)}
 	Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}.
-	However, global approaches are difficult to apply in domains where only short and noisy text is available. For example \newcite{Huang2014Collective} requires disambiguating many tweets together for applying a global model. 
+	However, global approaches are difficult to apply in domains where only short and noisy text is available, as occurs often in social media, question answers and other short web documents. For example, \newcite{Huang2014Collective} requires disambiguating many tweets together for applying a global model. 
 
 
 	\paragraph{Neural Approaches}
 	
-	The first published attempt of using deep neural networks (DNNs) for NED was by \newcite{he2013learning}, that used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. Recently, the increasing popularity of DNNs inspired a number of works that used Convolutional Neural Nets (CNN) for learning semantic similarity between context, mention and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using entity and context embeddings \cite{yamada2016joint,Hu2015Entity}.
+	The first published attempt of using deep neural networks (DNNs) for NED \cite{he2013learning} used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. Recently, the increasing popularity of DNNs inspired a number of works that used Convolutional Neural Nets (CNN) for learning semantic similarity between context, mention and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using entity and context embeddings \cite{yamada2016joint,Hu2015Entity}.
 	
 	In this paper, we train a Recurrent Neural Network (RNN) model, which unlike CNNs and embeddings, are designed to exploit the sequential nature of text. Moreover, we implement a neural attention mechanism, inspired by results from \newcite{Lazic2015} that successfully used a probabilistic attention-like model for NED.
 	
 	\paragraph{Noisy Data}
 	
-	\newcite{chisholm2015entity} have shown that despite the noisy nature of web data, augmenting Wikipedia derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. 
+	\newcite{chisholm2015entity} showed that despite the noisy nature of web data, augmenting Wikipedia derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. 
 	Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather then using it for training alone. Moreover, we argue that manually designing features for noisy text can be difficult and therefore use DNNs to automatically capture useful features.\toin{Noam: we must emphasize here the difference from Chisholm. Explicitly say - The context in our model is not modeled in BOW fashion ,hence it allows to capture semantic information between context words (Another reason to use NN)}
 	
 	Commonly used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO is a dataset based on Reuters newswire articles that was created by \newcite{hoffart2011robust} by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO entities. It contains $1393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} is another, smaller, dataset for NED based on news articles. ACE 2005 corpus is another news based dataset annotated by \newcite{bentivogli2010extending}. \newcite{Ratinov2011} have used a random sample of paragraphs from Wikipedia for evaluation, however they did not make the precise sample they used publicly available. 
 	
-	Our WikilinksNED dataset is substantially different from currently available datasets since these are all based on high quality content from either news-articles or Wikipedia, while WikilinksNED is a test-case for generally noisier, less coherent and lower quality data. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors and is not annotated by either experts, or a high-quality community effort in the case of Wikipedia. It is also significantly larger in size, being two orders of magnitude larger then existing news-based datasets.
+	Our WikilinksNED dataset is substantially different from currently available datasets since these are all based on high quality content from either news-articles or Wikipedia, while WikilinksNED is a test-case for generally noisier, less coherent and lower quality data, as often presented by many real-world problems. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors and is not annotated by either experts, or a high-quality community effort in the case of Wikipedia. It is also significantly larger in size, being two orders of magnitude larger than existing news-based datasets.
 	
-	Recently, a number of Twitter-based datasets were compiled as well \cite{fromreide2014crowdsourcing}. These represent a much more extreme case then our dataset in terms of noise, shortness and spelling variations, and are much smaller in size. Due to the unique nature of Tweet data, proposed algorithms tend to be substantially different from algorithms used for other NED tasks.
+	Recently, a number of Twitter-based datasets were compiled as well \cite{fromreide2014crowdsourcing}. These represent a much more extreme case than our dataset in terms of noise, shortness and spelling variations, and are much smaller in size. Due to the unique nature of Tweet data, proposed algorithms tend to be substantially different from algorithms used for other NED tasks.
 	
 	\section{The WikilinksNED Dataset: \qquad\qquad Entity Mentions in the Web}
 	\label{sec:w}
