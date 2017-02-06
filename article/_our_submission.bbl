@@ -276,6 +276,14 @@ Alan Ritter, Sam Clark, Mausam, and Oren Etzioni.
   Natural Language Processing}, pages 1524--1534. Association for Computational
   Linguistics.
 
+\bibitem[\protect\citename{Shen \bgroup et al.\egroup }2015]{Shen2015Entity}
+W.~Shen, J.~Wang, and J.~Han.
+\newblock 2015.
+\newblock Entity linking with a knowledge base: Issues, techniques, and
+  solutions.
+\newblock {\em IEEE Transactions on Knowledge and Data Engineering},
+  27(2):443--460, Feb.
+
 \bibitem[\protect\citename{Singh \bgroup et al.\egroup
   }2012]{singh12:wiki-links}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum.
