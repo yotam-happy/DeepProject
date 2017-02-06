@@ -68,7 +68,7 @@
 	\section{Introduction}
 			
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. 
-	NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in semantic parsing \cite{berant2013semantic}, as well as other NLP tasks.
+	NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in NLP tasks such as semantic parsing \cite{berant2013semantic}.
 		
 	Current research on NED is mostly driven by a number of standard datasets, such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE \cite{bentivogli2010extending}. A wide variety of algorithms were developed to address these datasets \cite{Shen2015Entity}. Most of the standard datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. However, other domains, such as web page fragments, social media, or questions, are often short, noisy and less coherent.
 
@@ -143,11 +143,12 @@
 		\label{fig:arnn}
 	\end{figure}	
 	
-	Figure \ref{fig:arnn} illustrates the main components of our architecture: an embedding layer, a duo of ARNNs, each processing one side of the context (left and right)\footnote{Right context is fed into the ARNN in reverse order}, and a classifier. 
+	Figure \ref{fig:arnn} illustrates the main components of our architecture: an embedding layer, a duo of ARNNs, each processing one side of the context (left and right), %\footnote{Right context is fed into the ARNN in reverse order}
+	and a classifier. 
 	
 	
 	\paragraph{Embedding}
-	The embedding layer first embeds both the entity and the context words as vectors\footnote{We use vectors with 300 dimensions for both words and entities}. 
+	The embedding layer first embeds both the entity and the context words as vectors (300 dimensions each).
 	
 	\paragraph{ARNN}
 	The ARNN unit is composed from an RNN and an attention mechanism. Equation \ref{eq1} represents the general semantics of an RNN unit. An RNN reads a sequence of vectors $\{v_t\}$ and maintains a hidden state vector $\{h_t\}$. At each step a new hidden state is computed based on the previous hidden state and the next input vector using some function $f$, and an output is computed using $g$. This allows the RNN to ``remember'' important signals while scanning the context and to recognize signals spanning multiple words.
@@ -160,7 +161,7 @@
 	\end{aligned}
 	\end{equation}
 	
-	In our implementation we used a standard GRU unit \cite{cho2014learning}, but any RNN can be a drop-in replacement. We fit the RNN unit with an additional attention mechanism, commonly used with state-of-the-art encoder-decoder models \cite{bahdanau2014neural,xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
+	Our implementation uses a standard GRU unit \cite{cho2014learning} as an RNN. We fit the RNN unit with an additional attention mechanism, commonly used with state-of-the-art encoder-decoder models \cite{bahdanau2014neural,xu2015show}. Since our model lacks a decoder, we use the entity embedding as a control signal for the attention mechanism.
 	
 	Equation \ref{eq2} details the equations governing the attention model.
 	
