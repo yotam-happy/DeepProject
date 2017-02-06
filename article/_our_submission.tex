@@ -85,8 +85,10 @@
 	
 	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. 
 	
-%	To better understand our results we performed an error analysis of the WikilinksNED experiment. We found that many false errors originate from annotation noise, limiting to some extent achievable performance on this dataset. Three additional key sources of error were identified, and should be addressed in future work: lack of sufficient training for long-tail entities, selecting overly specific or general entities, and failing to distinguish entities that are semantically highly related (e.g. a book and a movie of the same narrative). 
+%	To better understand our results we performed an error analysis of the WikilinksNED experiment. We found that many false errors originate from annotation noise, limiting to some extent achievable performance on this dataset. Three additional key sources of error were identified, and should be addressed in future work: lack of sufficient training for long-tail entities, selecting overly specific or general entities, and failing to distinguish entities that are semantically highly related (e.g. a book and a movie of the same narrative).
 %	
+    \toin{Omer: I think something should be said, perhaps in one sentence, about the high-level conclusions from the analysis. Maybe something about the related entities (books vs movies)? It could also be something along the lines of ``open challenges'' and ``future work''.}
+    
 	\section{Related Work}
 	
 	\paragraph{Local vs Global NED}
