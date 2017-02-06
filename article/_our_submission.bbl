@@ -92,9 +92,10 @@ Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Dzmitry Bahdanau, Fethi
   \href{https://doi.org/10.3115/v1/D14-1179}{https://doi.org/10.3115/v1/D14-1179}.
 
 \bibitem[{Chollet(2015)}]{chollet2015}
-François Chollet. 2015.
-\newblock keras.
-\newblock \url{https://github.com/fchollet/keras}.
+Fran\c{c}ois Chollet. 2015.
+\newblock \href{https://github.com/fchollet/keras}{Keras}.
+\newblock
+  \href{https://github.com/fchollet/keras}{https://github.com/fchollet/keras}.
 
 \bibitem[{Duchi et~al.(2011)Duchi, Hazan, and Singer}]{duchi2011adaptive}
 John~C. Duchi, Elad Hazan, and Yoram Singer. 2011.
@@ -117,26 +118,33 @@ Matthew Francis-Landau, Greg Durrett, and Dan Klein. 2016.
 
 \bibitem[{Friedman(2001)}]{friedman2001greedy}
 Jerome~H Friedman. 2001.
-\newblock Greedy function approximation: a gradient boosting machine.
+\newblock \href{https://doi.org/10.1214/aos/1013203451}{Greedy function
+  approximation: a gradient boosting machine}.
 \newblock {\em Annals of statistics\/} pages 1189--1232.
+\newblock
+  \href{https://doi.org/10.1214/aos/1013203451}{https://doi.org/10.1214/aos/1013203451}.
 
 \bibitem[{Fromreide et~al.(2014)Fromreide, Hovy, and
   S{\o}gaard}]{fromreide2014crowdsourcing}
 Hege Fromreide, Dirk Hovy, and Anders S{\o}gaard. 2014.
-\newblock Crowdsourcing and annotating ner for twitter \#drift.
+\newblock
+  \href{http://www.lrec-conf.org/proceedings/lrec2014/pdf/421\_Paper.pdf}{Crowdsourcing
+  and annotating ner for twitter \#drift}.
 \newblock In {\em Proceedings of the Ninth International Conference on Language
   Resources and Evaluation (LREC-2014)\/}. European Language Resources
   Association (ELRA).
+\newblock
+  \href{http://www.lrec-conf.org/proceedings/lrec2014/pdf/421\_Paper.pdf}{http://www.lrec-conf.org/proceedings/lrec2014/pdf/421\_Paper.pdf}.
 
 \bibitem[{Gabrilovich and Markovitch(2007)}]{gabrilovich2007computing}
 Evgeniy Gabrilovich and Shaul Markovitch. 2007.
-\newblock \href{http://ijcai.org/Proceedings/07/Papers/259.pdf}{Computing
+\newblock \href{http://dl.acm.org/citation.cfm?id=1625275.1625535}{Computing
   semantic relatedness using wikipedia-based explicit semantic analysis}.
-\newblock In {\em {IJCAI} 2007, Proceedings of the 20th International Joint
-  Conference on Artificial Intelligence, Hyderabad, India, January 6-12,
-  2007\/}. pages 1606--1611.
+\newblock In {\em Proceedings of the 20th International Joint Conference on
+  Artifical Intelligence\/}. Morgan Kaufmann Publishers Inc., San Francisco,
+  CA, USA, IJCAI'07, pages 1606--1611.
 \newblock
-  \href{http://ijcai.org/Proceedings/07/Papers/259.pdf}{http://ijcai.org/Proceedings/07/Papers/259.pdf}.
+  \href{http://dl.acm.org/citation.cfm?id=1625275.1625535}{http://dl.acm.org/citation.cfm?id=1625275.1625535}.
 
 \bibitem[{Globerson et~al.(2016)Globerson, Lazic, Chakrabarti, Subramanya,
   Ringaard, and Pereira}]{Globerson2016}
@@ -354,10 +362,13 @@ W.~Shen, J.~Wang, and J.~Han. 2015.
 \bibitem[{Singh et~al.(2012)Singh, Subramanya, Pereira, and
   McCallum}]{singh12:wiki-links}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum. 2012.
-\newblock Wikilinks: A large-scale cross-document coreference corpus labeled
-  via links to wikipedia.
+\newblock
+  \href{https://web.cs.umass.edu/publication/docs/2012/UM-CS-2012-015.pdf}{Wikilinks:
+  A large-scale cross-document coreference corpus labeled via links to
+  wikipedia}.
 \newblock {\em University of Massachusetts, Amherst, Tech. Rep.
-  UM-CS-2012-015\/} .
+  UM-CS-2012-015\/}
+  \href{https://web.cs.umass.edu/publication/docs/2012/UM-CS-2012-015.pdf}{https://web.cs.umass.edu/publication/docs/2012/UM-CS-2012-015.pdf}.
 
 \bibitem[{Sun et~al.(2015)Sun, Lin, Tang, Yang, Ji, and Wang}]{sun2015modeling}
 Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang. 2015.
