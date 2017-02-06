@@ -15,8 +15,16 @@
 %%e.agirre@ehu.es or Sergi.Balari@uab.es
 %% and that of ACL 08 by Joakim Nivre and Noah Smith
 
-\documentclass[11pt]{article}
-\usepackage{acl2016}
+\documentclass[11pt,a4paper]{article}
+\usepackage[hyperref]{acl2017}
+\usepackage{times}
+\usepackage{latexsym}
+
+\usepackage{url}
+
+
+%%\documentclass[11pt]{article}
+%%\usepackage{acl2016}
 \usepackage{times}
 \usepackage{url}
 \usepackage{latexsym}
@@ -362,7 +370,7 @@
 	
 	Finally, our error analysis shows a number of possible improvements that should be addressed. Since we use the training set for candidate generation, non-nonsensical candidates (i.e. disambiguation pages) cause our model to err and should be removed from the candidate set. In addition, we observe that lack of sufficient training for long-tail entities is still a problem, even when a large training set is available. We believe this, and some subtle semantic cases (book/movie) can be at least partially addressed by considering semantic properties of entities, such as types and categories. We intend to address these issues in future work.
 	
-	\bibliographystyle{acl2016}
+	\bibliographystyle{acl_natbib}
 	\bibliography{_our_submission}
 	
 \end{document}
