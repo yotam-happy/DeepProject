@@ -322,13 +322,14 @@ Lev Ratinov, Dan Roth, Doug Downey, and Mike Anderson. 2011.
 
 \bibitem[{Ratinov and Roth(2011)}]{ratinov2011glow}
 Lev{-}Arie Ratinov and Dan Roth. 2011.
-\newblock
-  \href{http://www.nist.gov/tac/publications/2011/participant.papers/cogcomp.proceedings.pdf}{{GLOW}
-  {TAC-KBP2011} entity linking system}.
+\newblock \href{http://www.nist.gov/tac/publications/2011/
+  participant.papers/cogcomp.proceedings.pdf}{{GLOW} {TAC-KBP2011} entity
+  linking system}.
 \newblock In {\em Proceedings of the Fourth Text Analysis Conference, {TAC}
   2011, Gaithersburg, Maryland, USA, November 14-15, 2011\/}.
-\newblock
-  \href{http://www.nist.gov/tac/publications/2011/participant.papers/cogcomp.proceedings.pdf}{http://www.nist.gov/tac/publications/2011/participant.papers/cogcomp.proceedings.pdf}.
+\newblock \href{http://www.nist.gov/tac/publications/2011/
+  participant.papers/cogcomp.proceedings.pdf}{http://www.nist.gov/tac/publications/2011/
+  participant.papers/cogcomp.proceedings.pdf}.
 
 \bibitem[{Ritter et~al.(2011)Ritter, Clark, Mausam, and
   Etzioni}]{ritter2011Named}
