@@ -78,7 +78,7 @@
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. 
 	NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in NLP tasks such as semantic parsing \cite{berant2013semantic}.
 		
-	Current research on NED is mostly driven by a number of standard datasets, such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE \cite{bentivogli2010extending}. A wide variety of algorithms were developed to address these datasets \cite{Shen2015Entity}. Most of the standard datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. However, other domains, such as web page fragments, social media, or questions, are often short, noisy and less coherent.
+	Current research on NED is mostly driven by a number of standard datasets, such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE \cite{bentivogli2010extending}. These datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. A wide variety of algorithms were developed to address these datasets \cite{Shen2015Entity}. In particular global algorithms, which employ a coherency model to disambiguate all mentions within a document together were shown to outperform local approaches that disambiguate each mention separately \cite{guo2014entity,pershina2015personalized,Globerson2016}. However, domains such as web page fragments, social media, or questions, are often short, noisy and less coherent. Such domains lack the necessary context and coherence required for global methods to pay off and present a more challenging setting for local methods.
 
 	In this work, we investigate the task of NED in a setting where only local and noisy context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset is two orders of magnitude larger than previously collected datasets, and contains 18K unique mentions linking to over 100K unique entities. We have empirically found it to be significantly noisier and more challenging than standard datasets. Take for example this fragment taken from the web:
 	
@@ -88,8 +88,7 @@
 	
 	This short fragment is considerably less structured and with a more personal tone than news reports. It clearly references the entity \textit{Monopoly\_(Game)}, however expressions such as 'experiment', and 'Industry' can generate a lot of noise when disambiguating \textit{Monopoly\_(Game)} from the much more common entity \textit{Monopoly} (economics term). Some sense of local semantics must be considered in order to separate the useful signals (e.g. indoor games, played) from the noisy ones.
 	
-	
-	We propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise in the text. We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
+	We therefore focus on local disambiguation and propose a novel neural network architecture based on recurrent neural networks (RNNs) with an attention mechanism. Our model differs from non-neural approaches by automatically learning feature representations for entity and context, allowing it to extract features from noisy and unexpected context patterns where it can be hard to manually design useful features. We differ from existing neural-based approaches by accounting for the sequential nature of textual context using RNNs, and using an attention model to reduce the impact of noise in the text. We also describe a novel method for initializing word and entity embeddings, and demonstrate its importance for model performance. 
 	
 	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated newswire articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. 
 	
@@ -99,10 +98,10 @@
 	
 	\paragraph{Local vs Global NED}
 	
-	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where a mention is disambiguated using hand-crafted statistical and contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches. These add a layer of sophistication on top of local approaches by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. 
+	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} have focused on local approaches where each mention is disambiguated separately using hand-crafted statistical and contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, increasing attention was recently given to global approaches. These disambiguate all mentions within a document together by considering the coherency of entity assignments within a document . For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism. 
 	
 	Global algorithms have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}.
-	However, global approaches are difficult to apply in domains where only short and noisy text is available, as occurs often in social media, question answers and other short web documents. For example, \newcite{Huang2014Collective} requires disambiguating many tweets together for applying a global model. 
+	However, global approaches are difficult to apply in domains where only short and noisy text is available, as occurs often in social media, questions and answers, and other short web documents. For example, \newcite{Huang2014Collective} requires disambiguating many tweets of the same author together for applying a global model. Our proposed model is a local model which disambiguates each mention separately since in our setting the short web-fragments lack sufficient context and coherency for global coherency-models.
 
 	\paragraph{Neural Approaches}
 	
@@ -116,7 +115,7 @@
 	Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather than using it for training alone. 
 	Moreover, we differ from Chisholm at el. by using DNNs to automatically discover useful features from noisy text, rather than manually designing statistical and bag-of-words based features.
 	
-	Commonly used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO is a dataset based on Reuters newswire articles that was created by \newcite{hoffart2011robust} by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO entities. It contains $1393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} is another, smaller, dataset for NED based on news articles. ACE is another news based dataset annotated by \newcite{bentivogli2010extending}. \newcite{Ratinov2011} have used a random sample of paragraphs from Wikipedia for evaluation, however they did not make the precise sample they used publicly available. 
+	Commonly used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO is a dataset based on Reuters newswire articles that was created by \newcite{hoffart2011robust} by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO \cite{YAGO:Hoffart} entities. It contains $1393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} is another, smaller, dataset for NED based on news articles. ACE is another news based dataset annotated by \newcite{bentivogli2010extending}. \newcite{Ratinov2011} have used a random sample of paragraphs from Wikipedia for evaluation, however they did not make the precise sample they used publicly available. 
 	
 	Our WikilinksNED dataset is substantially different from currently available datasets since these are all based on high quality content from either news-articles or Wikipedia, while WikilinksNED is a test-case for generally noisier, less coherent and lower quality data, as often presented by many real-world problems. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors and is not annotated by either experts, or a high-quality community effort in the case of Wikipedia. It is also significantly larger in size, being two orders of magnitude larger than existing news-based datasets.
 	
@@ -129,7 +128,7 @@
 	
 	Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced dataset where thousands of human annotators provide ground truths for mentions of interest. This means that the dataset also contains various kinds of noise, especially due to incoherent contexts. The contextual noise presents an interesting test-case that supplements existing datasets that are sourced from mostly coherent and well-formed text (news and Wikipedia). 
 	
-	To get a sense of textual noise we have set up a small experiment where we measured the similarity between entities mentioned in WikilinksNED and their surrounding context, and compared the results to CoNLL-YAGO. We used state-of-the-art word and entity embeddings obtained from \newcite{yamada2016joint} and computed cosine similarity between embeddings of the correct entity assignment and the mean of context words. We compared results from all mentions in CoNLL-YAGO to a sample of 50000 web fragments taken from WikilinksNED, using a window of words of size 40 around entity mentions. We have found the similarity between context and the correct entity is indeed lower for web mentions, and found this result to be statistically significant with very high probability ($p<10^{-5}$) . This result indicates that web fragments in WikilinksNED are indeed noisier compared to CoNLL-YAGO documents.
+	To get a sense of textual noise we have set up a small experiment where we measured the similarity between entities mentioned in WikilinksNED and their surrounding context, and compared the results to CoNLL-YAGO. We used state-of-the-art word and entity embeddings obtained from \newcite{yamada2016joint} and computed cosine similarity between embeddings of the correct entity assignment and the mean of context words. We compared results from all mentions in CoNLL-YAGO to a sample of 50000 web fragments taken from WikilinksNED, using a window of words of size 40 around entity mentions. We have found the similarity between context and the correct entity is indeed lower for web mentions ($0.163$) then for CoNLL-YAGO mentions ($0.188$), and found this result to be statistically significant with very high probability ($p<10^{-5}$) . This result indicates that web fragments in WikilinksNED are indeed noisier compared to CoNLL-YAGO documents.
 	
 	We prepared our dataset from the local-context version of Wikilinks\footnote{\url{http://www.iesl.cs.umass.edu/data/wiki-links}}, and resolved ground-truth links using a Wikipedia dump from April 2016\footnote{\url{https://dumps.wikimedia.org/}}. We used the \emph{page} and \emph{redirect} tables for resolution, and kept the database \emph{pageid} column as a unique identifier for Wikipedia entities. We discarded mentions where the ground-truth could not be resolved (only 3\% of mentions).
 	
@@ -140,7 +139,7 @@
 	
 	\section{Algorithm}
 	
-	Our DNN model is a discriminative model which takes a pair of local context and candidate entity, and outputs a probability-like score for the candidate entity being correct. Both words and entities are represented using embedding dictionaries and we interpret local context as a window-of-words to the left and right of a mention. The left and right contexts are fed into a duo of Attention-RNN (ARNN) components which process each side and produce a fixed length vector representation. The resulting vectors along with the entity embedding are then fed into a classifier network with two output units that are trained to emit a probability-like score of the candidate being a correct or corrupt assignment. 
+	Our DNN model is a discriminative model which takes a pair of local context and candidate entity, and outputs a probability-like score for the candidate entity being correct. Both words and entities are represented using embedding dictionaries and we interpret local context as a window-of-words to the left and right of a mention. The left and right contexts are fed into a duo of Attention-RNN (ARNN) components which process each side and produce a fixed length vector representation. The resulting vectors are concatenated and along with the entity embedding are and then fed into a classifier network with two output units that are trained to emit a probability-like score of the candidate being a correct or corrupt assignment. 
 	
 	\subsection{Model Architecture}
 	
@@ -217,8 +216,8 @@
 				\hline \multicolumn{3}{|c|}{Wikilinks Test-Set Evaluation} \\
 				\hline \bf Model               & \bf Sampled Test Set (10K)  & \bf Full Test Set (300K)  \\
 				\hline Baseline (MPS)                 & $60$   & $59.6$ \\
-				Cheng et al.                   & $50.7$ & - \\
-				Yamada at el.                  & $67.6$ & $66.9$ \\
+				Cheng (2013)                   & $50.7$ & - \\
+				Yamada (2016)              & $67.6$ & $66.9$ \\
 				\hline
 				\bf Our Attention-RNN              & $\bf 73.2$ & $\bf 73$ \\
 				Our RNN, w/o Attention         & $72.1$   & $72.2$ \\
@@ -228,7 +227,7 @@
 		\caption{\label{tab:wikilink} Evaluation on noisy web data (WikilinksNED)}
 	\end{table*}
 	
-	Training our model implicitly embeds the vocabulary of words and collection of entities in a common space. However, we found that explicitly initializing these embeddings with vectors pre-trained over a large collection of unlabeled data significantly improved performance (see Section \ref{experiments:effect}). To this end, we implemented an SGNS-based approach \cite{mikolov2013distributed} that simultaneously trains both word and entity vectors.
+	Training our model implicitly embeds the vocabulary of words and collection of entities in a common space. However, we found that explicitly initializing these embeddings with vectors pre-trained over a large collection of unlabeled data significantly improved performance (see Section \ref{experiments:effect}). To this end, we implemented an approach based on the Skip-Gram with Negative-Sampling (SGNS) algorithm by \newcite{mikolov2013distributed} that simultaneously trains both word and entity vectors.
 	
 	We used \texttt{word2vecf}\footnote{\url{http://bitbucket.org/yoavgo/word2vecf}} \cite{levy2014dependency}, which allows one to train word and context embeddings using arbitrary definitions of "word" and "context" by providing a dataset of word-context pairs $(w,c)$, rather than a textual corpus. In our usage, we define a context as an entity $e$. To compile a dataset of $(w,e)$ pairs, we consider every word $w$ that appeared in the Wikipedia article describing entity $e$. We limit our vocabularies to words that appeared at least 20 times in the corpus and entities that contain at least 20 words in their articles. We ran the process for 10 epochs and produced vectors of 300 dimensions; other hyperparameters were set to their defaults.
 	
@@ -266,7 +265,7 @@
 	\label{experiments-conll}
 	
 	\paragraph{Training}
-	CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which preliminary experiments showed is not sufficient to train our model on. To fit our model to this dataset we first used a simple domain adaptation technique and then incorporated a number of basic statistical and string based features.
+	CoNLL-YAGO has a training set with $18505$ non-NIL mentions, which our experiments showed is not sufficient to train our model on. To fit our model to this dataset we first used a simple domain adaptation technique and then incorporated a number of basic statistical and string based features.
 	
 	\paragraph{Domain Adaptation}
 	We used a simple domain adaptation technique where we first trained our model on an available large corpus of label data derived from Wikipedia, and then trained the resulting model on the smaller training set of CoNLL \cite{mou2016How}. The Wikipedia corpus was built by extracting all cross-reference links along with their context, resulting in over $80$ million training examples. We trained our model with All-Entity corrupt sampling for $1$ epoch on this data. The resulting model was then adapted to CoNLL-YAGO by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention as corrupt-samples (Near-Misses corrupt sampling).
@@ -285,21 +284,45 @@
 	
 	
 	\paragraph{Results}
-	The micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves comparable results, however it does not outperform the state-of-the-art, probably because of the relatively small training set and our reliance on domain adaptation.
+	Table \ref{tab:training} displays the micro and macro P@1 scores on CoNLL-YAGO test-b for the different training steps. We find that when using only the training set of CoNLL-YAGO our model is under-trained and that the domain adaptation provides a significant boost in performance. We find that incorporating extra statistical and string features yields a small extra improvement in performance.
+	
+	The final micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves comparable results, however it does not outperform the state-of-the-art, probably because of the relatively small training set and our reliance on domain adaptation.
 	
 	\begin{table}[ht]
 		\begin{center}
 			\begin{tabular}{|p{3.5cm}| p{1.3cm} p{1.3cm}|}
+				\hline \multicolumn{3}{|c|}{CoNLL-YAGO test-b - training steps evaluation} \\
+				\hline \textbf{Model} & \textbf{Micro P@1} & \textbf{Macro P@1} \\ 
+				\hline \multicolumn{3}{|c|}{PPRforNED} \\
+				\hline CoNLL training set    & $82$  & $82$ \\
+				+ domain adaptation    & $86.6$  & $87.7$ \\
+				+ GBRT    & $87.3$  & $88.6$ \\
+				\hline \multicolumn{3}{|c|}{Yago} \\
+				\hline CoNLL training set    & $74.8$  & $73.5$ \\
+				+ domain adaptation    & $83.6$  & $85.1$ \\
+				+ GBRT    & $83.3$  & $86.3$ \\
+				\hline
+			\end{tabular}
+		\end{center}
+		\caption{\label{tab:training} Evaluation of training steps on CoNLL-YAGO.}
+	\end{table}
+	
+	\begin{table}[ht]
+		\begin{center}
+			\begin{tabular}{|p{3.7cm}| p{1.2cm} p{1.2cm}|}
 				\hline \multicolumn{3}{|c|}{CoNLL-YAGO test-b (Local methods)} \\
 				\hline \textbf{Model} & \textbf{Micro P@1} & \textbf{Macro P@1} \\ 
 				\hline \multicolumn{3}{|c|}{PPRforNED} \\
 				\hline Our ARNN + GBRT    & $87.3$  & $88.6$ \\
-				Yamada et al. local               & $90.9$  & $92.4$ \\
+				Yamada (2016) local               & $90.9$  & $92.4$ \\
+				\hline Yamada (2016) global               & $93.1$  & $92.6$ \\
 				\hline \multicolumn{3}{|c|}{Yago} \\
 				\hline Our ARNN + GBRT    & $83.3$  & $86.3$ \\
-				Yamada et al. local               & $87.2$  & $89.6$ \\
-				Francis-Landau et al.             & $85.5$  & - \\
-				Chisholm et al. local             & $86.1$  & - \\
+				Yamada (2016) local               & $87.2$  & $89.6$ \\
+				Francis-Landau (2016)             & $85.5$  & - \\
+				Chisholm (2015) local             & $86.1$  & - \\
+				\hline Yamada (2016) global               & $91.5$  & $90.9$ \\
+				Chisholm (2015) global             & $88.7$  & - \\
 				\hline
 			\end{tabular}
 		\end{center}
