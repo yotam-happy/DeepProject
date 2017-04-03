@@ -112,7 +112,7 @@
 	\paragraph{Noisy Data}
 	
 	\newcite{chisholm2015entity} showed that despite the noisy nature of web data, augmenting Wikipedia-derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. 
-	Our work focuses on using a subset of Wikilinks to construct a noisy test case in-itself, rather than using it for training alone. 
+	In our work we find noisy web data to be a unique and challenging test case for disambiguation and therefore use Wikilinks to construct a noisy test case in-itself, rather than use it for training alone. 
 	Moreover, we differ from Chisholm at el. by using DNNs to automatically discover useful features from noisy text, rather than manually designing statistical and bag-of-words based features.
 	
 	Commonly used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO is a dataset based on Reuters newswire articles that was created by \newcite{hoffart2011robust} by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO \cite{YAGO:Hoffart} entities. It contains $1393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} is another, smaller, dataset for NED based on news articles. ACE is another news based dataset annotated by \newcite{bentivogli2010extending}. \newcite{Ratinov2011} have used a random sample of paragraphs from Wikipedia for evaluation, however they did not make the precise sample they used publicly available. 
