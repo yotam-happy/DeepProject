@@ -1,21 +1,25 @@
 %
-% File acl2017.tex
+% File acl2016.tex
 %
 %% Based on the style files for ACL-2015, with some improvements
 %%  taken from the NAACL-2016 style
 %% Based on the style files for ACL-2014, which were, in turn,
-%% based on ACL-2013, ACL-2012, ACL-2011, ACL-2010, ACL-IJCNLP-2009,
-%% EACL-2009, IJCNLP-2008...
+%% Based on the style files for ACL-2013, which were, in turn,
+%% Based on the style files for ACL-2012, which were, in turn,
+%% based on the style files for ACL-2011, which were, in turn, 
+%% based on the style files for ACL-2010, which were, in turn, 
+%% based on the style files for ACL-IJCNLP-2009, which were, in turn,
+%% based on the style files for EACL-2009 and IJCNLP-2008...
+
 %% Based on the style files for EACL 2006 by 
 %%e.agirre@ehu.es or Sergi.Balari@uab.es
 %% and that of ACL 08 by Joakim Nivre and Noah Smith
 
-\documentclass[11pt,a4paper]{article}
-\usepackage[hyperref]{acl2017}
+\documentclass[11pt]{article}
+\usepackage{acl2016}
 \usepackage{times}
-\usepackage{latexsym}
-
 \usepackage{url}
+\usepackage{latexsym}
 
 %\aclfinalcopy % Uncomment this line for the final submission
 %\def\aclpaperid{***} %  Enter the acl Paper ID here
@@ -28,7 +32,7 @@
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
 
-\title{Instructions for ACL-2017 Proceedings}
+\title{Instructions for ACL-2016 Proceedings}
 
 \author{First Author \\
   Affiliation / Address line 1 \\
@@ -47,7 +51,7 @@
 \maketitle
 \begin{abstract}
   This document contains the instructions for preparing a camera-ready
-  manuscript for the proceedings of ACL-2017. The document itself
+  manuscript for the proceedings of ACL-2016. The document itself
   conforms to its own specifications, and is therefore an example of
   what your manuscript should look like. These instructions should be
   used for both papers submitted for review and for final versions of
@@ -58,27 +62,32 @@
 \section{Credits}
 
 This document has been adapted from the instructions for earlier ACL
-and NAACL proceedings, including those for ACL 2017 by Dan Gildea and
-Min-Yen Kan, NAACL-2017 by Margaret Mitchell, ACL-2012 by Maggie Li
-and Michael White, those from ACL-2010 by Jing-Shing Chang and Philipp
-Koehn, those for ACL-2008 by Johanna D. Moore, Simone Teufel, James
-Allan, and Sadaoki Furui, those for ACL-2005 by Hwee Tou Ng and Kemal
+and NAACL proceedings, including those for NAACL-2016 by Margaret
+Mitchell, ACL-2012 by Maggie Li and Michael
+White, those from ACL-2010 by Jing-Shing Chang and Philipp Koehn,
+those for ACL-2008 by Johanna D. Moore, Simone Teufel, James Allan,
+and Sadaoki Furui, those for ACL-2005 by Hwee Tou Ng and Kemal
 Oflazer, those for ACL-2002 by Eugene Charniak and Dekang Lin, and
 earlier ACL and EACL formats. Those versions were written by several
 people, including John Chen, Henry S. Thompson and Donald
 Walker. Additional elements were taken from the formatting
 instructions of the {\em International Joint Conference on Artificial
   Intelligence} and the \emph{Conference on Computer Vision and
-  Pattern Recognition}.
+Pattern Recognition}.
 
 \section{Introduction}
 
 The following instructions are directed to authors of papers submitted
-to ACL-2017 or accepted for publication in its proceedings. All
+to ACL-2016 or accepted for publication in its proceedings. All
 authors are required to adhere to these specifications. Authors are
 required to provide a Portable Document Format (PDF) version of their
 papers. \textbf{The proceedings are designed for printing on A4
 paper.}
+
+We will make more detailed instructions available at
+\url{acl2016.org/index.php?article_id=9}. Please check this website 
+regularly.
+
 
 \section{General Instructions}
 
@@ -91,16 +100,16 @@ pages directly under the top margin. See the guidelines later
 regarding formatting the first page.  The manuscript should be
 printed single-sided and its length
 should not exceed the maximum page limit described in Section~\ref{sec:length}.
-Pages are numbered for  initial submission. However, {\bf do not number the pages in the camera-ready version}.
+Do not number the pages.
 
 By uncommenting {\small\verb|\aclfinalcopy|} at the top of this 
  document, it will compile to produce an example of the camera-ready formatting; by leaving it commented out, the document will be anonymized for initial submission.  When you first create your submission on softconf, please fill in your submitted paper ID where {\small\verb|***|} appears in the {\small\verb|\def\aclpaperid{***}|} definition at the top.
 
 The review process is double-blind, so do not include any author information (names, addresses) when submitting a paper for review.  
-However, you should maintain space for names and addresses so that they will fit in the final (accepted) version.  The ACL 2017 \LaTeX\ style will create a titlebox space of 2.5in for you when {\small\verb|\aclfinalcopy|} is commented out.  
+However, you should maintain space for names and addresses so that they will fit in the final (accepted) version.  The ACL 2016 \LaTeX\ style will create a titlebox space of 2.5in for you when {\small\verb|\aclfinalcopy|} is commented out.  
 
 \subsection{The Ruler}
-The ACL 2017 style defines a printed ruler which should be presented in the
+The ACL 2016 style defines a printed ruler which should be presented in the
 version submitted for review.  The ruler is provided in order that
 reviewers may comment on particular lines in the paper without
 circumlocution.  If you are preparing a document without the provided
@@ -111,22 +120,24 @@ camera ready copy should not contain a ruler. (\LaTeX\ users may uncomment
 the {\small\verb|\aclfinalcopy|} command in the document preamble.)  
 
 Reviewers: note that the ruler measurements do not align well with
-lines in the paper -- this turns out to be very difficult to do well
+lines in the paper --- this turns out to be very difficult to do well
 when the paper contains many figures and equations, and, when done,
 looks ugly. In most cases one would expect that the approximate
-location will be adequate, although you can also use fractional
-references ({\em e.g.}, the first paragraph on this page ends at mark $114.5$).
+location will be adequate, altough you can also use fractional
+references (e.g., the first paragraph on this page ends at mark $114.5$),
+although in most cases one would expect that the approximate location
+will be adequate.
 
 \subsection{Electronically-available resources}
 
-ACL provides this description in \LaTeX2e{} ({\small\tt acl2017.tex}) and PDF
-format ({\small\tt acl2017.pdf}), along with the \LaTeX2e{} style file used to
-format it ({\small\tt acl2017.sty}) and an ACL bibliography style ({\small\tt acl\_natbib.bst})
-and example bibliography ({\small\tt acl2017.bib}).
+ACL provides this description in \LaTeX2e{} ({\small\tt acl2016.tex}) and PDF
+format ({\small\tt acl2016.pdf}), along with the \LaTeX2e{} style file used to
+format it ({\small\tt acl2016.sty}) and an ACL bibliography style ({\small\tt acl2016.bst})
+and example bibliography ({\small\tt acl2016.bib}).
 These files are all available at
-{\small\tt acl2017.org/index.php?article\_id=9}. We
+{\small\tt acl2016.org/index.php?article\_id=9}. We
 strongly recommend the use of these style files, which have been
-appropriately tailored for the ACL 2017 proceedings.
+appropriately tailored for the ACL 2016 proceedings.
 
 \subsection{Format of Electronic Manuscript}
 \label{sect:pdf}
@@ -152,6 +163,7 @@ PDF. One way on some systems is to install a driver for a postscript
 printer, send your document to the printer specifying ``Output to a
 file'', then convert the file to PDF.
 
+
 It is of utmost importance to specify the \textbf{A4 format} (21 cm
 x 29.7 cm) when formatting the paper. When working with
 {\tt dvips}, for instance, one should specify {\tt -t a4}.
@@ -159,10 +171,12 @@ Or using the command \verb|\special{papersize=210mm,297mm}| in the latex
 preamble (directly below the \verb|\usepackage| commands). Then using 
 {\tt dvipdf} and/or {\tt pdflatex} which would make it easier for some.
 
+
 Print-outs of the PDF file on A4 paper should be identical to the
 hardcopy version. If you cannot meet the above requirements about the
 production of your electronic submission, please contact the
 publication chairs as soon as possible.
+
 
 \subsection{Layout}
 \label{ssec:layout}
@@ -185,6 +199,7 @@ paper are:
  your electronic submission, please contact the publication chairs 
  above as soon as possible.
 
+
 \subsection{Fonts}
 
 For reasons of uniformity, Adobe's {\bf Times Roman} font should be
@@ -199,6 +214,7 @@ used. In \LaTeX2e{} this is accomplished by putting
 in the preamble. If Times Roman is unavailable, use {\bf Computer
   Modern Roman} (\LaTeX2e{}'s default).  Note that the latter is about
   10\% less dense than Adobe's Times Roman font.
+
 
 \begin{table}[h]
 \begin{center}
@@ -235,7 +251,7 @@ without a blank line intervening. Approximately, put the title at 2.5
 cm from the top of the page, followed by a blank line, then the
 author's names(s), and the affiliation on the following line. Do not
 use only initials for given names (middle initials are allowed). Do
-not format surnames in all capitals ({\em e.g.}, use ``Mitchell'' not
+not format surnames in all capitals (e.g., use ``Mitchell not
 ``MITCHELL'').  Do not format title and section headings in all
 capitals as well except for proper names (such as ``BLEU'') that are
 conventionally in all capitals.  The affiliation should contain the
@@ -263,7 +279,7 @@ be no longer than 200 words. The abstract text should be in 10 point font.
 the abstract, observing the two-column format as shown in 
 the present document. Do not include page numbers.
 
-{\bf Indent}: When starting a new paragraph. Use 11 points for text and 
+{\bf Indent} when starting a new paragraph. Use 11 points for text and 
 subsection headings, 12 points for section headings and 15 points for
 the title. 
 
@@ -294,7 +310,7 @@ the title.
 \verb|{\ss}| & {\ss} \\\hline
 \end{tabular}
 \end{tabular}
-\caption{Example commands for accented characters, to be used in, {\em e.g.}, \BibTeX\ names.}\label{tab:accents}
+\caption{Example commands for accented characters, to be used in, e.g., \BibTeX\ names.}\label{tab:accents}
 \end{table}
 
 \subsection{Sections}
@@ -305,28 +321,11 @@ numerals) in order to facilitate cross references. Number subsections
 with the section number and the subsection number separated by a dot,
 in Arabic numerals. Do not number subsubsections.
 
-\begin{table*}
-\centering
-\begin{tabular}{lll}
-  output & natbib & previous ACL style files\\
-  \hline
-  \citep{Gusfield:97} & \verb|\citep| & \verb|\cite| \\
-  \citet{Gusfield:97} & \verb|\citet| & \verb|\newcite| \\
-  \citeyearpar{Gusfield:97} & \verb|\citeyearpar| & \verb|\shortcite| \\
-\end{tabular}
-\caption{Citation commands supported by the style file.
-  The citation style is based on the natbib package and
-  supports all natbib citation commands.
-  It also supports commands defined in previous ACL style files
-  for compatibility.
-  }
-\end{table*}
-
 {\bf Citations}: Citations within the text appear in parentheses
 as~\cite{Gusfield:97} or, if the author's name appears in the text
 itself, as Gusfield~\shortcite{Gusfield:97}.
 Using the provided \LaTeX\ style, the former is accomplished using
-{\small\verb|\cite|} and the latter with {\small\verb|\shortcite|} or {\small\verb|\newcite|}.  Collapse multiple citations as in~\cite{Gusfield:97,Aho:72}; this is accomplished with the provided style using commas within the {\small\verb|\cite|} command, {\em e.g.}, {\small\verb|\cite{Gusfield:97,Aho:72}|}.  
+{\small\verb|\cite|} and the latter with {\small\verb|\shortcite|} or {\small\verb|\newcite|}.  Collapse multiple citations as in~\cite{Gusfield:97,Aho:72}; this is accomplished with the provided style using commas within the {\small\verb|\cite|} command, e.g., {\small\verb|\cite{Gusfield:97,Aho:72}|}.  
 Append lowercase letters to the year in cases of ambiguities.  
  Treat double authors as
 in~\cite{Aho:72}, but write as in~\cite{Chandra:81} when more than two
@@ -346,42 +345,17 @@ you use
 \end{quote}
 
 If you are using the provided \LaTeX{} and Bib\TeX{} style files, you
-can use the command \verb|\citet| (cite in text)
-to get ``author (year)'' citations.
-
-If the Bib\TeX{} file contains DOI fields, the paper
-title in the references section will appear as a hyperlink
-to the DOI, using the hyperref \LaTeX{} package.
-To disable the hyperref package, load the style file
-with the \verb|nohyperref| option:
-\verb|\usepackage[nohyperref]{acl2017}|
-
-\textbf{Digital Object Identifiers}:  As part of our work to make ACL
-materials more widely used and cited outside of our discipline, ACL
-has registered as a CrossRef member, as a registrant of Digital Object
-Identifiers (DOIs), the standard for registering permanent URNs for
-referencing scholarly materials.  As of 2017, we are requiring all
-camera-ready references to contain the appropriate DOIs (or as a
-second resort, the hyperlinked ACL Anthology Identifier) to all cited
-works.  Thus, please ensure that you use Bib\TeX records that contain
-DOI or URLs for any of the ACL materials that you reference.
-Appropriate records should be found for most materials in the current
-ACL Anthology at \url{http://aclanthology.info/}.
-
-As examples, we cite \cite{P16-1001} to show you how papers with a DOI
-will appear in the bibliography.  We cite \cite{C14-1001} to show how
-papers without a DOI but with an ACL Anthology Identifier will appear
-in the bibliography.  
+can use the command \verb|\newcite| to get ``author (year)'' citations.
 
 As reviewing will be double-blind, the submitted version of the papers
 should not include the authors' names and affiliations. Furthermore,
-self-references that reveal the author's identity, {\em e.g.},
+self-references that reveal the author's identity, e.g.,
 \begin{quote}
 ``We previously showed \cite{Gusfield:97} ...''  
 \end{quote}
 should be avoided. Instead, use citations such as 
 \begin{quote}
-``\citeauthor{Gusfield:97} \shortcite{Gusfield:97}
+``Gusfield \shortcite{Gusfield:97}
 previously showed ... ''
 \end{quote}
 
@@ -440,29 +414,29 @@ tables and figures do not rely solely on color to convey critical
 distinctions.
 Here we give a simple criterion on your colored figures, if your paper has to be printed in black and white, then you must assure that every curves or points in your figures can be still clearly distinguished.
 
-% Min: no longer used as of ACL 2017, following ACL exec's decision to
-% remove this extra workflow that was not executed much.
-% BEGIN: remove
-%% \section{XML conversion and supported \LaTeX\ packages}
+\section{XML conversion and supported \LaTeX\ packages}
 
-%% Following ACL 2014 we will also we will attempt to automatically convert 
-%% your \LaTeX\ source files to publish papers in machine-readable 
-%% XML with semantic markup in the ACL Anthology, in addition to the 
-%% traditional PDF format.  This will allow us to create, over the next 
-%% few years, a growing corpus of scientific text for our own future research, 
-%% and picks up on recent initiatives on converting ACL papers from earlier 
-%% years to XML. 
+Following ACL 2014 we will also we will attempt to automatically convert 
+your \LaTeX\ source files to publish papers in machine-readable 
+XML with semantic markup in the ACL Anthology, in addition to the 
+traditional PDF format.  This will allow us to create, over the next 
+few years, a growing corpus of scientific text for our own future research, 
+and picks up on recent initiatives on converting ACL papers from earlier 
+years to XML. 
 
-%% We encourage you to submit a ZIP file of your \LaTeX\ sources along
-%% with the camera-ready version of your paper. We will then convert them
-%% to XML automatically, using the LaTeXML tool
-%% (\url{http://dlmf.nist.gov/LaTeXML}). LaTeXML has \emph{bindings} for
-%% a number of \LaTeX\ packages, including the ACL 2017 stylefile. These
-%% bindings allow LaTeXML to render the commands from these packages
-%% correctly in XML. For best results, we encourage you to use the
-%% packages that are officially supported by LaTeXML, listed at
-%% \url{http://dlmf.nist.gov/LaTeXML/manual/included.bindings}
-% END: remove
+We encourage you to submit a ZIP file of your \LaTeX\ sources along
+with the camera-ready version of your paper. We will then convert them
+to XML automatically, using the LaTeXML tool
+(\url{http://dlmf.nist.gov/LaTeXML}). LaTeXML has \emph{bindings} for
+a number of \LaTeX\ packages, including the ACL 2016 stylefile. These
+bindings allow LaTeXML to render the commands from these packages
+correctly in XML. For best results, we encourage you to use the
+packages that are officially supported by LaTeXML, listed at
+\url{http://dlmf.nist.gov/LaTeXML/manual/included.bindings}
+
+
+
+
 
 \section{Translation of non-English Terms}
 
@@ -475,12 +449,12 @@ the order of: original-form transliteration ``translation''.
 \section{Length of Submission}
 \label{sec:length}
 
-The ACL 2017 main conference accepts submissions of long papers and
+The ACL 2016 main conference accepts submissions of long papers and
 short papers.
  Long papers may consist of up to eight (8) pages of
 content plus unlimited pages for references. Upon acceptance, final
-versions of long papers will be given one additional page -- up to nine (9)
-pages of content plus unlimited pages for references -- so that reviewers' comments
+versions of long papers will be given one additional page (up to 9
+pages with unlimited pages for references) so that reviewers' comments
 can be taken into account. Short papers may consist of up to four (4)
 pages of content, plus unlimited pages for references. Upon
 acceptance, short papers will be given five (5) pages in the
@@ -502,6 +476,7 @@ Workshop chairs may have different rules for allowed length and
 whether supplemental material is welcome. As always, the respective
 call for papers is the authoritative source.
 
+
 \section*{Acknowledgments}
 
 The acknowledgments should go immediately before the references.  Do
@@ -510,15 +485,15 @@ when submitting your paper for review.
 
 % include your own bib file like this:
 %\bibliographystyle{acl}
-%\bibliography{acl2017}
-\bibliography{acl2017}
-\bibliographystyle{acl_natbib}
+%\bibliography{acl2016}
+\bibliography{acl2016}
+\bibliographystyle{acl2016}
 
 \appendix
 
 \section{Supplemental Material}
 \label{sec:supplemental}
-ACL 2017 also encourages the submission of supplementary material
+ACL 2016 also encourages the submission of supplementary material
 to report preprocessing decisions, model parameters, and other details
 necessary for the replication of the experiments reported in the 
 paper. Seemingly small preprocessing decisions can sometimes make
@@ -526,20 +501,18 @@ a large difference in performance, so it is crucial to record such
 decisions to precisely characterize state-of-the-art methods.
 
 Nonetheless, supplementary material should be supplementary (rather
-than central) to the paper. {\bf Submissions that misuse the supplementary 
-material may be rejected without review.}
-Essentially, supplementary material may include explanations or details
-of proofs or derivations that do not fit into the paper, lists of
-features or feature templates, sample inputs and outputs for a system,
+than central) to the paper. It may include explanations or details
+of proofs or deriations that do not fit into the paper, lists of
+features or feature tempates, sample inputs and outputs for a system,
 pseudo-code or source code, and data. (Source code and data should
 be separate uploads, rather than part of the paper).
 
 The paper should not rely on the supplementary material: while the paper
-may refer to and cite the supplementary material and the supplementary material will be available to the
+may refer to and cite the supplementary material will be available to the
 reviewers, they will not be asked to review the
 supplementary material.
 
-Appendices ({\em i.e.} supplementary material in the form of proofs, tables,
+Appendices (i.e. supplementary material in the form of proofs, tables,
 or pseudo-code) should come after the references, as shown here. Use
 \verb|\appendix| before any appendix section to switch the section
 numbering over to letters.

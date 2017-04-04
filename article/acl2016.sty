@@ -1,6 +1,5 @@
-% 2017: modified to support DOI links in bibliography.  Now uses
-% natbib package rather than defining citation commands in this file.
-% Use with acl_natbib.bst bib style.  -- Dan Gildea
+% File acl2015.sty
+% December 2014
 
 % This is the LaTeX style for ACL 2016. It contains Margaret Mitchell's
 % line number adaptations (ported by Hai Zhao and Yannick Versley).
@@ -16,6 +15,21 @@
 % instructions to reflect use of \documentclass rather than \documentstyle
 % and removing the white space before the title on the first page
 % -- John Chen, June 29, 2000
+
+% To convert from submissions prepared using the style file aclsub.sty
+% prepared for the ACL 2000 conference, proceed as follows:
+% 1) Remove submission-specific information:  \whichsession, \id,
+%    \wordcount, \otherconferences, \area, \keywords
+% 2) \summary should be removed.  The summary material should come
+%     after \maketitle and should be in the ``abstract'' environment
+% 3) Check all citations.  This style should handle citations correctly
+%    and also allows multiple citations separated by semicolons.
+% 4) Check figures and examples.  Because the final format is double-
+%    column, some adjustments may have to be made to fit text in the column
+%    or to choose full-width (\figure*} figures.
+% 5) Change the style reference from aclsub to acl2000, and be sure
+%    this style file is in your TeX search path
+
 
 % This is the LaTeX style file for EACL-95.  It is identical to the
 % style file for ANLP '94 except that the margins are adjusted for A4
@@ -51,7 +65,7 @@
 % improvements, etc.  please let me know.  My e-mail address is:
 %       pfps@research.att.com
 
-% Papers are to be prepared using the ``acl_natbib'' bibliography style,
+% Papers are to be prepared using the ``acl'' bibliography style,
 % as follows:
 %       \documentclass[11pt]{article}
 %       \usepackage{acl2000}
@@ -61,7 +75,7 @@
 %       \begin{document}
 %       ...
 %       \bibliography{bibliography-file}
-%       \bibliographystyle{acl_natbib}
+%       \bibliographystyle{acl}
 %       \end{document}
 
 % Author information can be set in various styles:
@@ -85,26 +99,7 @@
 % \usepackage{acl2015}
 % where <new height> can be something larger than 5cm
 
-% include hyperref, unless user specifies nohyperref option like this:
-% \usepackage[nohyperref]{acl2017}
-\newif\ifacl@hyperref
-\DeclareOption{hyperref}{\acl@hyperreftrue}
-\DeclareOption{nohyperref}{\acl@hyperreffalse}
-\ExecuteOptions{hyperref} % default is to use hyperref
-\ProcessOptions\relax
-\ifacl@hyperref
-  \RequirePackage{hyperref}
-  \usepackage{xcolor}		% make links dark blue
-  \definecolor{darkblue}{rgb}{0, 0, 0.5}
-  \hypersetup{colorlinks=true,citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
-\else
-  % This definition is used if the hyperref package is not loaded.
-  % It provides a backup, no-op definiton of \href.
-  % This is necessary because \href command is used in the acl_natbib.bst file.
-  \def\href#1#2{{#2}}
-\fi
-
-\typeout{Conference Style for ACL 2017}
+\typeout{Conference Style for ACL 2016 -- released January 17th, 2016}
 
 % NOTE:  Some laser printers have a serious problem printing TeX output.
 % These printing devices, commonly known as ``write-white'' laser
@@ -325,15 +320,14 @@
 \ifnum\cv@refno<\cv@tot\repeat}}\endgroup}%
 %\makeatother
 
-
 \def\aclpaperid{***}
-\def\confidential{ACL 2017 Submission~\aclpaperid.  Confidential Review Copy.  DO NOT DISTRIBUTE.}
+\def\confidential{ACL 2016 Submission~\aclpaperid.  Confidential review copy.  DO NOT DISTRIBUTE.}
 
 %% Page numbering, Vruler and Confidentiality %%
 % \makevruler[<SCALE>][<INITIAL_COUNT>][<STEP>][<DIGITS>][<HEIGHT>]
 \def\aclruler#1{\makevruler[14.17pt][#1][1][3][\textheight]\usebox{\aclrulerbox}}
-\def\leftoffset{-2.1cm} %original: -45pt
-\def\rightoffset{17.5cm} %original: 500pt
+\def\leftoffset{-1.9cm} %original: -45pt
+\def\rightoffset{17.3cm} %original: 500pt
 \ifaclfinal\else\pagenumbering{arabic}
 \AddToShipoutPicture{%
 \ifaclfinal\else
@@ -414,18 +408,70 @@
 %\renewenvironment{abstract}{\centerline{\large\bf  
 % Abstract}\vspace{0.5ex}\begin{quote}}{\par\end{quote}\vskip 1ex}
 
-\RequirePackage{natbib}
-% for citation commands in the .tex, authors can use:
-% \citep, \citet, and \citeyearpar for compatibility with natbib, or
-% \cite, \newcite, and \shortcite for compatibility with older ACL .sty files
-\renewcommand\cite{\citep}	% to get "(Author Year)" with natbib    
-\newcommand\shortcite{\citeyearpar}% to get "(Year)" with natbib    
-\newcommand\newcite{\citet}	% to get "Author (Year)" with natbib    
-
 
 % bibliography
 
+\def\thebibliography#1{\section*{References}
+  \global\def\@listi{\leftmargin\leftmargini
+               \labelwidth\leftmargini \advance\labelwidth-\labelsep
+               \topsep 1pt plus 2pt minus 1pt
+               \parsep 0.25ex plus 1pt \itemsep 0.25ex plus 1pt}
+  \list {[\arabic{enumi}]}{\settowidth\labelwidth{[#1]}\leftmargin\labelwidth
+    \advance\leftmargin\labelsep\usecounter{enumi}}
+    \def\newblock{\hskip .11em plus .33em minus -.07em}
+    \sloppy
+    \sfcode`\.=1000\relax}
+
 \def\@up#1{\raise.2ex\hbox{#1}}
+
+% most of cite format is from aclsub.sty by SMS
+
+% don't box citations, separate with ; and a space
+% also, make the penalty between citations negative: a good place to break
+% changed comma back to semicolon pj 2/1/90
+% \def\@citex[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+% \def\@citea{}\@cite{\@for\@citeb:=#2\do
+%   {\@citea\def\@citea{;\penalty\@citeseppen\ }\@ifundefined
+%      {b@\@citeb}{{\bf ?}\@warning
+%      {Citation `\@citeb' on page \thepage \space undefined}}%
+% {\csname b@\@citeb\endcsname}}}{#1}}
+
+% don't box citations, separate with ; and a space
+% Replaced for multiple citations (pj) 
+% don't box citations and also add space, semicolon between multiple citations
+\def\@citex[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \def\@citea{}\@cite{\@for\@citeb:=#2\do
+     {\@citea\def\@citea{; }\@ifundefined
+       {b@\@citeb}{{\bf ?}\@warning
+        {Citation `\@citeb' on page \thepage \space undefined}}%
+ {\csname b@\@citeb\endcsname}}}{#1}}
+
+% Allow short (name-less) citations, when used in
+% conjunction with a bibliography style that creates labels like
+%       \citename{<names>, }<year>
+% 
+\let\@internalcite\cite
+\def\cite{\def\citename##1{##1, }\@internalcite}
+\def\shortcite{\def\citename##1{}\@internalcite}
+\def\newcite{\def\citename##1{{\frenchspacing##1} (}\@internalciteb}
+
+% Macros for \newcite, which leaves name in running text, and is
+% otherwise like \shortcite.
+\def\@citexb[#1]#2{\if@filesw\immediate\write\@auxout{\string\citation{#2}}\fi
+  \def\@citea{}\@newcite{\@for\@citeb:=#2\do
+    {\@citea\def\@citea{;\penalty\@m\ }\@ifundefined
+       {b@\@citeb}{{\bf ?}\@warning
+       {Citation `\@citeb' on page \thepage \space undefined}}%
+{\csname b@\@citeb\endcsname}}}{#1}}
+\def\@internalciteb{\@ifnextchar [{\@tempswatrue\@citexb}{\@tempswafalse\@citexb[]}}
+
+\def\@newcite#1#2{{#1\if@tempswa, #2\fi)}}
+
+\def\@biblabel#1{\def\citename##1{##1}[#1]\hfill}
+
+%%% More changes made by SMS (originals in latex.tex)
+% Use parentheses instead of square brackets in the text.
+\def\@cite#1#2{({#1\if@tempswa , #2\fi})}
 
 % Don't put a label in the bibliography at all.  Just use the unlabeled format
 % instead.
@@ -444,7 +490,6 @@
  \sfcode`\.=1000\relax}
 \let\endthebibliography=\endlist
 
-
 % Allow for a bibliography of sources of attested examples
 \def\thesourcebibliography#1{\vskip\parskip%
 \vskip\baselineskip%
@@ -460,6 +505,13 @@
  \sloppy\clubpenalty4000\widowpenalty4000
  \sfcode`\.=1000\relax}
 \let\endthesourcebibliography=\endlist
+
+\def\@lbibitem[#1]#2{\item[]\if@filesw 
+      { \def\protect##1{\string ##1\space}\immediate
+        \write\@auxout{\string\bibcite{#2}{#1}}\fi\ignorespaces}}
+
+\def\@bibitem#1{\item\if@filesw \immediate\write\@auxout
+       {\string\bibcite{#1}{\the\c@enumi}}\fi\ignorespaces}
 
 % sections with less space
 \def\section{\@startsection {section}{1}{\z@}{-2.0ex plus
