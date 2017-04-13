@@ -102,10 +102,10 @@
 	
 	\paragraph{Local vs Global NED}
 	
-	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} focused on local approaches where each mention is disambiguated separately using hand-crafted contextual features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, recent work has largely focused on global approaches. These disambiguate all mentions within a document simultaneously by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was exploited as part of the relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence mechanism.
+	Early work on Named Entity Disambiguation, such as \newcite{bunescu2006using} and \newcite{mihalcea2007wikify} focused on local approaches where each mention is disambiguated separately using hand-crafted features. While local approaches provide a hard-to-beat baseline \cite{Ratinov2011}, recent work has largely focused on global approaches. These disambiguate all mentions within a document simultaneously by considering the coherency of entity assignments within a document. For example the local component of the GLOW algorithm \cite{Ratinov2011} was used as part of the relational inference system suggested by \newcite{Cheng2013}. Similarly, \newcite{Globerson2016} achieved state-of-the-art results by extending the local-based selective-context model of \newcite{Lazic2015} with an attention-like coherence model.
 	
 	Global models can tap into highly-discriminative semantic signals (e.g. coreference and entity relatedness) that are unavailable to local methods, and have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}.
-	However, global approaches are difficult to apply in domains where only short and noisy text is available, as often occurs in social media, questions and answers, and other short web documents. For example, \newcite{Huang2014Collective} had to collect many tweets from the same author in order to apply a global disambiguation method. Since this work focuses on disambiguating entities within short fragments of text, our algorithmic approach tries to extract as much information from the local context, without resorting to external signals.
+	However, global approaches are difficult to apply in domains where only short and noisy text is available, as often occurs in social media, questions and answers, and other short web documents. For example, \newcite{Huang2014Collective} collected many tweets from the same author in order to apply a global disambiguation method. Since this work focuses on disambiguating entities within short fragments of text, our algorithmic approach tries to extract as much information from the local context, without resorting to external signals.
 
 	\paragraph{Neural Approaches}
 	
@@ -113,22 +113,22 @@
 	
 	\paragraph{Noisy Data}
 	
-	\newcite{chisholm2015entity} showed that despite the noisy nature of web data, augmenting Wikipedia-derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can lead to improved performance on standard datasets. 
+	\newcite{chisholm2015entity} showed that despite the noisy nature of web data, augmenting Wikipedia-derived data with web-links from the Wikilinks corpus \cite{singh12:wiki-links} can improved performance on standard datasets. 
 	In our work, we find noisy web data to be a unique and challenging test case for disambiguation. We therefore use Wikilinks to construct a new stand-alone disambiguation benchmark that focuses on noisy text, rather than use it for training alone. 
 	Moreover, we differ from Chisholm at el. by taking a neural approach that implicitly discovers useful signals from contexts, instead of manually crafting features.
 	
 	Commonly-used benchmarks for NED systems have mostly focused on news-based corpora. CoNLL-YAGO \cite{hoffart2011robust} is a dataset based on Reuters, created by hand-annotating the CoNLL 2003 Named Entity Recognition task dataset with YAGO \cite{suchanek2007} entities. It contains $1,393$ documents split into train, development and test sets. TAC KBP 2010 \cite{ji2010overview} and ACE \newcite{bentivogli2010extending} are also news-based datasets that contain only a limited amount of examples. \newcite{Ratinov2011} used a random sample of paragraphs from Wikipedia for evaluation; however, they did not make their sample publicly available.
 	
-	Our WikilinksNED dataset is substantially different from currently available datasets since they are all based on high-quality content from either news articles or Wikipedia, while WikilinksNED is a benchmark for generally noisier, less coherent, and more colloquial text. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors. It is also significantly larger in size, being over 100 times larger than CoNLL-YAGO.
+	Our WikilinksNED dataset is substantially different from currently available datasets since they are all based on high-quality content from either news articles or Wikipedia, while WikilinksNED is a benchmark for noisier, less coherent, and more colloquial text. The annotation process in significantly different as well, as our dataset reflects the annotation preferences of real-world website authors. It is also significantly larger in size, being over 100 times larger than CoNLL-YAGO.
 	
 	Recently, a number of Twitter-based datasets were compiled as well \cite{Meij202Adding,fromreide2014crowdsourcing}. These represent a much more extreme case than our dataset in terms of noise, shortness and spelling variations, and are much smaller in size. Due to the unique nature of tweets, proposed algorithms tend to be substantially different from algorithms used for other NED tasks.
 	
 	\section{The WikilinksNED Dataset: \qquad\qquad Entity Mentions in the Web}
 	\label{sec:w}
 	
-	We introduce WikilinksNED, a new large-scale NED dataset based on text fragments from the web. Our dataset is derived from the Wikilinks corpus \cite{singh12:wiki-links}, which was constructed by crawling the web and collecting hyperlinks (mentions) linking to Wikipedia concepts (entities) and their surrounding text (context). Wikilinks contains 40 million mentions covering 3 million entities, collected from over 10 million web pages. 
+	We introduce WikilinksNED, a large-scale NED dataset based on text fragments from the web. Our dataset is derived from the Wikilinks corpus \cite{singh12:wiki-links}, which was constructed by crawling the web and collecting hyperlinks (mentions) linking to Wikipedia concepts (entities) and their surrounding text (context). Wikilinks contains 40 million mentions covering 3 million entities, collected from over 10 million web pages. 
 	
-	Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced dataset where thousands of human annotators provide ground truths for mentions of interest. This means that the dataset also contains various kinds of noise, especially due to incoherent contexts. The contextual noise presents an interesting test-case that supplements existing datasets that are sourced from mostly coherent and well-formed text (news and Wikipedia). 
+	Wikilinks can be seen as a large-scale, naturally-occurring, crowd-sourced dataset where thousands of human annotators provide ground truths for mentions of interest. This means that the dataset contains various kinds of noise, especially due to incoherent contexts. The contextual noise presents an interesting test-case that supplements existing datasets that are sourced from mostly coherent and well-formed text. 
 	
 	To get a sense of textual noise we have set up a small experiment where we measured the similarity between entities mentioned in WikilinksNED and their surrounding context, and compared the results to CoNLL-YAGO. We used state-of-the-art word and entity embeddings obtained from \newcite{yamada2016joint} and computed cosine similarity between embeddings of the correct entity assignment and the mean of context words. We compared results from all mentions in CoNLL-YAGO to a sample of 50000 web fragments taken from WikilinksNED, using a window of words of size 40 around entity mentions. We have found the similarity between context and the correct entity is indeed lower for web mentions ($0.163$) then for CoNLL-YAGO mentions ($0.188$), and found this result to be statistically significant with very high probability ($p<10^{-5}$) . This result indicates that web fragments in WikilinksNED are indeed noisier compared to CoNLL-YAGO documents.
 	
@@ -147,7 +147,7 @@
 	
 	\begin{figure}[t]
 		\centering
-		\includegraphics[scale=0.92]{diagrams/model_color_v8.pdf}
+		\includegraphics[scale=0.78]{diagrams/model_color_v8.pdf}
 		\caption{The architecture of our Neural Network model. A close-up of the Attention-RNN component appears in the dashed box.}
 		\label{fig:arnn}
 	\end{figure}	
@@ -195,7 +195,7 @@
 	
 	\subsection{Training}
 	
-	We assume our model is only given examples of correct entity assignments during training and therefore use \textit{corrupt-sampling}, where we automatically generate examples of corrupt assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling and provide an empirical comparison of the two approaches (Section \ref{experiments}):
+	We assume our model is only given training examples for correct entity assignments and therefore use \textit{corrupt-sampling}, where we automatically generate examples of wrong assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling and provide an empirical comparison of the two approaches (Section \ref{experiments}):
 	
 	\begin{description}
 	\item{\textbf{Near-Misses:}} 
@@ -206,7 +206,7 @@
 	
 	We sample corrupt examples uniformly in both alternatives since with uniform sampling the ratio between the number of positive and negative examples of an entity is higher for popular entities, thus biasing the network towards popular entities. In the All-Entity case, this ratio is approximately proportional to the prior probability of the entity. 
 	
-	We note that preliminary experiments revealed that corrupt-sampling according to the distribution of entities in the dataset (as is done by Mikolov at el. \shortcite{mikolov2013distributed}), rather than uniform sampling, produces an interesting entity-context similarity measure. However, it does not perform well in our settings due to the lack of biasing toward popular entities.
+	We note that preliminary experiments revealed that corrupt-sampling according to the distribution of entities in the dataset (as is done by Mikolov at el. \shortcite{mikolov2013distributed}), rather than uniform sampling, did not perform well in our settings due to the lack of biasing toward popular entities.
 	
 	Model optimization was carried out using standard backpropagation and an AdaGrad optimizer \cite{duchi2011adaptive}. We allowed the error to propagate through all parts of the network and fine tune all trainable parameters, including the word and entity embeddings themselves. We found the performance of our model substantially improves for the first few epochs and then continues to slowly converge with marginal gains, and therefore trained all models for $8$ epochs with $k=5$ for corrupt-sampling. 
 	
@@ -240,7 +240,7 @@
 	
 	In this section, we describe our experimental setup and compare our model to the state of the art on two datasets: our new WikilinksNED dataset, as well as the commonly-used CoNLL-YAGO dataset \cite{hoffart2011robust}. We also examine the effect of different corrupt-sampling schemes, and of initializing our model with pre-trained word and entity embeddings.
 	
-	In all experiments, our model was trained with fixed-size left and right contexts (20 words in each direction). We used a special padding symbol when the actual context was shorter than the window. Further, we filtered stopwords using NLTK's stop-word list prior to selecting the window in order to focus on more informative words. Our model was implemented using the Keras \cite{chollet2015} and Tensorflow \cite{tensorflow2015-whitepaper} libraries.
+	In all experiments, our model was trained with fixed-size left and right contexts (20 words in each side). We used a special padding symbol when the actual context was shorter than the window. Further, we filtered stopwords using NLTK's stop-word list prior to selecting the window in order to focus on more informative words. Our model was implemented using the Keras \cite{chollet2015} and Tensorflow \cite{tensorflow2015-whitepaper} libraries.
 	
 	\subsection{WikilinksNED}
 	
@@ -284,7 +284,7 @@
 	
 	
 	\paragraph{Results}
-	Table \ref{tab:training} displays the micro and macro P@1 scores on CoNLL-YAGO test-b for the different training steps. We find that when using only the training set of CoNLL-YAGO our model is under-trained and that the domain adaptation provides a significant boost in performance. We find that incorporating extra statistical and string features yields a small extra improvement in performance.
+	Table \ref{tab:training} displays the micro and macro P@1 scores on CoNLL-YAGO test-b for the different training steps. We find that when using only the training set of CoNLL-YAGO our model is under-trained and that the domain adaptation significant boosts performance. We find that incorporating extra statistical and string features yields a small extra improvement in performance.
 	
 	The final micro and macro P@1 scores on CoNLL-YAGO test-b are displayed in table \ref{tab:conll}. On this dataset our model achieves comparable results, however it does not outperform the state-of-the-art, probably because of the relatively small training set and our reliance on domain adaptation.
 	
@@ -355,11 +355,11 @@
 	
 	\section{Error Analysis}
 	
-	We randomly sampled and manually analyzed $200$ individual cases of prediction errors made by our model. This set was obtained from WikilinksNED's validation set that was not used for training. 
+	We randomly sampled and manually analyzed $200$ cases of prediction errors made by our model. This set was obtained from WikilinksNED's validation set that was not used for training. 
 	
-	Working with crowd-sourced data, we expected some errors to result from noise in the ground truths themselves. Indeed, we found that $19.5$\% (39/200) of the prediction errors were not false, out of which $5\%$ (2) where wrong labels, $33\%$ (13) were predictions with an equivalent meaning as the correct entity, and in $61.5\%$ (24) our model suggested a more convincing solution than the original author by using specific hints from the context. In this manner, the  mention \textit{'Supreme leader'} , which was contextually associated to the Iranian leader Ali Khamenei, was linked by our model with \textit{'supreme leader of Iran'} while the "correct" tag was the general \textit{'supreme leader'} entity.
+	Working with crowd-sourced data, we expected some errors to result from noise in the ground truths themselves. Indeed, we found that $19.5$\% (39/200) of the errors were not false, out of which $5\%$ (2) where wrong labels, $33\%$ (13) were predictions with an equivalent meaning as the correct entity, and in $61.5\%$ (24) our model suggested a more convincing solution than the original author by using specific hints from the context. In this manner, the  mention \textit{'Supreme leader'} , which was contextually associated to the Iranian leader Ali Khamenei, was linked by our model with \textit{'supreme leader of Iran'} while the "correct" tag was the general \textit{'supreme leader'} entity.
 	
-	In addition, $15.5\%$ (31/200) were cases where a Wikipedia disambiguation-page was chosen as either the correct or predicted entity ($2.5\%$ and $14\%$, respectively). We considered the rest of the 130 errors as true semantic errors, and analyzed them in-depth.
+	In addition, $15.5\%$ (31/200) were cases where a Wikipedia disambiguation-page was either the correct or predicted entity ($2.5\%$ and $14\%$, respectively). We considered the rest of the 130 errors as true semantic errors, and analyzed them in-depth.
 	
 	\begin{table}[ht]
 		\begin{center}
@@ -389,7 +389,7 @@
 	\section{Conclusions}
 	Our results indicate that the expressibility of attention-RNNs indeed allows us to extract useful features from noisy context, when sufficient amounts of training examples are available. This allows our model to significantly out-perform existing state-of-the-art models. We find that both using pre-initialized embedding vocabularies, and the corrupt-sampling method employed are very important for properly training our model.
 	
-	However, the gap between results of all systems tested on both CoNLL-YAGO and WikilinksNED indicates that mentions with noisy context are indeed a challenging test. We believe this to be an important real-world scenario, that represents a distinct test-case that fills a gap between existing news-based datasets and the much noisier Twitter data \cite{ritter2011Named} that has received increasing attention. We find recurrent neural models are a promising direction for this task, while there is still room for improvement. 
+	However, the gap between results of all systems tested on both CoNLL-YAGO and WikilinksNED indicates that mentions with noisy context are indeed a challenging test. We believe this to be an important real-world scenario, that represents a distinct test-case that fills a gap between existing news-based datasets and the much noisier Twitter data \cite{ritter2011Named} that has received increasing attention. We find recurrent neural models are a promising direction for this task. 
 	
 	Finally, our error analysis shows a number of possible improvements that should be addressed. Since we use the training set for candidate generation, non-nonsensical candidates (i.e. disambiguation pages) cause our model to err and should be removed from the candidate set. In addition, we observe that lack of sufficient training for long-tail entities is still a problem, even when a large training set is available. We believe this, and some subtle semantic cases (book/movie) can be at least partially addressed by considering semantic properties of entities, such as types and categories. We intend to address these issues in future work.
 	
