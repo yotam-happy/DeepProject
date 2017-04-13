@@ -350,15 +350,6 @@ Alan Ritter, Sam Clark, Mausam, and Oren Etzioni. 2011.
 \newblock
   \href{http://aclweb.org/anthology/D11-1141}{http://aclweb.org/anthology/D11-1141}.
 
-\bibitem[{Shen et~al.(2015)Shen, Wang, and Han}]{Shen2015Entity}
-W.~Shen, J.~Wang, and J.~Han. 2015.
-\newblock \href{https://doi.org/10.1109/TKDE.2014.2327028}{Entity linking with
-  a knowledge base: Issues, techniques, and solutions}.
-\newblock {\em IEEE Transactions on Knowledge and Data Engineering\/}
-  27(2):443--460.
-\newblock
-  \href{https://doi.org/10.1109/TKDE.2014.2327028}{https://doi.org/10.1109/TKDE.2014.2327028}.
-
 \bibitem[{Singh et~al.(2012)Singh, Subramanya, Pereira, and
   McCallum}]{singh12:wiki-links}
 Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum. 2012.
@@ -369,6 +360,15 @@ Sameer Singh, Amarnag Subramanya, Fernando Pereira, and Andrew McCallum. 2012.
   UM-CS-2012-015\/} \href{https://web.cs.umass.edu/publication/docs
   /2012/UM-CS-2012-015.pdf}{https://web.cs.umass.edu/publication/docs
   /2012/UM-CS-2012-015.pdf}.
+
+\bibitem[{Suchanek et~al.(2007)Suchanek, Kasneci, and Weikum}]{suchanek2007}
+Fabian~M. Suchanek, Gjergji Kasneci, and Gerhard Weikum. 2007.
+\newblock \href{https://doi.org/10.1145/1242572.1242667}{Yago: A core of
+  semantic knowledge}.
+\newblock In {\em Proceedings of the 16th International Conference on World
+  Wide Web\/}. ACM, New York, NY, USA, WWW '07, pages 697--706.
+\newblock
+  \href{https://doi.org/10.1145/1242572.1242667}{https://doi.org/10.1145/1242572.1242667}.
 
 \bibitem[{Sun et~al.(2015)Sun, Lin, Tang, Yang, Ji, and Wang}]{sun2015modeling}
 Yaming Sun, Lei Lin, Duyu Tang, Nan Yang, Zhenzhou Ji, and Xiaolong Wang. 2015.
