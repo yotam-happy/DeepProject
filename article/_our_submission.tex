@@ -147,7 +147,7 @@
 	
 	\begin{figure}[t]
 		\centering
-		\includegraphics[scale=0.92]{diagrams/model_color_v7.pdf}
+		\includegraphics[scale=0.92]{diagrams/model_color_v8.pdf}
 		\caption{The architecture of our Neural Network model. A close-up of the Attention-RNN component appears in the dashed box.}
 		\label{fig:arnn}
 	\end{figure}	
@@ -260,8 +260,6 @@
 	
 	\paragraph{Results}
 	We used standard micro P@1 accuracy for evaluation. Experimental results comparing our model with the baselines are reported in Table \ref{tab:wikilink}. Our RNN model significantly outperforms Yamada at el. on this data by over 5 points, indicating that the more expressive RNNs are indeed beneficial for this task. We find that the attention mechanism further improves our results by a small, yet statistically significant, margin.
-	
-	When running Cheng at el \shortcite{Cheng2013} we used a pre-trained model supplied by the authors, which, similarly to the setting used for evaluating the GLOW algorithm by Ratinov at el \cite{ratinov2011glow}, was not directly trained on our training set. This has resulted in poor performance, emphasizing the greater importance of training a model directly on the training set compared to existing datasets.
 	
 	\subsection{CoNLL-YAGO}
 	\label{experiments-conll}
