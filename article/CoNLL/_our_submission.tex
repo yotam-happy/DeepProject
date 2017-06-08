@@ -61,7 +61,6 @@
 	\And
 	Kira Radinsky \\
 	eBay Research \& Technion  – Israel Institute of Technology \\ 
-	Affiliation / Address line 2 \\
 	{\tt kirar@cs.technion.ac.il} \\
 	\And
 	Ikuda Yamada \\
@@ -71,10 +70,10 @@
 	{\tt yotamesh@cs.technion.ac.il} \\
 	\And
 	Omer Cohen \\
-	Affiliation / Address line 1 \\ 
-	Affiliation / Address line 2 \\
-	Affiliation / Address line 3 \\
-	{\tt email@domain} \\}
+	Paul G. Allen School of Computer Science and Engineering \\
+	University of Washington \\ 
+	Seattle, WA \\
+	{\tt omerlevy@cs.washington.edu} \\}
 
 \date{}
 
@@ -107,6 +106,8 @@
 	While convolutional neural networks \cite{sun2015modeling,francis2016capturing} and probabilistic attention \cite{Lazic2015} have been applied to the task, this is the first model to use RNNs and a neural attention model for NED. RNNs account for the sequential nature of textual context while the attention model is applied to reduce the impact of noise in the text. 
 
 	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context better than current approaches. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated news articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. These experiments highlight the difference between the two datasets, indicating that our NED benchmark is substantially more challenging.
+	
+	Code and data used for our experiments can be found at \url{https://github.com/yotam-happy/NEDforNoisyText}
 	
 	%We analyze our results both quantitatively and qualitatively, and conclude with a number of possible directions for future work, such as handling of semantically highly relayed entities (e.g. a book and a movie of the same narrative).
 
