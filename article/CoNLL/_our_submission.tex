@@ -48,63 +48,46 @@
 
 \title{Named Entity Disambiguation for Noisy Text}
 
-%\renewcommand\Authands{ and }
-
-%\author[1]{Yotam Eshel}
-%\author[2]{Noam Cohen}
-%\author[1,3]{Kira Radinsky}
-%\author[1]{Shaul Markovitch}
-%\author[4]{\authorcr Ikuda Yamada}
-%\author[5]{Omer Levi}
-%\affil[1]{Department of Computer Science, \authorcr Technion - Israel Institute of Technology, Haifa, Israel}
-%\affil[2]{Department of Biomedical Engineering \authorcr Technion - Israel Institute of Technology, Haifa, Israel}
-%\affil[3]{eBay Research \& Technion  – Israel Institute of Technology}
-%\affil[4]{Studio Ousia, 4489-105-221 Endo, Fujisawa, Kanagawa, Japan}
-%\affil[5]{Paul G. Allen School of Computer Science and Engineering, \authorcr University of Washington, Seattle, WA}
-
 \author{
-	\begin{minipage}{11em}
-		\begin{center}
-		Yotam Eshel \\
-		{\normalfont Technion, Haifa, Israel \\
-		\texttt{yotamesh@\\technion.ac.il}}
-		\end{center}
-	\end{minipage}
-	\begin{minipage}{11em}
-		\begin{center}
-			Noam Cohen \\
-		{\normalfont Technion, Haifa, Israel \\
-			\texttt{noambox@\\gmail.com}}
-		\end{center}
-	\end{minipage}
-	\begin{minipage}{13em}
-		\begin{center}
-			Kira Radinsky \\
-		{\normalfont Technion \& eBay research \\
-			\texttt{kirar@\\technion.ac.il}}
-		\end{center}
-	\end{minipage} \\ \\
-	\begin{minipage}{10em}
-		\begin{center}
-			\textbf{Shaul Markovitch} \\
-			{\normalfont Technion, Haifa, Israel \\
-				\texttt{shaulm@\\technion.ac.il}}
-		\end{center}
-	\end{minipage}
-	\begin{minipage}{10em}
-		\begin{center}
-			\textbf{Ikuda Yamada} \\
-			{\normalfont Studio Ousia, Fujisawa, Kanagawa, Japan \\
-				\texttt{ikuya@ousia.jp}}
-		\end{center}
-	\end{minipage}
-	\begin{minipage}{15em}
-		\begin{center}
-			\textbf{Omer Levi} \\
-			{\normalfont Paul G. Allen School, University of Washington, Seattle, WA \\
-				\texttt{omerlevy@cs.washington.edu}}
-		\end{center}
-	\end{minipage} \\
+\begin{minipage}{11em}
+	\begin{center}
+		Yotam Eshel$^{1}$
+	\end{center}
+\end{minipage}
+\begin{minipage}{11em}
+	\begin{center}
+		Noam Cohen$^{1}$
+	\end{center}
+\end{minipage}
+\begin{minipage}{11em}
+	\begin{center}
+		Kira Radinsky$^{1,2}$
+	\end{center}
+\end{minipage}\\
+\begin{minipage}{11em}
+	\begin{center}
+		\textbf{Shaul Markovitch$^{1}$}
+	\end{center}
+\end{minipage}
+\begin{minipage}{11em}
+	\begin{center}
+		\textbf{Ikuda Yamada$^{3}$}
+	\end{center}
+\end{minipage}
+\begin{minipage}{11em}
+	\begin{center}
+		\textbf{Omer Levy$^{4}$}
+	\end{center}
+\end{minipage}\\ \\
+	$^{1}$Technion - Israel Institute of Technology, Haifa, Israel\\
+	%\texttt{\{yotamesh, shaulm, kirar\}@cs.technion.ac.il}\\
+	%$^{2}$Technion - Israel Institute of Technology, Haifa, Israel\\
+	%\texttt{noambox@gmail.com} \\
+	$^{2}$eBay Research, Israel\\
+	$^{3}$Studio Ousia, Fujisawa, Kanagawa, Japan\\
+	%\texttt{ikuya@ousia.jp} \\
+	$^{4}$University of Washington, Seattle, WA\\
+	%\texttt{omerlevy@cs.washington.edu}\\
 }
 
 
@@ -122,12 +105,12 @@
 	
 	
 	\section{Introduction}
-			
+	
 	Named Entity Disambiguation (NED) is the task of linking mentions of entities in text to a given knowledge base, such as Freebase or Wikipedia. 
 	NED is a key component in Entity Linking (EL) systems, focusing on the disambiguation task itself, independently from the tasks of Named Entity Recognition (detecting mention bounds) and Candidate Generation (retrieving the set of potential candidate entities). NED has been recognized as an important component in NLP tasks such as semantic parsing \cite{berant2013semantic}.
-		
+	
 	Current research on NED is mostly driven by a number of standard datasets, such as CoNLL-YAGO \cite{hoffart2011robust}, TAC KBP \cite{ji2010overview} and ACE \cite{bentivogli2010extending}. These datasets are based on news corpora and Wikipedia, which are naturally coherent, well-structured, and rich in context. Global disambiguation models \cite{guo2014entity,pershina2015personalized,Globerson2016} leverage this coherency by jointly disambiguating all the mentions in a single document. However, domains such as web-page fragments, social media, or search queries, are often short, noisy, and less coherent; such domains lack the necessary contextual information for global methods to pay off, and present a more challenging setting in general.
-
+	
 	In this work, we investigate the task of NED in a setting where only \textit{local} and \textit{noisy} context is available. In particular, we create a dataset of 3.2M short text fragments extracted from web pages, each containing a mention of a named entity. Our dataset is far larger than previously collected datasets, and contains 18K unique mentions linking to over 100K unique entities. We have empirically found it to be noisier and more challenging than existing datasets. For example:
 	\begin{quote}
 		``I had no choice but to experiment with other indoor games. I was born in Atlantic City so the obvious next choice was \textbf{Monopoly}. I played until I became a successful Captain of Industry.''
@@ -137,13 +120,13 @@
 	We therefore propose a new model that leverages local contextual information to disambiguate entities. Our neural approach (based on RNNs with attention) leverages the vast amount of training data in WikilinksNED to learn representations for entity and context, allowing it to extract signals from noisy and unexpected context patterns. 
 	
 	While convolutional neural networks \cite{sun2015modeling,francis2016capturing} and probabilistic attention \cite{Lazic2015} have been applied to the task, this is the first model to use RNNs and a neural attention model for NED. RNNs account for the sequential nature of textual context while the attention model is applied to reduce the impact of noise in the text. 
-
+	
 	Our experiments show that our model significantly outperforms existing state-of-the-art NED algorithms on WikilinksNED, suggesting that RNNs with attention are able to model short and noisy context better than current approaches. In addition, we evaluate our algorithm on CoNLL-YAGO \cite{hoffart2011robust}, a dataset of annotated news articles. We use a simple domain adaptation technique since CoNLL-YAGO lacks a large enough training set for our model, and achieve comparable results to other state-of-the-art methods. These experiments highlight the difference between the two datasets, indicating that our NED benchmark is substantially more challenging.
 	
 	Code and data used for our experiments can be found at \url{https://github.com/yotam-happy/NEDforNoisyText}
 	
 	%We analyze our results both quantitatively and qualitatively, and conclude with a number of possible directions for future work, such as handling of semantically highly relayed entities (e.g. a book and a movie of the same narrative).
-
+	
 	\section{Related Work}
 	
 	\paragraph{Local vs Global NED}
@@ -152,7 +135,7 @@
 	
 	Global models can tap into highly-discriminative semantic signals (e.g. coreference and entity relatedness) that are unavailable to local methods, and have significantly outperformed the local approach on standard datasets \cite{guo2014entity,pershina2015personalized,Globerson2016}.
 	However, global approaches are difficult to apply in domains where only short and noisy text is available, as often occurs in social media, questions and answers, and other short web documents. For example, \newcite{Huang2014Collective} collected many tweets from the same author in order to apply a global disambiguation method. Since this work focuses on disambiguating entities within short fragments of text, our algorithmic approach tries to extract as much information from the local context, without resorting to external signals.
-
+	
 	\paragraph{Neural Approaches}
 	
 	The first neural approach for NED \cite{he2013learning} used stacked auto-encoders to learn a similarity measure between mention-context structures and entity candidates. More recently, convolutional neural networks (CNNs) were employed for learning semantic similarity between context, mention, and candidate inputs \cite{sun2015modeling,francis2016capturing}. Neural embedding techniques have also inspired a number of works that measure entity-context relatedness using their embeddings \cite{yamada2016joint,Hu2015Entity}. In this paper, we train a recurrent neural network (RNN) model, which unlike CNNs and embeddings, is designed to exploit the sequential nature of text. We also utilize an attention mechanism, inspired by results from \newcite{Lazic2015} that successfully used a probabilistic attention-like model for NED.
@@ -244,10 +227,10 @@
 	We assume our model is only given training examples for correct entity assignments and therefore use \textit{corrupt-sampling}, where we automatically generate examples of wrong assignments. For each context-entity pair $(c,e)$, where $e$ is the correct assignment for $c$, we produce $k$ corrupt examples with the same context $c$ but with a different, corrupt entity $e'$. We considered two alternatives for corrupt sampling and provide an empirical comparison of the two approaches (Section \ref{experiments}):
 	
 	\begin{description}
-	\item{\textbf{Near-Misses:}} 
-	Sampling out of the candidate set of each mention. We have found this to be more effective where the training data reliably reflects the test-set distribution.
-	\item{\textbf{All-Entity:}} 
-	Sampling from the entire dictionary of entities. Better suited to cases where the training data or candidate generation does not reflect the test-set well. Has an added benefit of allowing us to utilize unambiguous training examples where only a single candidate is found.
+		\item{\textbf{Near-Misses:}} 
+		Sampling out of the candidate set of each mention. We have found this to be more effective where the training data reliably reflects the test-set distribution.
+		\item{\textbf{All-Entity:}} 
+		Sampling from the entire dictionary of entities. Better suited to cases where the training data or candidate generation does not reflect the test-set well. Has an added benefit of allowing us to utilize unambiguous training examples where only a single candidate is found.
 	\end{description}
 	
 	We sample corrupt examples uniformly in both alternatives since with uniform sampling the ratio between the number of positive and negative examples of an entity is higher for popular entities, thus biasing the network towards popular entities. In the All-Entity case, this ratio is approximately proportional to the prior probability of the entity. 
@@ -315,10 +298,10 @@
 	
 	\paragraph{Domain Adaptation}
 	We used a simple domain adaptation technique where we first trained our model on an available large corpus of label data derived from Wikipedia, and then trained the resulting model on the smaller training set of CoNLL \cite{mou2016How}. The Wikipedia corpus was built by extracting all cross-reference links along with their context, resulting in over $80$ million training examples. We trained our model with All-Entity corrupt sampling for $1$ epoch on this data. The resulting model was then adapted to CoNLL-YAGO by training $1$ epoch on CoNLL-YAGO's training set, where corrupt examples were produced by considering all possible candidates for each mention as corrupt-samples (Near-Misses corrupt sampling).
-
+	
 	\paragraph{Additional Features}	
 	We proceeded to use the model in a similar setting to \newcite{yamada2016joint} where a Gradient Boosting Regression Tree (GBRT) \cite{friedman2001greedy} model was trained with our model's prediction as a feature along with a number of statistical and string based features defined by Yamada. The statistical features include entity prior probability, conditional probability, number of candidates for the given mention and maximum conditional probability of the entity in the document. The string based features include edit distance between mention and entity title and two boolean features indicating whether the entity title starts or ends with the mention and vice versa. The GBRT model parameters where set to the values reported as optimal by Yamada\footnote{Learning rate of $0.02$; maximal tree depth of $4$; $10,000$ trees.}.
-			
+	
 	\paragraph{Candidate Generation}
 	For comparability with existing methods we used two publicly available candidates datasets: (1) PPRforNED - Pershina at el. \shortcite{pershina2015personalized};
 	(2) YAGO - Hoffart at el. \shortcite{hoffart2011robust}.
@@ -416,7 +399,7 @@
 				\hline Not errors 			& $19.5\%$ 	& $(39/200)$  \\ 
 				- Annotation error 			& $5\%$    	& $(2/39)$ \\ 
 				- Better suggestion			& $61.5\%$ 	&$(24/39)$ \\
-			    - Equivalent entities		& $ 33\%$ 	&$(13/39)$ \\ 
+				- Equivalent entities		& $ 33\%$ 	&$(13/39)$ \\ 
 				Disambiguation page			& $15.5\%$   	&$(31/200)$ \\ 
 				\hline \multicolumn{3}{|c|}{True semantic errors} \\
 				\hline	Too specific/general  	& $31.5\%$ 	&$(41/130)$ \\ 
